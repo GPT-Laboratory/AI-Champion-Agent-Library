@@ -258,6 +258,9 @@ describe('no pre-existing test file was modified by Phase 15', () => {
     'scripts/tryout-run.test.ts', // Phase 23 CR-52 (D-618..): a connection that never reached the server keeps no 0.50 USD reserve
     // Phase 25: each new catalog agent bumps the hard-coded agent count (25-02, 25-03).
     'src/lib/server/search/accuracy.test.ts',
+    // Catalog cleanup (850b295): removing 8 placeholder agents changed the hard-coded catalog fixtures in these two tests.
+    'scripts/set-try-it-out-mode.test.ts',
+    'src/lib/server/tryItOutPrompts.test.ts',
   ]
   it('git diff --diff-filter=M against the baseline lists no test file', () => {
     let start = ''
