@@ -19,7 +19,7 @@
           "input_schema": "[{\"key\":\"ai_use_case\",\"label\":\"AI use case\",\"type\":\"textarea\",\"required\":true,\"description\":null,\"placeholder\":\"Describe the AI-enabled system and what it is used for\",\"unit\":null,\"defaultValue\":null,\"options\":[],\"min\":null,\"max\":null},{\"key\":\"context\",\"label\":\"Context\",\"type\":\"textarea\",\"required\":false,\"description\":null,\"placeholder\":\"Sector, deployment setting, users affected, data involved\",\"unit\":null,\"defaultValue\":null,\"options\":[],\"min\":null,\"max\":null},{\"key\":\"regulatory_area\",\"label\":\"Regulatory area\",\"type\":\"text\",\"required\":false,\"description\":null,\"placeholder\":\"e.g. AI Act, data governance (leave empty to let AIRO decide)\",\"unit\":null,\"defaultValue\":null,\"options\":[],\"min\":null,\"max\":null},{\"key\":\"language\",\"label\":\"Response language\",\"type\":\"select\",\"required\":true,\"description\":null,\"placeholder\":null,\"unit\":null,\"defaultValue\":\"en\",\"options\":[{\"value\":\"en\",\"label\":\"English\"},{\"value\":\"fi\",\"label\":\"Finnish\"},{\"value\":\"sv\",\"label\":\"Swedish\"}],\"min\":null,\"max\":null}]",
           "requires_human_approval": 1,
           "category": "compliance",
-          "github_url": "https://github.com/mikauran/AI-Champion-Agent-Library",
+          "github_url": "https://chatgpt.com/g/g-69c51a866c0081918a86d4c0b81c810a-airo",
           "customizable_fields": "[]",
           "fixed_fields": "[\"llm.name\",\"llm.temperature\",\"tools\"]",
           "fixed_note": "Temperature, top-p and max tokens are managed by ChatGPT. The model is set by the creator; ChatGPT users may be able to switch models.",
