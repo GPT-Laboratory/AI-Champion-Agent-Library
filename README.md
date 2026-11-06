@@ -244,10 +244,9 @@ for running the built server in a container.
 podman build -t aic-agent-library -f Containerfile .
 
 # Run it
-podman run -d --name aic-agent-library -p 3000:3000 aic-agent-library
+./deploy.sh
 
-# Or with podman-compose
-podman-compose up -d --build
+# Deployment checks, health verification and rollback: see docs/autodeploy.md
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
@@ -388,3 +387,5 @@ Research output from Phase 12. Hosting of multi-agent systems and other formats 
 ---
 
 *Part of the AI Champion (AIC) consortium project.*
+
+Production deployment and signed-tag polling: [deployment guide](docs/autodeploy.md).

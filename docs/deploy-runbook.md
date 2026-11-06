@@ -19,7 +19,7 @@ npm run db:push           # drizzle-kit push: creates/updates db/catalog.db (age
 npm run ingest            # data/agents/*.yaml -> SQLite (+ embeddings, see below)
 npm run tryout:configure  # sets try_it_out_mode: demo-rfi-triage = runnable, hvac-load-calculator = none
 npx vite build            # server bundle in build/
-node build                # production server (PORT, default 3000)
+node --env-file=.env build # production server (PORT, default 3000)
 ```
 
 `npm run build` runs `db:push`, `ingest`, `tryout:configure` and `vite build` in that order. `tryout:configure` fails if the two slugs are missing, so run it after `ingest`.
@@ -128,7 +128,7 @@ test -S "$XDG_RUNTIME_DIR/podman/podman.sock" || {
     exit 1
 }
 podman build -t localhost/pi-runner:latest -f Containerfile.pi-runner .
-podman-compose up -d --build    # builds the app image and starts it
+./deploy.sh                   # preflight, build, replacement, health check, rollback
 ```
 
 Run the commands above as the same dedicated, non-root user that owns the
@@ -217,3 +217,5 @@ Nothing below has been done. Each file is an unchecked checklist.
 | 15 MCP test platform | Runner image build, container run, real FastMCP comparison, auth hook check, browser checks | `.planning/phases/15-mcp-test-platform-flagged/15-HUMAN-UAT.md` |
 
 Phases 1, 2.1, 2.2, 5, 6, 7, 8 and 12 are verified `passed`. The first production container build is a human step.
+
+For the shared deployment script and signed-tag timer, see [autodeploy.md](autodeploy.md).

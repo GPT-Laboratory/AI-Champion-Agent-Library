@@ -3,7 +3,7 @@
 # Podman/Docker build for the AIC Agent Library (SvelteKit + adapter-node).
 #
 # Build:  podman build -t aic-agent-library -f Containerfile .
-# Run:    podman run -d --name aic-agent-library -p 3000:3000 aic-agent-library
+# Run:    ./deploy.sh (loads runtime settings and verifies health)
 #
 # The catalog is baked into the image at build time: `npm run build` runs
 # drizzle-kit push + the YAML ingest script against data/agents/ before the
