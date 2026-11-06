@@ -13,3 +13,4 @@ runtime/
 data/fixtures-scale/
 override.tryitout.yml
 .tryitout-runs/
+.claude/

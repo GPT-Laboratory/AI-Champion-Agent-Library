@@ -7,6 +7,7 @@ services:
       dockerfile: Containerfile
     image: "${APP_IMAGE:-aic-agent-library:latest}"
     container_name: aic-agent-library
+    restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
