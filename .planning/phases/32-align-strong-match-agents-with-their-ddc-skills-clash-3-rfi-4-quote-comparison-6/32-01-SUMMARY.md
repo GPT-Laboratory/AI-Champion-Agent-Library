@@ -1,0 +1,9 @@
+# 32-01 summary: agent 3 Clash prioritization aligned with clash-resolution-analyzer
+
+Status: aligned and redesigned (per-clash classification step plus tested helper scripts/clash-patterns.ts for patterns and findings); live verification still ATTEMPTED-NOT-COUNTED (4 runs on the first design, then 3 runs on the redesign, each with one wrong cell).
+
+- Skill: 2_DDC_Book/4.3-BIM-Validation-Pipeline/clash-resolution-analyzer (SKILL.md and instructions.md read in full). Taken: CRITICAL/HIGH/MEDIUM/LOW scale and rules, status set, resolution types, responsible-discipline pair rules and ranking, pattern idea. Changed: Finnish MEP labels (Rakenne, Arkkitehti, Ilmanvaihto, Putkisto, Sähkö, Sprinkler) with a full pair lookup; location_key removed, patterns keyed from identical element text; no counts/rates/matrix. Seven skill bugs/inconsistencies fixed or documented (spec section 6).
+- Files: docs/ddc-alignment/clash-prioritization.md (written first, commit c7b3487), data/agents/clash-prioritization.yaml, data/tryitout-prompts/clash-prioritization/{SKILL.md,sample-clash-report.txt} (sample shrunk to 8 rows), scripts/ddc-alignment.clash-prioritization.test.ts, scripts/__golden__/flag-off.json (this entry only), gaps and inventory docs, 32-VERIFICATION.md, 32-HUMAN-UAT.md, spend log.
+- Runs (synthetic, gpt-4.1-mini, Option A): 4f18541b 18796 tok 0.0301 FAIL; f4376fb6 18820 tok 0.0301 FAIL; 977ecb72 20129 tok 0.0322 FAIL; bd86fcac (8 rows) 17434 tok 0.0279 FAIL. Total 0.1203 USD. See 32-VERIFICATION.md.
+- Stack stopped, no stragglers.
+- Redesign retry runs: 917eb36a 15349 tok 0.0246 FAIL (CL-003 type); fd61a009 15467 tok 0.0247 FAIL (CL-008 responsible); c1822385 15449 tok 0.0247 FAIL (CL-003 T1=Y for a soft clash). 7 of 8 rows right each time; patterns now from the helper (correct on the last output). Spend 0.0740 USD. See 32-VERIFICATION.md.

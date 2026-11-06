@@ -1,0 +1,58 @@
+id: T2-CATALOG-API
+tier: 2
+title: Acme parts catalog REST API (synthetic)
+source: invented Acme catalog API served by the offline mock
+auth: api_key_header
+transport: stdio
+provides_modalities: [spec]
+pass_thresholds:
+  d1_pass: true
+  d2_pct: 90
+  d4_pct: 80
+scoring_notes: >
+  Same structure as the implemented source case: nine source-style checks (tool_exists_lookup through
+  auth_failure) plus the ten generic behaviour checks (bh_ lines, linked through check_kind) so that a lenient
+  server cannot score full marks. The mock rejects the native attribute parameter, caps the page size at 50
+  and returns a legacy error envelope past the result window (200). Legacy HTTP+SSE is not covered.
+x-upstream:
+  a:
+    datasets: [catalog]
+    auth: { header: X-Api-Key, mode: '401' }
+    maxPageSize: 50
+    ceiling: 200
+    seed: 1
+x-env:
+  baseUrl: ACME_BASE_URL
+  apiKey: ACME_API_KEY
+x-identity:
+  idKeys: [id, item_id]
+  altKeys: [code]
+  partitionKeys: [supplier]
+  knownId: ACM-000042
+  knownAlt: '9900000000424'
+  badId: ACM-999999
+  partitionValue: SUP-003
+  derivedKey: Colour
+  derivedValue: Red
+  expectedDerivedIds:
+    - ACM-000025
+    - ACM-000050
+    - ACM-000075
+    - ACM-000100
+    - ACM-000125
+    - ACM-000150
+    - ACM-000175
+    - ACM-000200
+    - ACM-000225
+    - ACM-000250
+    - ACM-000275
+    - ACM-000300
+    - ACM-000325
+    - ACM-000350
+    - ACM-000375
+    - ACM-000400
+  maxPage: 50
+  ceilingPage: 4
+  keyEnv: ACME_API_KEY
+x-ceiling: 200
+x-applies-to: [fake, generator, submitted]

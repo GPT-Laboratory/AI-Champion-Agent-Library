@@ -1,0 +1,173 @@
+{
+  "auth_fail": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "auth_failure": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "bad_id": {
+    "tool": "lookup_product_by_id",
+    "argMap": {
+      "id": "product_id"
+    }
+  },
+  "bad_input": {
+    "tool": "lookup_product_by_id",
+    "argMap": {
+      "id": "product_id"
+    }
+  },
+  "derived_filter": {
+    "tool": "filter_product_by_features",
+    "argMap": {
+      "attribute": "key"
+    }
+  },
+  "empty_vs_error": {
+    "tool": "lookup_product_by_id",
+    "argMap": {
+      "id": "product_id"
+    }
+  },
+  "fault_malformed": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "fault_retry": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "fault_timeout": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "lookup_by_id": {
+    "tool": "lookup_product_by_id",
+    "argMap": {
+      "id": "product_id"
+    }
+  },
+  "lookup_first_item": {
+    "tool": "lookup_product_by_id",
+    "argMap": {
+      "id": "product_id"
+    }
+  },
+  "multilingual_fields": {
+    "tool": "lookup_product_by_id",
+    "argMap": {
+      "id": "product_id"
+    }
+  },
+  "pagesize_clamp": {
+    "tool": "list_products",
+    "argMap": {
+      "per_page": "page_size"
+    }
+  },
+  "pagination_ceiling": {
+    "tool": "list_products",
+    "argMap": {
+      "per_page": "page_size"
+    }
+  },
+  "pagination_page2": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "projection": {
+    "tool": "lookup_product_by_id",
+    "argMap": {
+      "id": "product_id"
+    }
+  },
+  "rerun_variance": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "search_bearing": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "search_empty": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "search_gasket": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "search_keyword": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "search_pump": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "search_sensor": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "search_valve": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "secret_canary": {
+    "tool": "search_product",
+    "argMap": {
+      "query": "q",
+      "per_page": "page_size"
+    }
+  },
+  "tool_exists_lookup": {
+    "tool": "lookup_product_by_id"
+  },
+  "tool_exists_search": {
+    "tool": "search_product"
+  }
+}

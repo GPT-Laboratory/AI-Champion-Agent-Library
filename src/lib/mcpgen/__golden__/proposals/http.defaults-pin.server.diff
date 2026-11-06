@@ -1,0 +1,16 @@
+@@ baseline line 299 @@
++    "part": ["partId", "name", "category"],
+-    "part": ["partId", "name", "category", "features"],
+@@ baseline line 303 @@
++def filter_part_by_features(key: str, value: Optional[str] = None, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
+-def filter_part_by_features(key: str, value: Optional[str] = None, q: Optional[str] = None, max_pages: int = 5, fields: Optional[list[str]] = None) -> dict:
+@@ baseline line 312 @@
+-        max_pages: Candidate pages to scan, 1 to 10. The tool fetches the pages itself.
+@@ baseline line 314 @@
++
++    Fixed: max_pages is always 3.
+@@ baseline line 316 @@
++        max_pages = 3
+@@ baseline line 390 @@
++def search_part(page: int = 1, page_size: int = 10, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
+-def search_part(page: int = 1, page_size: int = 20, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:

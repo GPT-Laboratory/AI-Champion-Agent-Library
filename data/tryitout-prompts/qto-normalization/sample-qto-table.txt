@@ -1,0 +1,8 @@
+# SYNTHETIC SAMPLE - invented data for an invented building, not from any real project
+row_id,group,description,quantity,unit,level
+Q-01,Putkisto,Copper pipe DN22,48.5,m,Level 1
+Q-02,ilmanvaihto,Circular duct DN160,"36,4",m,Level 1
+Q-03,Putkisto,Copper pipe DN15,2400,mm,Level 2
+Q-04,Sähkö,Cable drum 5x2.5,3,roll,Level 1
+Q-05,PUTKISTO,Copper pipe DN22,48.5,m,Level 1
+Q-06,Ilmanvaihto,Supply air diffuser,,pcs,Level 2

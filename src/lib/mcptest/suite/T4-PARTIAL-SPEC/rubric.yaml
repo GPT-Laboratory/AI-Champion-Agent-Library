@@ -1,0 +1,12 @@
+D3:
+  title: Gap handling (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: gaps_listed, text: Every deliberate gap appears in the generator report, auto: true }
+    - { id: tool_marked, text: The affected operation is omitted or marked, auto: true }
+D5:
+  title: Not applicable
+  scale: "0-3"
+  criteria: []
+checklist_per_subject:
+  - { id: deterministic, text: Reruns are byte-identical, auto: true }

@@ -1,0 +1,10 @@
+plan_task:
+  description: Plan the work for the request.
+  expected_output: A numbered plan.
+  agent: planner
+review_task:
+  description: Review the plan.
+  expected_output: A list of issues.
+  agent: reviewer
+  context:
+    - plan_task

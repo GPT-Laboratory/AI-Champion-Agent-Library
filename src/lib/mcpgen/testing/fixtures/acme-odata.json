@@ -1,0 +1,71 @@
+{
+  "$Version": "4.01",
+  "$EntityContainer": "Acme.Catalog.Container",
+  "$Reference": {
+    "https://vocab.acme.example/Org.OData.Core.V1.json": {
+      "$Include": [{ "$Namespace": "Org.OData.Core.V1", "$Alias": "Core" }]
+    }
+  },
+  "Acme.Catalog": {
+    "$Alias": "C",
+    "ProductStatus": { "$Kind": "EnumType", "Draft": 0, "Active": 1, "Retired": 2 },
+    "Dimensions": {
+      "$Kind": "ComplexType",
+      "Width": { "$Type": "Edm.Double", "$Nullable": true },
+      "Height": { "$Type": "Edm.Double", "$Nullable": true }
+    },
+    "Product": {
+      "$Kind": "EntityType",
+      "$Key": ["ID"],
+      "ID": { "$Type": "Edm.Guid" },
+      "Name": { "$MaxLength": 80 },
+      "Status": { "$Type": "C.ProductStatus", "$Nullable": true },
+      "Price": { "$Type": "Edm.Decimal", "$Precision": 12, "$Scale": 2, "$Nullable": true },
+      "Stock": { "$Type": "Edm.Int32", "$Nullable": true },
+      "ReleaseDate": { "$Type": "Edm.Date", "$Nullable": true },
+      "Active": { "$Type": "Edm.Boolean", "$Nullable": true },
+      "Size": { "$Type": "C.Dimensions", "$Nullable": true },
+      "Tags": { "$Collection": true },
+      "Photo": { "$Type": "Edm.Binary", "$Nullable": true },
+      "Supplier": { "$Kind": "NavigationProperty", "$Type": "C.Supplier", "$Nullable": true },
+      "Reviews": { "$Kind": "NavigationProperty", "$Collection": true, "$Type": "C.Review" },
+      "@Core.Description": "A product in the Acme catalog."
+    },
+    "Supplier": {
+      "$Kind": "EntityType",
+      "$Key": ["SupplierCode"],
+      "SupplierCode": {},
+      "Name": { "$Nullable": true },
+      "Country": { "$Nullable": true }
+    },
+    "OrderLine": {
+      "$Kind": "EntityType",
+      "$Key": ["OrderID", "LineNumber"],
+      "OrderID": { "$Type": "Edm.Int32" },
+      "LineNumber": { "$Type": "Edm.Int32" },
+      "Quantity": { "$Type": "Edm.Int32", "$Nullable": true },
+      "Note": { "$Nullable": true }
+    },
+    "Review": {
+      "$Kind": "EntityType",
+      "$Key": ["ReviewID"],
+      "ReviewID": { "$Type": "Edm.Int32" },
+      "Text": { "$Nullable": true }
+    },
+    "ArchiveProduct": [{ "$Kind": "Action", "$IsBound": true, "$Parameter": [{ "$Name": "product", "$Type": "C.Product" }] }],
+    "TopProducts": [{ "$Kind": "Function", "$ReturnType": { "$Collection": true, "$Type": "C.Product" } }],
+    "Container": {
+      "$Kind": "EntityContainer",
+      "Products": { "$Collection": true, "$Type": "C.Product", "@Core.Description": "Products you can order." },
+      "Suppliers": { "$Collection": true, "$Type": "C.Supplier" },
+      "OrderLines": {
+        "$Collection": true,
+        "$Type": "C.OrderLine",
+        "@Org.OData.Capabilities.V1.FilterRestrictions": { "NonFilterableProperties": ["Note"] }
+      },
+      "Company": { "$Type": "C.Supplier" },
+      "@Org.OData.Authorization.V1.Authorizations": [{ "@type": "#Org.OData.Authorization.V1.OAuth2AuthCode" }]
+    },
+    "$Annotations": { "C.Container/Suppliers": { "@Core.Description": "Applied from outside." } }
+  }
+}

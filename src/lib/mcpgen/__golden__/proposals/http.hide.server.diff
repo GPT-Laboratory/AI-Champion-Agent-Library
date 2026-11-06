@@ -1,0 +1,67 @@
+@@ baseline line 303 @@
+-def filter_part_by_features(key: str, value: Optional[str] = None, q: Optional[str] = None, max_pages: int = 5, fields: Optional[list[str]] = None) -> dict:
+-    """Find parts whose features contain a matching entry; candidate pages are fetched and filtered in memory and the scan coverage is reported.
+-
+-    Scans up to max_pages pages in memory and reports coverage (pages_scanned, truncated). A truncated scan means more candidates exist than were checked.
+-
+-    Args:
+-        key: Key to look for in features (matches featureCode).
+-        value: Optional value the entry must also have (matches featureValue or unit).
+-        q: Free text query
+-        max_pages: Candidate pages to scan, 1 to 10. The tool fetches the pages itself.
+-        fields: Optional list of field names to return (at most 12; unknown names are ignored).
+-    """
+-    try:
+-        max_pages = _clamp(max_pages, 1, 10)
+-        needle = str(key).strip()
+-        if not needle or len(needle) > 256:
+-            return _err("invalid_argument", "A key of 1 to 256 characters is required.")
+-        if value is not None and len(str(value)) > 256:
+-            return _err("invalid_argument", "value is too long (at most 256 characters).")
+-        if q is not None and len(str(q)) > 256:
+-            return _err("invalid_argument", "q is too long (at most 256 characters).")
+-        sel = _select_fields(fields, _ALLOWED["part"], _DEFAULT["part"])
+-        base_query = {}
+-        if q is not None:
+-            base_query["q"] = _qv(q)
+-        matches = []
+-        scanned = 0
+-        truncated = False
+-        for page in range(1, max_pages + 1):
+-            query = dict(base_query)
+-            query["page"] = page
+-            query["size"] = 50
+-            rows = _rows(_http_json("/parts", query))
+-            scanned += 1
+-            for row in rows:
+-                hits = _nested_hits(row.get("features"), ["featureCode"], ["featureValue", "unit"], needle, value)
+-                if hits:
+-                    item = _project(row, sel)
+-                    item["features"] = hits
+-                    matches.append(item)
+-                    if len(matches) >= MAX_RESPONSE_ITEMS:
+-                        truncated = True
+-                        break
+-            if truncated:
+-                break
+-            if len(rows) < 50:
+-                break
+-        else:
+-            truncated = True
+-        coverage = {"pages_scanned": scanned, "truncated": truncated, "note": "The scan stopped before every candidate page was checked; matching items may be missing. Narrow the request or raise max_pages." if truncated else "Every candidate page was checked."}
+-        out = {"ok": True, "results": matches, "count": len(matches), "coverage": coverage}
+-        if not matches:
+-            out["message"] = "No matches found among the scanned candidates." + (" The scan was incomplete, so a match may exist further on." if truncated else "")
+-        elif truncated:
+-            out["message"] = "Results may be incomplete: the scan stopped before every page was checked."
+-        return out
+-    except _Fail as exc:
+-        return _fail(exc)
+-    except Exception:
+-        return _err("internal", _INTERNAL_MESSAGE)
+-
+-
+@@ baseline line 500 @@
+-    "filter_part_by_features": _OUT_LIST,
+@@ baseline line 508 @@
+-    filter_part_by_features,

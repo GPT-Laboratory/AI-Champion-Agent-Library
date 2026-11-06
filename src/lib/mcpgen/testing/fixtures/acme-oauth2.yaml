@@ -1,0 +1,71 @@
+openapi: 3.0.3
+info:
+  title: Acme Ledger API
+  version: "1.0.0"
+  description: Invented ledger used only as a test fixture.
+servers:
+  - url: https://ledger.acme.example/v2
+security:
+  - AcmeOAuth: [ledger.read]
+paths:
+  /entries:
+    get:
+      operationId: listEntries
+      summary: List ledger entries
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: size
+          in: query
+          schema:
+            type: integer
+            maximum: 40
+      responses:
+        "200":
+          description: Entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entry"
+  /entries/{entryId}:
+    get:
+      operationId: getEntry
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+components:
+  securitySchemes:
+    AcmeOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.acme.example/authorize
+          tokenUrl: https://auth.acme.example/token
+          scopes:
+            ledger.read: Read the ledger
+  schemas:
+    Entry:
+      type: object
+      properties:
+        entryId:
+          type: string
+        account:
+          type: string
+        amount:
+          type: number
+        memo:
+          type: string

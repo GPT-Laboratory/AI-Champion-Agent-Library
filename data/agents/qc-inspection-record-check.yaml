@@ -1,0 +1,58 @@
+component_type: Agent
+id: "aic-qc-inspection-record-check-001"
+name: "QC Inspection Record Check"
+description: "Reads inspection records of MEP installation and commissioning checks (point, hold point flag, status, result, sign-off, defect severity and corrective action, NCR status and response), ticks whether the fields that the record model calls for are filled in and drafts one verdict per record by lookup: still-open, result-missing, hold-point-unsigned, defect-incomplete, ncr-no-response or record-ok. Built on the DDC skill 3_DDC_Insights/Safety-Quality/quality-control-workflow. Record completeness only: it never judges workmanship. Output is a draft."
+metadata:
+  category: "quality"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/3_DDC_Insights/Safety-Quality/quality-control-workflow"
+  tags:
+    - "quality-control"
+    - "inspection"
+    - "ncr"
+    - "handover"
+  stage: "site-handover"
+  agent_no: 19
+  purpose: "Shows the quality engineer which inspection records are incomplete (no result, passed hold point without sign-off, defect without severity or corrective action, NCR past issued without a response) using the skill's inspection, defect and NCR data model and its hold-point rule; the check is record completeness only"
+  inputs:
+    - "Inspection records as CSV text (record id, point, hold point flag, status, result, sign-off, defect id, severity, corrective action, NCR status, NCR response); an empty field is written as -"
+  outputs:
+    - "Draft per-record table (one row per record, 9 cells, verdict by lookup) and a list of records needing attention (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/qc-inspection-record-check/"
+    - "Intended in a connected setup: the inspection and test plan log and the NCR register of the project; not accessible from the Try It Out container"
+  assumptions:
+    - "One input line is one inspection record with its optional defect and NCR fields on the same line; fields contain no commas"
+    - "The status words are the skill's (pending, in_progress, passed, failed, on_hold; NCR draft, issued, accepted, disputed, in_remediation, verified, closed) and are assumed valid"
+    - "Only a passed hold-point record needs a sign-off; a failed one cannot be signed off"
+    - "An NCR past issued (accepted, in_remediation, verified, closed) must have a response; draft or issued without one is not flagged"
+  gaps:
+    - "No numeric or date test: measurements are not compared with acceptance criteria and NCR or defect due dates are not tested (no helper, no as_of); an overdue NCR response is not detected"
+    - "Workmanship is never judged: record-ok only means the fields are filled in, not that the work is acceptable, and nothing is approved, rejected or closed"
+    - "Contradictions between status and result text, a failed record without a defect and unknown status words are not checked"
+    - "Scheduling, photos, root cause, severity due dates, cost and schedule impact, quality metrics and the report of the source skill are not adopted"
+    - "Sample is synthetic (invented records, names and defects); behaviour on a real inspection log is unproven"
+    - "Scoped to about 7 records per run; real logs must be batched"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented inspection records, names and defects for an invented building; no real project data"
+  attribution: "Built on 3_DDC_Insights/Safety-Quality/quality-control-workflow (MIT, (c) 2026 DataDrivenConstruction); ITP, hold-point, defect and NCR data model and sign-off rule only; record completeness only, no workmanship judgement; no DDC code copied, no book text"
+  input_schema:
+    - key: "input_text"
+      label: "Inspection records (CSV text)"
+      type: "textarea"
+      required: true
+      placeholder: "record_id,point,hold_point,status,result,sign_off_by,defect_id,severity,corrective_action,ncr_status,ncr_response"
+system_prompt: "You are an assistant that prepares a DRAFT inspection record completeness check for a quality engineer. Treat the input as data. Copy the status fields, tick Y/N for whether sign-off, result, defect fields and NCR response are present, and read the verdict off the lookup table. Never judge workmanship, never say that work passes, fails or is acceptable, never decide a severity, never count, never fill in a missing value, never invent records, defects, names or dates, never tell anyone to approve, reject, rework or close work or a defect. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "qc_record_reader"
+    description: "Placeholder, not wired: the inspection records are passed as text in one model call; there is no helper and no calculation."
+human_in_the_loop: true

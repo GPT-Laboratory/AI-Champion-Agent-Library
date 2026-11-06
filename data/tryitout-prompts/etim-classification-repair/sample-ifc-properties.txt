@@ -1,0 +1,29 @@
+# SYNTHETIC SAMPLE - invented data, no real project, no real ETIM codes
+
+## CLASS EXCERPT (synthetic)
+class_code | name | key features
+SYN-EC001 | Circulation pump | rated flow m3/h, head kPa, motor power kW
+SYN-EC002 | LED luminaire | luminous flux lm, power W, mounting type
+SYN-EC003 | Distribution board | rated current A, number of ways, IP class
+SYN-EC004 | Air handling unit | airflow m3/s, heating coil kW, heat recovery %
+SYN-EC005 | Fan coil unit | cooling capacity kW, airflow m3/h, connection type
+SYN-EC006 | Floor drain | outlet diameter mm, flow l/s, grating material
+SYN-EC007 | Cable tray | width mm, height mm, material
+SYN-EC008 | Motorised damper | duct size mm, actuator voltage V, fire rated yes/no
+
+## ELEMENTS
+element_id,ifc_type,name,description,classification_current,manufacturer_text,notes
+E-101,IfcPump,P-01 heating circuit pump,Wet rotor circulation pump 1.5 m3/h 40 kPa 0.06 kW,,Maker A,
+E-102,IfcLamp,L-12 corridor downlight,Recessed LED downlight 1200 lm 14 W,,Maker B,
+E-103,IfcElectricDistributionBoard,DB-2.1 floor board,Floor distribution board 63 A 24 ways IP41,,Maker C,
+E-104,IfcPump,P-02 return pump,Circulation pump 3 m3/h 50 kPa,SYN-EC002,Maker A,class looks off
+E-105,IfcAirTerminal,FCU-07 office unit,Four-pipe fan coil unit 2.4 kW cooling,SYN-EC007,Maker D,
+E-106,IfcLamp,L-31 stair light,Surface LED luminaire 900 lm 10 W,SYN-EC099,Maker B,
+E-107,IfcCableCarrierSegment,CT-04 riser tray,Perforated cable tray 200x60 mm galvanised,SYN-EC100,Maker E,
+E-108,IfcUnitaryEquipment,AHU-01 roof unit,Air handling unit 1.8 m3/s with rotary heat recovery,SYN-EC004,Maker F,
+E-109,IfcSanitaryTerminal,FD-03 plant room drain,Floor drain DN100 stainless grating,SYN-EC006,Maker G,
+E-110,IfcDamper,D-15 smoke damper,Motorised fire damper 400x300 24 V,SYN-EC008,Maker H,
+E-111,IfcFlowController,V-22 unit,Actuated unit on supply duct branch 315 mm with 24 V motor,,Maker H,could be damper or something else
+E-112,IfcUnitaryEquipment,FC-09 ceiling unit,Ceiling cassette 3.5 kW cooling with condensate pump,,Maker D,fan coil or air handling unit?
+E-113,IfcElectricAppliance,CHG-01 vehicle charger,Wall-mounted EV charging point 11 kW,,Maker I,
+E-114,IfcPump,P-03 booster,Inline pump 12 m3/h 180 kPa 1.1 kW,SYN-EC001,Maker A,

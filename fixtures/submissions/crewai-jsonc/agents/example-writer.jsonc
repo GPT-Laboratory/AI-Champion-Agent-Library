@@ -1,0 +1,7 @@
+{
+  "role": "Example Writer",
+  "goal": "Turn research notes into a short brief",
+  "backstory": "A concise editor.",
+  "llm": "example-model-small",
+  "tools": []
+}

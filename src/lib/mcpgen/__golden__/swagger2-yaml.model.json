@@ -1,0 +1,157 @@
+{
+  "auth": {
+    "envVar": "ACME_SWAGGER_PARTS_API_KEY",
+    "paramName": "X-Acme-Key",
+    "scheme": "apiKeyHeader"
+  },
+  "backend": {
+    "baseUrlEnv": "ACME_SWAGGER_PARTS_BASE_URL",
+    "kind": "http"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "description": "Stable part code",
+          "identifier": true,
+          "name": "partId",
+          "type": "string"
+        },
+        {
+          "description": "Display name",
+          "name": "name",
+          "nameLike": true,
+          "type": "string"
+        },
+        {
+          "classLike": true,
+          "description": "Part group",
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "price",
+          "type": "number"
+        },
+        {
+          "name": "inStock",
+          "type": "boolean"
+        },
+        {
+          "enum": [
+            "active",
+            "retired"
+          ],
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "note",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "description": "Technical features as code and value entries",
+          "name": "features",
+          "type": "array"
+        }
+      ],
+      "id": "part",
+      "identifierFields": [
+        "partId"
+      ],
+      "label": "Part",
+      "nested": [
+        {
+          "field": "features",
+          "itemFields": [
+            {
+              "classLike": true,
+              "name": "featureCode",
+              "type": "string"
+            },
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ],
+          "keyFields": [
+            "featureCode"
+          ],
+          "valueFields": [
+            "value"
+          ]
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "code": "base-path-in-env",
+      "message": "The document declares a base path (servers url or basePath); operation paths are relative to it, but it is not copied. Include it in ACME_SWAGGER_PARTS_BASE_URL.",
+      "severity": "info"
+    }
+  ],
+  "limits": {
+    "maxPageSize": 50,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Swagger Parts API",
+  "operations": [
+    {
+      "entity": "part",
+      "id": "getPart",
+      "kind": "get",
+      "method": "GET",
+      "params": [
+        {
+          "description": "Part code",
+          "in": "path",
+          "name": "partId",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "path": "/parts/{partId}",
+      "summary": "Fetch one part"
+    },
+    {
+      "entity": "part",
+      "id": "listParts",
+      "kind": "search",
+      "method": "GET",
+      "pageParam": "page",
+      "pageSizeParam": "size",
+      "params": [
+        {
+          "description": "Free text query",
+          "in": "query",
+          "name": "q",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "in": "query",
+          "min": 1,
+          "name": "page",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "max": 50,
+          "min": 1,
+          "name": "size",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "path": "/parts",
+      "summary": "Search and list parts"
+    }
+  ],
+  "writeOperationsDropped": [
+    "createPart",
+    "deletePart"
+  ]
+}

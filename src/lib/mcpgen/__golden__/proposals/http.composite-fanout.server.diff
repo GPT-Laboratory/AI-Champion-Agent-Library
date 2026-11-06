@@ -1,0 +1,116 @@
+@@ baseline line 267 @@
++class _Stop(Exception):
++    """Ends a composite tool early with a ready, caller-safe response."""
+@@ baseline line 268 @@
++    def __init__(self, response):
++        super().__init__("stop")
++        self.response = response
++
++
++def _kw(**kwargs):
++    return {key: value for key, value in kwargs.items() if value is not None}
++
++
++def _tag(result, source):
++    if isinstance(result, dict) and result.get("ok") is True:
++        tagged = dict(result)
++        tagged["source"] = source
++        return tagged
++    return result
++
++
++def _count_of(result):
++    count = result.get("count")
++    if isinstance(count, int):
++        return count
++    return 1 if result.get("result") else 0
++
++
++def _merged(parts):
++    good = [key for key, value in parts.items() if isinstance(value, dict) and value.get("ok") is True]
++    if not good:
++        for value in parts.values():
++            return value
++    return {
++        "ok": True,
++        "sources": parts,
++        "count": sum(_count_of(parts[key]) for key in good),
++        "failed": [key for key in parts if key not in good],
++    }
++
++
++def _sel(ctx, path):
++    """Walk dictionaries and lists along a fixed path. Missing anything gives None. No attribute access."""
++    current = ctx
++    for part in path:
++        if isinstance(part, int):
++            if isinstance(current, list) and -len(current) <= part < len(current):
++                current = current[part]
++            else:
++                return None
++        elif isinstance(current, dict) and part in current:
++            current = current[part]
++        else:
++            return None
++    return current
++
++
++def _as_list(value, cap):
++    return list(value)[:cap] if isinstance(value, list) else []
++
++
++def _step(budget, fn, args, required, soft=False):
++    """One grounded call of a read-only tool function, counted against the total call cap."""
++    for name in required:
++        if args.get(name) is None:
++            if soft:
++                return _no_results("item", "The previous step gave no value for this call.")
++            raise _Stop(_no_results("result", "An earlier step returned nothing to continue with."))
++    budget[0] += 1
++    if budget[0] > budget[1]:
++        raise _Stop(_err("limit", "The call limit of this tool was reached.", "Narrow the request."))
++    result = fn(**{key: value for key, value in args.items() if value is not None})
++    if isinstance(result, dict) and result.get("ok") is True:
++        return result
++    failure = _err(
++        result.get("kind", "internal") if isinstance(result, dict) else "internal",
++        result.get("message", _INTERNAL_MESSAGE) if isinstance(result, dict) else _INTERNAL_MESSAGE,
++        result.get("hint") if isinstance(result, dict) else None,
++    )
++    if soft:
++        return failure
++    raise _Stop(failure)
++
++
+@@ baseline line 365 @@
++def find_part_records(text: str) -> dict:
++    """Searches parts by text and returns the full record of each of the first matches.
++
++    Runs at most 6 read-only calls in a fixed order and reports an honest empty result when an earlier step finds nothing.
++
++    Args:
++        text: Required.
++    """
++    try:
++        if len(str(text)) > 256:
++            return _err("invalid_argument", "text is too long (at most 256 characters).")
++        _ctx = {"input": {"text": text}}
++        _budget = [0, 6]
++        _ctx["find"] = _step(_budget, search_part, {"page_size": 5, "q": _sel(_ctx, ("input", "text")), "fields": ["partId"]}, ())
++        _outs = []
++        for _item in _as_list(_sel(_ctx, ("find", "results")), 5):
++            _ctx["item"] = _item
++            _outs.append(_step(_budget, lookup_part_by_id, {"partId": _sel(_ctx, ("item", "partId"))}, ("partId",), True))
++        _ctx.pop("item", None)
++        _ctx["each"] = {"ok": True, "results": _outs, "count": len(_outs)}
++        return {"ok": True, "result": {"first": _sel(_ctx, ("each", "results", 0, "result")), "total": _sel(_ctx, ("each", "count"))}}
++    except _Stop as stop:
++        return stop.response
++    except Exception:
++        return _err("internal", _INTERNAL_MESSAGE)
++
++
+@@ baseline line 501 @@
++    "find_part_records": _OUT_ITEM,
+@@ baseline line 509 @@
++    find_part_records,

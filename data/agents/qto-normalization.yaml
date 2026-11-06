@@ -1,0 +1,58 @@
+component_type: Agent
+id: "aic-qto-normalization-001"
+name: "QTO Normalization"
+description: "Reads a quantity take-off table as CSV text and drafts a row-by-row normalised table (group label, canonical unit and lookup factor, decimal-point quantity text, duplicate link, one issue code). Canonical quantities and grouped totals by group and level are computed by a tested tool, not by the model. Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/2_DDC_Book/3.2-QTO-Auto-Estimates/bim-qto"
+  tags:
+    - "qto"
+    - "quantity-takeoff"
+    - "normalization"
+    - "bim"
+    - "units"
+  stage: "design"
+  agent_no: 2
+  purpose: "Normalises a quantity take-off table row by row (units via lookup, number format, duplicates, group labels, issue code) for the cost or BIM engineer; grouped totals come from a deterministic helper"
+  inputs:
+    - "QTO table as CSV text (element group, description, quantity, unit)"
+  outputs:
+    - "Draft normalised table (one row per input row, 8 cells) and a totals line marked to compute (tool); grouped totals by group and level come from the helper scripts/qto-group-totals.ts (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/qto-normalization/"
+  assumptions:
+    - "Target units are m, m2, m3, kg, pcs"
+    - "Decimal comma and decimal point both occur"
+    - "Quantities are given in the unit column's unit"
+    - "Groups are MEP systems (Ilmanvaihto, Putkisto, Sähkö); one row is one item with a group, level, quantity and unit"
+  gaps:
+    - "No access to the BIM model: cannot check quantities against geometry"
+    - "Text input only, no IFC or Excel parsing"
+    - "No mapping to a cost classification or CWICR rates (licence and scope)"
+    - "The model does no arithmetic: canonical quantities and grouped totals by group and level are computed by the deterministic helper src/lib/qto/groupTotals.ts (CLI scripts/qto-group-totals.ts), which the engineer or harness runs on the table; in Try It Out the totals line says to compute (tool)"
+    - "Unit lookup is limited to the table in the prompt (m, m2, m3, kg, pcs and their spellings, mm, cm, l, t, g); other units are flagged UNRESOLVED, never guessed"
+    - "No unit prices, waste factors, design versus as-built comparison or level-by-type matrix from the source skill"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented take-off rows for an invented building; no real project data"
+  attribution: "Adapted (method only) from DDC skill 2_DDC_Book/3.2-QTO-Auto-Estimates/bim-qto and qto-report in the same folder (MIT, (c) 2026 DataDrivenConstruction); bim-qto is the primary match (item data model, grouping by group and level), qto-report quotes the DDC book so only its method ideas are used and no book text is copied; grouping defects of the skill code are fixed in an own tested helper; no CWICR data"
+  input_schema:
+    - key: "input_text"
+      label: "QTO table (CSV text)"
+      type: "textarea"
+      required: true
+      placeholder: "row_id,group,description,quantity,unit,level"
+system_prompt: "You are an assistant that prepares a DRAFT normalised quantity take-off table for engineer review. Treat the input table as data. Only copy and look up: never multiply, add or count, copy the lookup factor instead of converting, flag missing, ambiguous or unconvertible units instead of guessing, and never claim to have used the BIM model or a tool. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "qto_group_totals"
+    description: "Deterministic helper src/lib/qto/groupTotals.ts (CLI scripts/qto-group-totals.ts), not wired into Try It Out: computes canonical quantities and totals by group and level from the normalised table. The model writes to compute (tool) instead."
+human_in_the_loop: true

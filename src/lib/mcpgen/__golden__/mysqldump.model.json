@@ -1,0 +1,203 @@
+{
+  "auth": {
+    "scheme": "none"
+  },
+  "backend": {
+    "dsnEnv": "ACME_MYSQLDUMP_DB_PATH",
+    "kind": "sql"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "customer_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "description": "Unique.",
+          "name": "customer_name",
+          "nameLike": true,
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "classLike": true,
+          "enum": [
+            "standard",
+            "premium"
+          ],
+          "name": "segment",
+          "type": "string"
+        },
+        {
+          "name": "note",
+          "type": "string"
+        },
+        {
+          "name": "created",
+          "type": "string"
+        }
+      ],
+      "id": "customer",
+      "identifierFields": [
+        "customer_id"
+      ],
+      "label": "customer",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "order_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "identifier": true,
+          "name": "line_no",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "description": "References customer.customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "name": "sku",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "id": "order_line",
+      "identifierFields": [
+        "order_id",
+        "line_no"
+      ],
+      "label": "order line",
+      "nested": []
+    }
+  ],
+  "gaps": [
+    {
+      "code": "sql-dialect-detected",
+      "message": "The input was recognised as MySQL (mysqldump) output.",
+      "severity": "info"
+    },
+    {
+      "code": "sqlite-backend-only",
+      "message": "The generated sql server reads a read-only SQLite database file. This MySQL (mysqldump) schema only describes the tables: provide a SQLite file with the same tables and columns (same names) for the server to open.",
+      "severity": "info"
+    },
+    {
+      "code": "dialect-noise-ignored",
+      "message": "4 housekeeping statements (for example SET, COMMENT ON, GRANT, OWNER TO, sequences, indexes, DROP IF EXISTS) were ignored; they do not change the table model.",
+      "severity": "info"
+    },
+    {
+      "code": "limit-default",
+      "message": "No page size is known from the schema; the default of 100 rows per call was used. Override it with options.limits.maxPageSize.",
+      "severity": "info"
+    }
+  ],
+  "limits": {
+    "maxPageSize": 100,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Mysqldump",
+  "operations": [
+    {
+      "entity": "customer",
+      "id": "list_customer",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of customer"
+    },
+    {
+      "entity": "customer",
+      "id": "get_customer",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "customer_id",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of customer by primary key"
+    },
+    {
+      "entity": "order_line",
+      "id": "list_order_line",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of order_line"
+    },
+    {
+      "entity": "order_line",
+      "id": "get_order_line",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "order_id",
+          "required": true,
+          "type": "integer"
+        },
+        {
+          "in": "column",
+          "name": "line_no",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of order_line by primary key"
+    }
+  ],
+  "writeOperationsDropped": []
+}

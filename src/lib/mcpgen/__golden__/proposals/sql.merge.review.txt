@@ -1,0 +1,21 @@
+Proposal review (strict mode)
+  proposal file sha256: 379888bda42c26a0a8c63850158e61cba70bb98ea676dc2265c158534f790f79
+  baseline fingerprint: 8fc43262e49d20764ada5b7941533ad640fbb608bd3b35b78bcadcfcb18d52eb
+  result: ACCEPTED
+
+Applied ops (1):
+  - merge-orders [merge_tools]: test
+
+Changes per tool (before -> after):
+  query_order
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  query_order_line
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  NEW order_data (merge dispatch)
+    description: Orders and their lines from one tool; choose which with the operation argument.
+    arguments: (operation, field?, value?, match?, fields?, limit?, offset?)
+    calls: orders -> query_order; lines -> query_order_line
+
+Tools offered after applying (4): describe_acme_schema, order_data, query_customer, query_note_log
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

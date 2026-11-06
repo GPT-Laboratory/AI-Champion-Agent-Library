@@ -1,0 +1,92 @@
+openapi: 3.1.0
+info:
+  title: Acme Assets API
+  version: "1.0.0"
+  summary: Invented asset register used only as a test fixture.
+servers:
+  - url: https://assets.acme.example
+paths:
+  /assets:
+    $ref: "#/components/pathItems/AssetList"
+  /assets/{assetId}:
+    get:
+      operationId: getAsset
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Asset"
+webhooks:
+  assetChanged:
+    post:
+      operationId: assetChangedHook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Asset"
+      responses:
+        "200":
+          description: Accepted
+components:
+  pathItems:
+    AssetList:
+      get:
+        operationId: listAssets
+        parameters:
+          - name: page
+            in: query
+            schema:
+              type: integer
+          - name: size
+            in: query
+            schema:
+              type: integer
+              maximum: 30
+        responses:
+          "200":
+            description: Assets
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Asset"
+  schemas:
+    Asset:
+      type: object
+      properties:
+        assetId:
+          type: string
+        name:
+          type: string
+        location:
+          type:
+            - string
+            - "null"
+          examples:
+            - Warehouse 4
+        retiredOn:
+          type: [string, "null"]
+          description: Date the asset was retired
+        weightKg:
+          type: number
+          nullable: true
+        owner:
+          $ref: "#/components/schemas/Owner"
+          description: Current owner
+        tag:
+          type: [string, integer]
+    Owner:
+      type: object
+      properties:
+        ownerId:
+          type: string

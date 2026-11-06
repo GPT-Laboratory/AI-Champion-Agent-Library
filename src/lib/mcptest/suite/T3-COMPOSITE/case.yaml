@@ -1,0 +1,26 @@
+id: T3-COMPOSITE
+tier: 3
+title: Acme composite tool joining two backends (synthetic)
+source: invented Acme components (backend A) and assemblies (backend B) on two loopback mocks
+auth: none
+transport: stdio
+provides_modalities: [spec]
+pass_thresholds:
+  d1_pass: true
+  d2_pct: 80
+scoring_notes: >
+  The composite tool joins a component from backend A with its assembly from backend B. When backend B is
+  down the tool must degrade with a partial answer and an explicit notice, not an error dump and not a
+  confident full answer. Needs a purpose-built composite fake; the generator cannot produce composite tools
+  (listed as a gap).
+x-upstream:
+  a: { datasets: [components], seed: 1 }
+  b: { datasets: [products], seed: 1 }
+x-env:
+  baseUrl: ACME_BASE_URL
+  baseUrlB: ACME_BASE_URL_B
+x-config:
+  composite:
+    componentId: CMP-0003
+    expectedKeys: [mass_g, parts]
+x-applies-to: [fake]

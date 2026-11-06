@@ -1,0 +1,17 @@
+# SYNTHETIC SAMPLE - invented data. The category table is a PLACEHOLDER chosen for this sample, not a safety regulation or company standard. Observations and locations are invented.
+## CATEGORY TABLE
+keyword,category,severity_hint
+harness,fall-protection,high
+cord,electrical,high
+hard hat,ppe,medium
+debris,housekeeping,low
+excavation,excavation,high
+wet,housekeeping,medium
+## OBSERVATIONS
+obs_id,location,text
+S-01,Level 3 scaffold,Worker on scaffold without harness at grid C
+S-02,Level 1 plant room,Extension cord frayed near wet area
+S-03,Level 2 stair,Debris blocking stair exit
+S-04,Yard,Forklift reversing without spotter
+S-05,Gate,Visitor entered without hard hat
+S-06,North trench,Excavation edge unprotected and no barrier

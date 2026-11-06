@@ -1,0 +1,9 @@
+{
+  "graphs": {
+    "researcher": "./src/example/researcher.py:graph",
+    "writer": "./src/example/writer.py:graph"
+  },
+  "dependencies": ["."],
+  "env": { "EXAMPLE_TOKEN": "synthetic-value-not-stored" },
+  "python_version": "3.12"
+}

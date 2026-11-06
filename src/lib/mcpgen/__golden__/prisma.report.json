@@ -1,0 +1,56 @@
+{
+  "assumptions": [
+    "FastMCP is pinned as fastmcp>=3.4,<5 (verified on 3.4.8 and 4.1.0 on 2026-10-14).",
+    "Tools are registered with mcp.tool(function) and called directly in the generated tests. UNVERIFIED against the pinned FastMCP version.",
+    "The generated Python was syntax-checked at most; it was never executed or installed by the generator.",
+    "SQL backend supports SQLite files only (Python standard library, read-only connection). Other database systems are out of scope.",
+    "No result ceiling was supplied, so no ceiling warning is emitted."
+  ],
+  "envVars": [
+    {
+      "name": "ACME_PRISMA_DB_PATH",
+      "purpose": "Location of the SQLite database file (opened read-only)"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "unsupported-type",
+      "message": "The Json type is not supported; the column is exposed as text.",
+      "path": "Customer.profile",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "A list field is not supported; the column is exposed as text.",
+      "path": "Customer.tags",
+      "severity": "warn"
+    },
+    {
+      "code": "config-blocks-ignored",
+      "message": "2 datasource or generator blocks ignored; nothing inside them was read or copied.",
+      "severity": "info"
+    },
+    {
+      "code": "limit-default",
+      "message": "No page size is known from the schema; the default of 100 rows per call was used. Override it with options.limits.maxPageSize.",
+      "severity": "info"
+    },
+    {
+      "code": "relation-fields-skipped",
+      "message": "4 relation fields (links to other models) are not columns; foreign keys come from the scalar fields they use.",
+      "severity": "info"
+    },
+    {
+      "code": "sqlite-backend-only",
+      "message": "The generated sql server reads a read-only SQLite database file. This Prisma schema only describes the tables: provide a SQLite file with the same table and column names (after @map and @@map) for the server to open.",
+      "severity": "info"
+    }
+  ],
+  "toolsDropped": [],
+  "toolsEmitted": [
+    "describe_acme_prisma",
+    "query_customer",
+    "query_order_line",
+    "query_orders"
+  ]
+}

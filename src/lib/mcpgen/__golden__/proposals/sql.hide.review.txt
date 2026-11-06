@@ -1,0 +1,15 @@
+Proposal review (strict mode)
+  proposal file sha256: c8332e9f733b6b03376203c3a71f2d47c9738a75749f212fb62688027c3bb7b8
+  baseline fingerprint: 8fc43262e49d20764ada5b7941533ad640fbb608bd3b35b78bcadcfcb18d52eb
+  result: ACCEPTED
+
+Applied ops (1):
+  - hide-notes [hide_tool]: test
+
+Changes per tool (before -> after):
+  query_note_log
+    removed: hidden by a proposal and not used by any other tool
+
+Tools offered after applying (4): describe_acme_schema, query_customer, query_order, query_order_line
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

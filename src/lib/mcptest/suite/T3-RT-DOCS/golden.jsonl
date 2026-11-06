@@ -1,0 +1,6 @@
+# Documented operations only: listWidgets and getWidget.
+{"id":"tool_exists_list","type":"tool_exists","description":"A tool for the documented list operation exists","tool_hint":"^list_widgets$","dimension":"D1"}
+{"id":"tool_exists_get","type":"tool_exists","description":"A tool for the documented get operation exists","tool_hint":"^get_widget$","dimension":"D1"}
+{"id":"list_widgets_call","type":"call","description":"The list operation returns the documented widgets","tool_hint":"^list_widgets$","expect":{"no_error":true,"field_value":{"name":"Example Widget Alpha"}},"dimension":"D2"}
+{"id":"get_widget_call","type":"call","description":"The get operation returns one widget by identifier","tool_hint":"^get_widget$","args":{"id":"WGT-002"},"expect":{"no_error":true,"field_value":{"name":"Example Widget Beta"}},"dimension":"D2"}
+{"id":"grounding_trace","type":"tool_exists","description":"Every tool traces to a documented operation and no undocumented route is requested","check_kind":"grounding","tool_hint":"^list_widgets$","dimension":"D3"}

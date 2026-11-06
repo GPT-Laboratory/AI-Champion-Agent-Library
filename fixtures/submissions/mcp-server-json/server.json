@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/example/server.schema.json",
+  "name": "io.github.example/acme-catalog-server",
+  "description": "Example MCP server exposing a catalog lookup.",
+  "version": "1.2.3",
+  "repository": { "url": "https://github.com/example/acme-catalog-server", "source": "github" },
+  "packages": [
+    {
+      "registry_type": "npm",
+      "identifier": "@example/acme-catalog-server",
+      "version": "1.2.3",
+      "transport": { "type": "stdio" },
+      "environment_variables": [
+        { "name": "ACME_API_KEY", "description": "API key", "is_secret": true, "value": "sk-SYNTHETICNOTREAL123456" },
+        { "name": "ACME_REGION", "description": "Region", "default": "eu" }
+      ]
+    }
+  ],
+  "remotes": [{ "type": "streamable-http", "url": "https://example.com/mcp" }],
+  "futureField": { "x": 1 }
+}

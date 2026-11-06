@@ -1,0 +1,27 @@
+id: T2-CATALOG-HTTP
+tier: 2
+title: Acme catalog over Streamable HTTP (synthetic)
+source: invented Acme catalog served by the offline mock; the subject exposes an HTTP MCP endpoint
+auth: api_key_header
+transport: http
+provides_modalities: [spec]
+pass_thresholds:
+  d1_pass: true
+  d2_pct: 90
+scoring_notes: >
+  Client-side only: D1 requires initialize and tools/list over Streamable HTTP plus a health GET. Generator
+  subjects emit stdio only and are reported NA_TRANSPORT. Legacy HTTP+SSE is deprecated by the specification
+  and is not covered (designed-only gap, listed in the fidelity table).
+x-upstream:
+  a:
+    datasets: [catalog]
+    auth: { header: X-Api-Key, mode: '401' }
+    maxPageSize: 50
+    ceiling: 200
+    seed: 1
+x-env:
+  baseUrl: ACME_BASE_URL
+  apiKey: ACME_API_KEY
+x-config:
+  healthPath: /health
+x-applies-to: [fake]

@@ -1,0 +1,13 @@
+id: T4-PARTIAL-SPEC
+tier: 4
+title: Partial and contradictory Acme spec (synthetic)
+source: invented partial OpenAPI document with deliberate gaps
+auth: none
+transport: stdio
+provides_modalities: [spec]
+scoring_notes: >
+  Generator-side and in-process. The spec has a missing response type, an undocumented required parameter and
+  a stale example. Pass means the gap is reported and the affected tool omitted or marked, never silently
+  guessed; three reruns must be byte-identical (silent guessing would show as variance). Non-generator
+  subjects get NA_MODALITY.
+x-applies-to: [generator]

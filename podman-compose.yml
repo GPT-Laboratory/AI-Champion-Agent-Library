@@ -1,0 +1,56 @@
+# Production deployment: ./deploy.sh
+# Requires the deployment user's active rootless Podman socket; see docs/deploy-runbook.md.
+services:
+  aic-agent-library:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: "${APP_IMAGE:-aic-agent-library:latest}"
+    container_name: aic-agent-library
+    ports:
+      - "3000:3000"
+    env_file:
+      - "${APP_ENV_FILE:-.env}"
+    environment:
+      PORT: "3000"
+      ORIGIN: "${ORIGIN:-http://localhost:3000}"
+      # Owner id for the Try It Out orphan sweep (stable across recreates; must be UNIQUE per
+      # deployment if several share one Podman engine, or they would sweep each other).
+      APP_INSTANCE_NAME: "${APP_INSTANCE_NAME:-aic-agent-library}"
+      AUTH_DB_PATH: "/app/runtime/auth/auth.db"
+      PI_RUNNER_SOCKET: "/run/podman/podman.sock"
+      PI_RUNNER_NETWORK: "aic-pi-internal"
+      # Pinned (not interpolated from .env): a developer's dev-mode .env (host.containers.internal,
+      # open egress) must not leak into this production-like stack, where Pi containers only reach
+      # the app through the internal network alias.
+      PI_LLM_PROXY_URL: "http://aic-agent-library:3000/api/llm/v1"
+      PI_RUNNER_ALLOW_OPEN_EGRESS: "false"
+      PI_RUNNER_IMAGE: "${PI_RUNNER_IMAGE:-localhost/pi-runner:latest}"
+      PI_RUNNER_FS_MODE: "${PI_RUNNER_FS_MODE:-tmpfs}"
+      PI_FALLBACK_ENABLED: "${PI_FALLBACK_ENABLED:-true}"
+    volumes:
+      - tryout-sessions:/app/runtime/tryitout-work:U
+      - auth-data:/app/runtime/auth:U
+      # Host user's rootless Podman socket: the app starts Pi containers through it.
+      - "${XDG_RUNTIME_DIR:?XDG_RUNTIME_DIR must be set to the deployment user runtime directory}/podman/podman.sock:/run/podman/podman.sock"
+    # Needed to use the socket on SELinux hosts (app service only).
+    security_opt:
+      - label=disable
+    # Map the host user to container user node (uid 1000) so the 0700 socket is readable.
+    userns_mode: "keep-id:uid=1000,gid=1000"
+    networks:
+      default: {}
+      pi-internal:
+        aliases:
+          - aic-agent-library
+    restart: unless-stopped
+
+networks:
+  default: {}
+  pi-internal:
+    name: aic-pi-internal
+    internal: true
+
+volumes:
+  tryout-sessions:
+  auth-data:

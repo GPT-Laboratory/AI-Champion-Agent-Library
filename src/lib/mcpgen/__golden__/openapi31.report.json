@@ -1,0 +1,44 @@
+{
+  "assumptions": [
+    "FastMCP is pinned as fastmcp>=3.4,<5 (verified on 3.4.8 and 4.1.0 on 2026-10-14).",
+    "Tools are registered with mcp.tool(function) and called directly in the generated tests. UNVERIFIED against the pinned FastMCP version.",
+    "The generated Python was syntax-checked at most; it was never executed or installed by the generator.",
+    "Upstream list responses are read as a JSON array or as an object holding one array (items, results, data, content, records, rows, entries or values).",
+    "Page numbers start at 1 and are sent unchanged in the declared page parameter. UNVERIFIED for this source.",
+    "Retries: at most 2, with 0.5 s then 1 s backoff, on 429, 5xx and network failures. Requests time out after 10 s.",
+    "No result ceiling was supplied, so no ceiling warning is emitted."
+  ],
+  "envVars": [
+    {
+      "name": "ACME_ASSETS_BASE_URL",
+      "purpose": "Base address of the upstream service"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "ceiling-unknown",
+      "message": "No result ceiling is set (limits.resultCeiling); no ceiling warning is emitted. Supply the upstream ceiling if one exists.",
+      "severity": "warn"
+    },
+    {
+      "code": "auth-none",
+      "message": "The source declares no authentication; the server sends no credentials.",
+      "severity": "info"
+    },
+    {
+      "code": "multi-type-unsupported",
+      "message": "A schema allows several non-null types (type is a list); the field type is reported as unknown.",
+      "severity": "info"
+    },
+    {
+      "code": "webhooks-ignored",
+      "message": "The document declares webhooks; they describe calls made to the consumer and are ignored (only paths are read).",
+      "severity": "info"
+    }
+  ],
+  "toolsDropped": [],
+  "toolsEmitted": [
+    "list_assets",
+    "lookup_asset_by_id"
+  ]
+}

@@ -1,0 +1,251 @@
+@@ baseline line 195 @@
++class _Stop(Exception):
++    """Ends a composite tool early with a ready, caller-safe response."""
+@@ baseline line 196 @@
++    def __init__(self, response):
++        super().__init__("stop")
++        self.response = response
++
++
++def _kw(**kwargs):
++    return {key: value for key, value in kwargs.items() if value is not None}
++
++
++def _tag(result, source):
++    if isinstance(result, dict) and result.get("ok") is True:
++        tagged = dict(result)
++        tagged["source"] = source
++        return tagged
++    return result
++
++
++def _count_of(result):
++    count = result.get("count")
++    if isinstance(count, int):
++        return count
++    return 1 if result.get("result") else 0
++
++
++def _merged(parts):
++    good = [key for key, value in parts.items() if isinstance(value, dict) and value.get("ok") is True]
++    if not good:
++        for value in parts.values():
++            return value
++    return {
++        "ok": True,
++        "sources": parts,
++        "count": sum(_count_of(parts[key]) for key in good),
++        "failed": [key for key in parts if key not in good],
++    }
++
++
++def _sel(ctx, path):
++    """Walk dictionaries and lists along a fixed path. Missing anything gives None. No attribute access."""
++    current = ctx
++    for part in path:
++        if isinstance(part, int):
++            if isinstance(current, list) and -len(current) <= part < len(current):
++                current = current[part]
++            else:
++                return None
++        elif isinstance(current, dict) and part in current:
++            current = current[part]
++        else:
++            return None
++    return current
++
++
++def _as_list(value, cap):
++    return list(value)[:cap] if isinstance(value, list) else []
++
++
++def _step(budget, fn, args, required, soft=False):
++    """One grounded call of a read-only tool function, counted against the total call cap."""
++    for name in required:
++        if args.get(name) is None:
++            if soft:
++                return _no_results("item", "The previous step gave no value for this call.")
++            raise _Stop(_no_results("result", "An earlier step returned nothing to continue with."))
++    budget[0] += 1
++    if budget[0] > budget[1]:
++        raise _Stop(_err("limit", "The call limit of this tool was reached.", "Narrow the request."))
++    result = fn(**{key: value for key, value in args.items() if value is not None})
++    if isinstance(result, dict) and result.get("ok") is True:
++        return result
++    failure = _err(
++        result.get("kind", "internal") if isinstance(result, dict) else "internal",
++        result.get("message", _INTERNAL_MESSAGE) if isinstance(result, dict) else _INTERNAL_MESSAGE,
++        result.get("hint") if isinstance(result, dict) else None,
++    )
++    if soft:
++        return failure
++    raise _Stop(failure)
++
++
+@@ baseline line 214 @@
+-            "name": "customer",
+-            "label": "customer",
+-            "query_tool": "query_customer",
+-            "default_fields": ["customer_id", "customer_name", "segment"],
+-            "fields": [
+-                {
+-                    "name": "customer_id",
+-                    "type": "integer",
+-                },
+-                {
+-                    "name": "customer_name",
+-                    "type": "string",
+-                },
+-                {
+-                    "name": "segment",
+-                    "type": "string",
+-                },
+-                {
+-                    "name": "city",
+-                    "type": "string",
+-                },
+-            ],
+-        },
+-        {
+@@ baseline line 355 @@
++def customers_exact(field: Optional[str] = None, value: Optional[str] = None, fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
++    """Customers whose value equals the text.
++
++    Args:
++        field: Optional.
++        value: Optional.
++        fields: Optional list of field names to return (at most 12; unknown names are ignored).
++        limit: Optional.
++        offset: Optional.
++    """
++    try:
++        return _op_query_customer(**_kw(match="equals", field=field, value=value, fields=fields, limit=limit, offset=offset))
++    except _Stop as stop:
++        return stop.response
++    except Exception:
++        return _err("internal", _INTERNAL_MESSAGE)
++
++
++def customers_starting_with(field: Optional[str] = None, value: Optional[str] = None, fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
++    """Customers whose value starts with the text.
++
++    Args:
++        field: Optional.
++        value: Optional.
++        fields: Optional list of field names to return (at most 12; unknown names are ignored).
++        limit: Optional.
++        offset: Optional.
++    """
++    try:
++        return _op_query_customer(**_kw(match="startsWith", field=field, value=value, fields=fields, limit=limit, offset=offset))
++    except _Stop as stop:
++        return stop.response
++    except Exception:
++        return _err("internal", _INTERNAL_MESSAGE)
++
++
+@@ baseline line 363 @@
++def query_note_log(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
++    """Query note logs by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+-def query_customer(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-    """Query customers by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+@@ baseline line 379 @@
++        problem = _query_problem(_ALLOWED["note_log"], "describe_acme_schema", field, value, match)
+-        problem = _query_problem(_ALLOWED["customer"], "describe_acme_schema", field, value, match)
+@@ baseline line 382 @@
++        sel = _select_fields(fields, _ALLOWED["note_log"], _DEFAULT["note_log"])
+-        sel = _select_fields(fields, _ALLOWED["customer"], _DEFAULT["customer"])
+@@ baseline line 385 @@
++        rows = _sql_query("note_log", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+-        rows = _sql_query("customer", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+@@ baseline line 387 @@
++            return _no_results("note_log", "Try a broader value or another match mode.")
+-            return _no_results("customer", "Try a broader value or another match mode.")
+@@ baseline line 396 @@
++def query_order(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
++    """Query orders by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+-def query_note_log(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-    """Query note logs by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+@@ baseline line 412 @@
++        problem = _query_problem(_ALLOWED["order"], "describe_acme_schema", field, value, match)
+-        problem = _query_problem(_ALLOWED["note_log"], "describe_acme_schema", field, value, match)
+@@ baseline line 415 @@
++        sel = _select_fields(fields, _ALLOWED["order"], _DEFAULT["order"])
+-        sel = _select_fields(fields, _ALLOWED["note_log"], _DEFAULT["note_log"])
+@@ baseline line 418 @@
++        rows = _sql_query("order", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+-        rows = _sql_query("note_log", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+@@ baseline line 420 @@
++            return _no_results("order", "Try a broader value or another match mode.")
+-            return _no_results("note_log", "Try a broader value or another match mode.")
+@@ baseline line 429 @@
++def query_order_line(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
++    """Query order lines by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+-def query_order(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-    """Query orders by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+@@ baseline line 445 @@
++        problem = _query_problem(_ALLOWED["order_line"], "describe_acme_schema", field, value, match)
+-        problem = _query_problem(_ALLOWED["order"], "describe_acme_schema", field, value, match)
+@@ baseline line 448 @@
++        sel = _select_fields(fields, _ALLOWED["order_line"], _DEFAULT["order_line"])
+-        sel = _select_fields(fields, _ALLOWED["order"], _DEFAULT["order"])
+@@ baseline line 451 @@
++        rows = _sql_query("order_line", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+-        rows = _sql_query("order", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+@@ baseline line 453 @@
++            return _no_results("order_line", "Try a broader value or another match mode.")
+-            return _no_results("order", "Try a broader value or another match mode.")
+@@ baseline line 462 @@
++def _op_query_customer(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
++    """Query customers by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+-def query_order_line(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-    """Query order lines by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+@@ baseline line 478 @@
++        problem = _query_problem(_ALLOWED["customer"], "describe_acme_schema", field, value, match)
+-        problem = _query_problem(_ALLOWED["order_line"], "describe_acme_schema", field, value, match)
+@@ baseline line 481 @@
++        sel = _select_fields(fields, _ALLOWED["customer"], _DEFAULT["customer"])
+-        sel = _select_fields(fields, _ALLOWED["order_line"], _DEFAULT["order_line"])
+@@ baseline line 484 @@
++        rows = _sql_query("customer", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+-        rows = _sql_query("order_line", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+@@ baseline line 486 @@
++            return _no_results("customer", "Try a broader value or another match mode.")
+-            return _no_results("order_line", "Try a broader value or another match mode.")
+@@ baseline line 543 @@
++_OUT_ITEM = {
++    "type": "object",
++    "properties": {
++        "ok": {
++            "type": "boolean",
++        },
++        "kind": {
++            "type": "string",
++        },
++        "message": {
++            "type": "string",
++        },
++        "hint": {
++            "type": ["string", "null"],
++        },
++        "warning": {
++            "type": "string",
++        },
++        "result": {
++            "type": "object",
++            "additionalProperties": True,
++        },
++    },
++    "required": ["ok"],
++    "additionalProperties": True,
++}
+@@ baseline line 589 @@
++    "customers_exact": _OUT_ITEM,
++    "customers_starting_with": _OUT_ITEM,
+@@ baseline line 590 @@
+-    "query_customer": _OUT_LIST,
+@@ baseline line 599 @@
++    customers_exact,
++    customers_starting_with,
+@@ baseline line 600 @@
+-    query_customer,

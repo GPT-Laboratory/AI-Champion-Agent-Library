@@ -1,0 +1,15 @@
+D3:
+  title: Secret handling surface (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: no_key_param, text: No tool takes the API key as an argument, auto: true }
+    - { id: read_only_hints, text: Tools carry a readOnlyHint where supported, auto: true }
+D5:
+  title: Secret hygiene (manual)
+  scale: "0-3"
+  criteria:
+    - { id: env_only, text: The key is read from the environment only, auto: false }
+    - { id: not_logged, text: The key is never written to logs or stderr, auto: false }
+checklist_per_subject:
+  - { id: canary_clean, text: Canary absent from all outputs and stderr, auto: true }
+  - { id: no_write_tool, text: No write-capable tool listed, auto: true }

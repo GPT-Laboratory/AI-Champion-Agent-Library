@@ -1,0 +1,56 @@
+swagger: "2.0"
+info:
+  title: Acme Hostile Swagger API
+  version: "1.0.0"
+host: hostile.acme.example
+paths:
+  /nodes:
+    get:
+      operationId: listNodes
+      responses:
+        "200":
+          description: Nodes (a schema that refers to itself)
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Node"
+  /loops:
+    get:
+      operationId: listLoops
+      responses:
+        "200":
+          description: A reference chain that never ends
+          schema:
+            $ref: "#/definitions/LoopA"
+  /remote:
+    get:
+      operationId: listRemote
+      responses:
+        "200":
+          description: External schema
+          schema:
+            $ref: "https://schemas.acme.example/remote.json#/definitions/Remote"
+  /anchored:
+    get:
+      operationId: listAnchored
+      responses:
+        "200":
+          description: Anchor reference
+          schema:
+            $ref: "#Anchored"
+definitions:
+  Node:
+    type: object
+    properties:
+      nodeId:
+        type: string
+      parent:
+        $ref: "#/definitions/Node"
+      children:
+        type: array
+        items:
+          $ref: "#/definitions/Node"
+  LoopA:
+    $ref: "#/definitions/LoopB"
+  LoopB:
+    $ref: "#/definitions/LoopA"

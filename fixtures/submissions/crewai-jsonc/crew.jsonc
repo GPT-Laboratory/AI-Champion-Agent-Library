@@ -1,0 +1,11 @@
+// Synthetic example crew (not copied from any real project).
+{
+  "name": "Example Research Crew",
+  "description": "Researches a topic and writes a short brief. // not a comment inside a string",
+  "process": "sequential",
+  "agents": ["example-researcher", "example-writer"], /* order matters */
+  "tasks": [
+    { "name": "research", "agent": "example-researcher", "description": "Collect facts." },
+    { "name": "write", "agent": "example-writer", "context": ["research"] },
+  ]
+}

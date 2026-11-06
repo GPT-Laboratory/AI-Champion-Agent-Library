@@ -1,0 +1,9 @@
+# SYNTHETIC SAMPLE - invented data. Not a real prefab model, not a real isometric. Lengths in mm.
+## SEGMENTS
+seg_id,spool_id,dn,material,length_mm,stock_mm,remainder_mm
+P-01,SP-A,22,copper,1850,5000,
+P-02,SP-A,22,copper,720,5000,
+P-03,SP-A,28,copper,2400,5000,
+P-04,SP-B,28,copper,6200,5000,
+P-05,SP-B,22,copper,950,5000,300
+P-06,SP-C,50,steel,3100,6000,

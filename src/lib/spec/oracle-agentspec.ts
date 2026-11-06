@@ -2,6 +2,33 @@ import { z } from 'zod'
 import type { AgentRecord } from './types.js'
 import { slugify } from './types.js'
 
+const OracleInputOptionSchema = z.object({
+  value: z.string().min(1),
+  label: z.string().min(1),
+})
+
+const OracleInputFieldSchema = z.object({
+  key: z.string().regex(/^[a-z][a-z0-9_]*$/),
+  label: z.string().min(1),
+  type: z.enum(['text', 'textarea', 'number', 'select']),
+  required: z.boolean().optional(),
+  description: z.string().optional(),
+  placeholder: z.string().optional(),
+  unit: z.string().optional(),
+  default: z.union([z.string(), z.number()]).optional(),
+  options: z.array(OracleInputOptionSchema).optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+}).superRefine((field, ctx) => {
+  if (field.type === 'select' && (!field.options || field.options.length === 0)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Select fields require at least one option',
+      path: ['options'],
+    })
+  }
+})
+
 // Zod 4 schema mirrors Oracle AgentSpec structure exactly.
 // Oracle AgentSpec field names exist ONLY in this file — never in types.ts or index.ts.
 export const OracleAgentSpecSchema = z.object({
@@ -9,7 +36,9 @@ export const OracleAgentSpecSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1),
   description: z.string().optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: z.object({
+    input_schema: z.array(OracleInputFieldSchema).optional(),
+  }).catchall(z.unknown()).optional(),
   system_prompt: z.string().min(1),
   llm_config: z.object({
     name: z.string().min(1),
@@ -54,6 +83,14 @@ function extractMetaArray(metadata: Record<string, unknown> | undefined, key: st
 }
 
 /**
+ * Like extractMetaArray, but distinguishes an absent key (null) from an empty list.
+ */
+function extractOptionalMetaArray(metadata: Record<string, unknown> | undefined, key: string): string[] | null {
+  if (!metadata || !Array.isArray(metadata[key])) return null
+  return extractMetaArray(metadata, key)
+}
+
+/**
  * Cast a raw maturity string to the AgentRecord maturityStatus union.
  * Falls back to 'experimental' for any unrecognized value.
  */
@@ -80,11 +117,28 @@ export function fromOracleAgentSpec(raw: OracleAgentSpec): AgentRecord {
       topP: raw.llm_config.default_generation_parameters?.top_p ?? null,
     },
     toolNames: (raw.tools ?? []).map(t => t.name),
+    inputFields: (raw.metadata?.input_schema ?? []).map(field => ({
+      key: field.key,
+      label: field.label,
+      type: field.type,
+      required: field.required ?? false,
+      description: field.description ?? null,
+      placeholder: field.placeholder ?? null,
+      unit: field.unit ?? null,
+      defaultValue: field.default ?? null,
+      options: field.options ?? [],
+      min: field.min ?? null,
+      max: field.max ?? null,
+    })),
     requiresHumanApproval: raw.human_in_the_loop ?? false,
     category: extractMeta(raw.metadata, 'category'),
     githubUrl: extractMeta(raw.metadata, 'github_url'),
+    linkLabel: extractMeta(raw.metadata, 'link_label'),
     maturityStatus: toMaturityStatus(extractMeta(raw.metadata, 'maturity')),
     tags: extractMetaArray(raw.metadata, 'tags'),
+    customizableFields: extractOptionalMetaArray(raw.metadata, 'customizable'),
+    fixedFields: extractMetaArray(raw.metadata, 'fixed'),
+    fixedNote: extractMeta(raw.metadata, 'fixed_note'),
     lastIngestedAt: new Date().toISOString(),
   }
 }

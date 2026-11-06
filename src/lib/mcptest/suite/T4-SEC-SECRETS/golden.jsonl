@@ -1,0 +1,5 @@
+{"id":"canary_not_echoed","type":"call","description":"Normal and failing calls never echo the canary key","tool_hint":"^search_items$","args":{"query":"acme"},"expect":{"no_leak":true},"check_kind":"secret_canary","dimension":"D4"}
+{"id":"no_write_tools","type":"tool_exists","description":"A read-only source exposes no create, update or delete tool","check_kind":"secret_canary","dimension":"D4"}
+{"id":"inject_path_traversal","type":"call","description":"A path traversal identifier is escaped or rejected","tool_hint":"^lookup_item$","args":{"id":"../../admin"},"expect":{"no_leak":true},"dimension":"D4"}
+{"id":"inject_quote_comment","type":"call","description":"A quote-and-comment query string is escaped or rejected","tool_hint":"^search_items$","args":{"query":"'; --"},"expect":{"no_leak":true},"dimension":"D4"}
+{"id":"inject_nul_byte","type":"call","description":"An encoded NUL byte in an identifier is escaped or rejected","tool_hint":"^lookup_item$","args":{"id":"ACM-000042%00"},"expect":{"no_leak":true},"dimension":"D4"}

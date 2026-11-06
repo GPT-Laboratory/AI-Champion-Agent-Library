@@ -1,0 +1,15 @@
+[Unit]
+Description=Start the last deployed AIC Agent Library container at boot
+Requires=podman.socket
+After=podman.socket
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/podman start aic-agent-library
+ExecStop=/usr/bin/podman stop --time 30 aic-agent-library
+TimeoutStartSec=90s
+TimeoutStopSec=60s
+
+[Install]
+WantedBy=default.target

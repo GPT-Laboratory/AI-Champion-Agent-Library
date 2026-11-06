@@ -1,0 +1,2 @@
+{"id":"gap_reported","type":"call","description":"The generator reports each spec gap instead of guessing","check_kind":"generator_side","dimension":"D2"}
+{"id":"rerun_identical","type":"call","description":"Three reruns over the partial spec are byte-identical","check_kind":"rerun_variance","dimension":"D6"}

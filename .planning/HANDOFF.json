@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-10-15T05:20:04Z",
+  "phase": "23",
+  "phase_name": "Code Review of New Generator Code",
+  "phase_dir": ".planning/phases/23-code-review-of-new-generator-code",
+  "status": "paused",
+  "completed_tasks": [
+    {"id": "24-29", "name": "12 consortium agents + 4 DDC agents (all counted, see phase VERIFICATION files)", "status": "done"},
+    {"id": "30", "name": "Release prep: local branch release/agents-2026-10 tip f9ef5d0, build+smoke+check passed", "status": "done"},
+    {"id": "21-23", "name": "Generator Stage 0, proposal follow-ups, code review + security (SECURED)", "status": "done"}
+  ],
+  "remaining_tasks": [],
+  "blockers": [],
+  "human_actions_pending": [
+    {"action": "Review proposal src/lib/mcpgen/proposals/real/acme-openapi.proposals.json and sign off 22-COMPARISON.md", "blocking": false},
+    {"action": "Decide AGENT_KINDS on/off for release, internal docs exclusion, personal GitHub URL in stk-mcp/lvi-info-mcp entries; push + open PR manually (see .planning/phases/30-*/release/PENDING-HUMAN.md)", "blocking": false},
+    {"action": "Confirm assumptions: D2 = Finnish building code D2; LVI-INFO variants; gaps G-001..G-114 (docs/consortium-agents-gaps.md)", "blocking": false},
+    {"action": "Phases 21-23 changes are NOT on the release branch (D-606): decide a follow-up PR", "blocking": false},
+    {"action": "Build production + runner images and live-check container path (23-HUMAN-UAT.md); compose hardening decision CR-54", "blocking": false}
+  ],
+  "decisions": [{"decision": "Spend ~$1.09 of $10 on real-model runs", "phase": "25-29"}],
+  "uncommitted_files": [],
+  "next_action": "Read .planning/STATE.md 'Autonomous run end'; work through pending-human lists; consider backlog items in ROADMAP.md (agent counter, Pi orchestration, multi-agent, public MCP release).",
+  "context_notes": "All requested phases executed. Worktree /home/ville/projects/aic-release holds the release branch (remove after PR). Nothing pushed."
+}

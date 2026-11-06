@@ -1,0 +1,29 @@
+{
+  "bad_id": {
+    "tool": "query_customer"
+  },
+  "bad_input": {
+    "tool": "query_customer"
+  },
+  "empty_vs_error": {
+    "tool": "query_customer"
+  },
+  "lookup_by_alt_key": {
+    "tool": "query_order"
+  },
+  "lookup_by_id": {
+    "tool": "query_customer"
+  },
+  "lookup_first_item": {
+    "tool": "query_customer"
+  },
+  "multilingual_fields": {
+    "tool": "query_customer"
+  },
+  "projection": {
+    "tool": "query_customer"
+  },
+  "tool_exists_lookup": {
+    "tool": "query_customer"
+  }
+}

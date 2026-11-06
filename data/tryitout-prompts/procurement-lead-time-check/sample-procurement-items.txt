@@ -1,0 +1,10 @@
+# SYNTHETIC SAMPLE - invented data for an invented building, not from any real project
+as_of: 2026-03-02
+item_id,description,priority,status,required_date,lead_time_days,vendor,po_number,must_order_by,days_to_order,late_flag,soon_flag,status_class
+P-01,Ilmanvaihtokone IV-1,critical,po_issued,2026-09-15,154,Vendor A,PO-1001,2026-04-14,43,N,N,ordered
+P-02,Jaahdytyskone JK-1,critical,quoted,2026-06-01,120,,,2026-02-01,-29,Y,N,pre-po
+P-03,Paakeskus PK-1,high,rfq_sent,2026-05-15,70,,,2026-03-06,4,N,Y,pre-po
+P-04,Hissi H-1,normal,requisitioned,2026-12-01,180,,,2026-06-04,94,N,N,pre-po
+P-05,Pumppu P-1,high,quoted,2026-10-01,,,,-,-,-,-,pre-po
+P-06,Sulkuventtiilit,low,delivered,2026-02-20,60,Vendor B,PO-1002,2025-12-22,-70,N,N,delivered
+P-07,Pumppu P-2,high,in_production,2026-08-03,90,Vendor C,,2026-05-05,64,N,N,ordered

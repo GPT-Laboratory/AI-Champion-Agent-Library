@@ -1,0 +1,23 @@
+id: T3-PROFILE-CONTRACT
+tier: 3
+title: Acme MCP profile contract (synthetic)
+source: invented Acme MCP profile; static checks over initialize and tools/list
+auth: none
+transport: stdio
+provides_modalities: [spec]
+pass_thresholds:
+  d1_pass: true
+  d3_score: 3
+scoring_notes: >
+  The profile is invented: required tool set, snake_case names, non-empty descriptions, server name and
+  version in initialize. Mapping to a real profile document is pending human (the real document is needed).
+x-upstream:
+  a: { datasets: [docs], seed: 1 }
+x-env:
+  baseUrl: ACME_BASE_URL
+x-config:
+  profile:
+    requiredTools: [list_widgets, get_widget]
+    namePattern: '^[a-z][a-z0-9_]*$'
+    requireDescriptions: true
+x-applies-to: [fake, submitted]

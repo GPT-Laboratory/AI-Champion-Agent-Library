@@ -1,0 +1,65 @@
+{
+  "assumptions": [
+    "FastMCP is pinned as fastmcp>=3.4,<5 (verified on 3.4.8 and 4.1.0 on 2026-10-14).",
+    "Tools are registered with mcp.tool(function) and called directly in the generated tests. UNVERIFIED against the pinned FastMCP version.",
+    "The generated Python was syntax-checked at most; it was never executed or installed by the generator.",
+    "Upstream list responses are read as a JSON array or as an object holding one array (items, results, data, content, records, rows, entries or values).",
+    "Page numbers start at 1 and are sent unchanged in the declared page parameter. UNVERIFIED for this source.",
+    "Retries: at most 2, with 0.5 s then 1 s backoff, on 429, 5xx and network failures. Requests time out after 10 s.",
+    "No result ceiling was supplied, so no ceiling warning is emitted."
+  ],
+  "envVars": [
+    {
+      "name": "ACME_SWAGGER_PARTS_API_KEY",
+      "purpose": "API key for the upstream service (value never stored in the package)"
+    },
+    {
+      "name": "ACME_SWAGGER_PARTS_BASE_URL",
+      "purpose": "Base address of the upstream service"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "ceiling-unknown",
+      "message": "No result ceiling is set (limits.resultCeiling); no ceiling warning is emitted. Supply the upstream ceiling if one exists.",
+      "severity": "warn"
+    },
+    {
+      "code": "source-text-copied",
+      "message": "Free text from the source document (operation summaries and argument descriptions) is published in the description of 3 tool(s). Summaries are labelled \"Source note\". Review that text before use.",
+      "severity": "warn"
+    },
+    {
+      "code": "base-path-in-env",
+      "message": "The document declares a base path (servers url or basePath); operation paths are relative to it, but it is not copied. Include it in ACME_SWAGGER_PARTS_BASE_URL.",
+      "severity": "info"
+    },
+    {
+      "code": "write-dropped",
+      "message": "Write operation createPart was dropped (read-only server).",
+      "path": "createPart",
+      "severity": "info"
+    },
+    {
+      "code": "write-dropped",
+      "message": "Write operation deletePart was dropped (read-only server).",
+      "path": "deletePart",
+      "severity": "info"
+    }
+  ],
+  "toolsDropped": [
+    {
+      "id": "createPart",
+      "reason": "Write operation createPart was dropped (read-only server)."
+    },
+    {
+      "id": "deletePart",
+      "reason": "Write operation deletePart was dropped (read-only server)."
+    }
+  ],
+  "toolsEmitted": [
+    "filter_part_by_features",
+    "lookup_part_by_id",
+    "search_part"
+  ]
+}

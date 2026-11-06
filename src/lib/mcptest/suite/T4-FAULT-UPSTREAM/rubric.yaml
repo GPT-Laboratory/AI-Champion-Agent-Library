@@ -1,0 +1,12 @@
+D3:
+  title: Error reporting (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: honest_errors, text: Upstream failures are reported as tool errors with a short message, auto: true }
+D5:
+  title: Not applicable
+  scale: "0-3"
+  criteria: []
+checklist_per_subject:
+  - { id: bounded_retry, text: Retries are bounded, auto: true }
+  - { id: no_raw_envelope, text: No raw upstream error text in tool output, auto: true }

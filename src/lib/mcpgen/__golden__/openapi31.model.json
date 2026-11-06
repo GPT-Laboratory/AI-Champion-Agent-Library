@@ -1,0 +1,114 @@
+{
+  "auth": {
+    "scheme": "none"
+  },
+  "backend": {
+    "baseUrlEnv": "ACME_ASSETS_BASE_URL",
+    "kind": "http"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "assetId",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "nameLike": true,
+          "type": "string"
+        },
+        {
+          "name": "location",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "description": "Date the asset was retired",
+          "name": "retiredOn",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "name": "weightKg",
+          "nullable": true,
+          "type": "number"
+        },
+        {
+          "name": "owner",
+          "type": "object"
+        },
+        {
+          "name": "tag",
+          "type": "unknown"
+        }
+      ],
+      "id": "asset",
+      "identifierFields": [
+        "assetId"
+      ],
+      "label": "Asset",
+      "nested": []
+    }
+  ],
+  "gaps": [
+    {
+      "code": "multi-type-unsupported",
+      "message": "A schema allows several non-null types (type is a list); the field type is reported as unknown.",
+      "severity": "info"
+    },
+    {
+      "code": "webhooks-ignored",
+      "message": "The document declares webhooks; they describe calls made to the consumer and are ignored (only paths are read).",
+      "severity": "info"
+    }
+  ],
+  "limits": {
+    "maxPageSize": 30,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Assets API",
+  "operations": [
+    {
+      "entity": "asset",
+      "id": "getAsset",
+      "kind": "get",
+      "method": "GET",
+      "params": [
+        {
+          "in": "path",
+          "name": "assetId",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "path": "/assets/{assetId}"
+    },
+    {
+      "entity": "asset",
+      "id": "listAssets",
+      "kind": "list",
+      "method": "GET",
+      "pageParam": "page",
+      "pageSizeParam": "size",
+      "params": [
+        {
+          "in": "query",
+          "name": "page",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "max": 30,
+          "name": "size",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "path": "/assets"
+    }
+  ],
+  "writeOperationsDropped": []
+}

@@ -1,0 +1,15 @@
+name: Example Weather MCP
+kind: mcp-server
+summary: A synthetic MCP server exposing fake weather lookups.
+category: Data
+tags: [mcp, weather]
+repo_url: https://example.com/acme/weather-mcp
+tools:
+  - get_forecast
+  - name: get_alerts
+transport: stdio
+package: example-weather-mcp
+command: npx
+env:
+  WEATHER_API_KEY: sk-this-is-a-fake-value-123456
+  WEATHER_REGION: eu

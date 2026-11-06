@@ -1,0 +1,3 @@
+{"id":"tool_exists_category","type":"tool_exists","description":"A tool listing items of a category exists","tool_hint":"category","dimension":"D1"}
+{"id":"category_bounded","type":"call","description":"Listing a 5000-item category stays under the byte and item caps and signals truncation","tool_hint":"category","args":{"category":"Bearings"},"expect":{"no_error":true,"no_leak":true,"max_items":1000},"check_kind":"large_response","dimension":"D4"}
+{"id":"category_huge_body","type":"call","description":"A very large upstream body is bounded and does not crash the server","tool_hint":"category","args":{"category":"Bearings"},"inject":{"route":"/categories","fault":"huge","bytes":2000000},"expect":{"no_leak":true},"dimension":"D4"}

@@ -1,0 +1,422 @@
+{
+  "auth": {
+    "envVar": "ACME_CATALOG_ACCESS_TOKEN",
+    "oauth2": true,
+    "scheme": "bearer"
+  },
+  "backend": {
+    "baseUrlEnv": "ACME_CATALOG_BASE_URL",
+    "kind": "http"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "ID",
+          "odata": {
+            "filterable": true,
+            "kind": "guid"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Name",
+          "nameLike": true,
+          "odata": {
+            "filterable": true,
+            "kind": "string"
+          },
+          "type": "string"
+        },
+        {
+          "classLike": true,
+          "enum": [
+            "Draft",
+            "Active",
+            "Retired"
+          ],
+          "name": "Status",
+          "odata": {
+            "enumType": "Acme.Catalog.ProductStatus",
+            "filterable": true,
+            "kind": "enum"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Price",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Stock",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "integer"
+        },
+        {
+          "name": "Weight",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "number"
+        },
+        {
+          "name": "ReleaseDate",
+          "odata": {
+            "filterable": true,
+            "kind": "date"
+          },
+          "type": "string"
+        },
+        {
+          "name": "UpdatedAt",
+          "odata": {
+            "filterable": true,
+            "kind": "datetimeoffset"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Active",
+          "odata": {
+            "filterable": true,
+            "kind": "boolean"
+          },
+          "type": "boolean"
+        },
+        {
+          "name": "Size",
+          "type": "object"
+        },
+        {
+          "name": "Tags",
+          "type": "array"
+        }
+      ],
+      "id": "Product",
+      "identifierFields": [
+        "ID"
+      ],
+      "label": "Product",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "SupplierCode",
+          "odata": {
+            "filterable": true,
+            "kind": "string"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Name",
+          "nameLike": true,
+          "odata": {
+            "filterable": true,
+            "kind": "string"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Country",
+          "odata": {
+            "filterable": true,
+            "kind": "string"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Rating",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "string"
+        }
+      ],
+      "id": "Supplier",
+      "identifierFields": [
+        "SupplierCode"
+      ],
+      "label": "Supplier",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "OrderID",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "integer"
+        },
+        {
+          "identifier": true,
+          "name": "LineNumber",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "integer"
+        },
+        {
+          "name": "Quantity",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "integer"
+        },
+        {
+          "name": "UnitPrice",
+          "odata": {
+            "filterable": true,
+            "kind": "number"
+          },
+          "type": "string"
+        },
+        {
+          "name": "Note",
+          "odata": {
+            "filterable": false,
+            "kind": "string"
+          },
+          "type": "string"
+        }
+      ],
+      "id": "OrderLine",
+      "identifierFields": [
+        "OrderID",
+        "LineNumber"
+      ],
+      "label": "OrderLine",
+      "nested": []
+    }
+  ],
+  "gaps": [
+    {
+      "code": "odata-version-detected",
+      "message": "OData 4.0 metadata (EDMX XML) was read; it is never fetched or sent anywhere.",
+      "severity": "info"
+    },
+    {
+      "code": "external-reference-not-fetched",
+      "message": "The document references 2 external schema document(s); they are never fetched, so types defined only there are unknown.",
+      "severity": "warn"
+    },
+    {
+      "code": "odata-external-annotations-ignored",
+      "message": "1 Annotations block(s) apply annotations to other targets; they are not applied.",
+      "severity": "info"
+    },
+    {
+      "code": "odata-nextlink-not-followed",
+      "message": "Server-driven paging links (@odata.nextLink) are never followed; lists are paged with $top and $skip. When a service caps its responses, the generated list tool returns a warning naming the page size to use.",
+      "severity": "info"
+    },
+    {
+      "code": "odata-derived-types-flattened",
+      "message": "Entity set Products may return derived types; only the properties of Product and its base types are exposed.",
+      "path": "Products",
+      "severity": "info"
+    },
+    {
+      "code": "odata-navigation-not-expanded",
+      "message": "Product has 2 navigation properties (Supplier, Reviews); $expand is not used and related entities are not returned.",
+      "path": "Products",
+      "severity": "info"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "Product: 1 property(ies) with a binary, stream or geospatial type were left out (Photo).",
+      "path": "Products",
+      "severity": "warn"
+    },
+    {
+      "code": "odata-precision-as-string",
+      "message": "Int64 and Decimal properties are typed as text so no precision is lost (Product.Price, Supplier.Rating, OrderLine.UnitPrice); filters still use number literals.",
+      "severity": "info"
+    },
+    {
+      "code": "odata-singleton-unsupported",
+      "message": "1 singleton(s) are not exposed (Company).",
+      "severity": "info"
+    },
+    {
+      "code": "odata-function-unsupported",
+      "message": "1 function(s) are not exposed: a function call is a different request shape (Acme.Catalog.TopProducts).",
+      "severity": "info"
+    },
+    {
+      "code": "oauth2-flow-not-implemented",
+      "message": "The service declares OAuth2 or OpenID Connect; no flow is implemented. The server reads an access token you obtained from ACME_CATALOG_ACCESS_TOKEN and sends it as a bearer token; it never stores or refreshes it.",
+      "severity": "warn"
+    }
+  ],
+  "limits": {
+    "maxResponseItems": 200
+  },
+  "name": "Acme Catalog",
+  "operations": [
+    {
+      "entity": "Product",
+      "id": "list_Products",
+      "kind": "list",
+      "method": "GET",
+      "pageParam": "skip",
+      "pageSizeParam": "top",
+      "params": [
+        {
+          "in": "query",
+          "min": 1,
+          "name": "top",
+          "required": false,
+          "type": "integer",
+          "wireName": "$top"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "skip",
+          "required": false,
+          "type": "integer",
+          "wireName": "$skip"
+        }
+      ],
+      "path": "/Products",
+      "protocol": "odata",
+      "summary": "Products you can order."
+    },
+    {
+      "entity": "Product",
+      "id": "get_Products",
+      "kind": "get",
+      "method": "GET",
+      "params": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "wireName": "ID"
+        }
+      ],
+      "path": "/Products",
+      "protocol": "odata",
+      "summary": "Products you can order."
+    },
+    {
+      "entity": "Supplier",
+      "id": "list_Suppliers",
+      "kind": "list",
+      "method": "GET",
+      "pageParam": "skip",
+      "pageSizeParam": "top",
+      "params": [
+        {
+          "in": "query",
+          "min": 1,
+          "name": "top",
+          "required": false,
+          "type": "integer",
+          "wireName": "$top"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "skip",
+          "required": false,
+          "type": "integer",
+          "wireName": "$skip"
+        }
+      ],
+      "path": "/Suppliers",
+      "protocol": "odata"
+    },
+    {
+      "entity": "Supplier",
+      "id": "get_Suppliers",
+      "kind": "get",
+      "method": "GET",
+      "params": [
+        {
+          "in": "path",
+          "name": "supplier_code",
+          "required": true,
+          "type": "string",
+          "wireName": "SupplierCode"
+        }
+      ],
+      "path": "/Suppliers",
+      "protocol": "odata"
+    },
+    {
+      "entity": "OrderLine",
+      "id": "list_OrderLines",
+      "kind": "list",
+      "method": "GET",
+      "pageParam": "skip",
+      "pageSizeParam": "top",
+      "params": [
+        {
+          "in": "query",
+          "min": 1,
+          "name": "top",
+          "required": false,
+          "type": "integer",
+          "wireName": "$top"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "skip",
+          "required": false,
+          "type": "integer",
+          "wireName": "$skip"
+        }
+      ],
+      "path": "/OrderLines",
+      "protocol": "odata"
+    },
+    {
+      "entity": "OrderLine",
+      "id": "get_OrderLines",
+      "kind": "get",
+      "method": "GET",
+      "params": [
+        {
+          "in": "path",
+          "name": "order_id",
+          "required": true,
+          "type": "integer",
+          "wireName": "OrderID"
+        },
+        {
+          "in": "path",
+          "name": "line_number",
+          "required": true,
+          "type": "integer",
+          "wireName": "LineNumber"
+        }
+      ],
+      "path": "/OrderLines",
+      "protocol": "odata"
+    }
+  ],
+  "writeOperationsDropped": [
+    "Acme.Catalog.ArchiveProduct"
+  ]
+}

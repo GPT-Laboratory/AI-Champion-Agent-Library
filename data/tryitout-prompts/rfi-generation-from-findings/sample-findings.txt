@@ -1,0 +1,8 @@
+# SYNTHETIC SAMPLE - invented data for an invented building (Harbour Annex), not from any real project
+finding_id | clash_ids | priority | disciplines | location | description | suggested_owner | open_question
+F-01 | CL-001, CL-002, CL-003 | CRITICAL | Ilmanvaihto, Rakenne | L2 grid C/3 | Supply duct SD-12 crosses beams B-14, B-15 and B-16; proposed: ROUTE_AROUND | Ilmanvaihto | Can the beams be notched or must duct SD-12 be rerouted?
+F-02 | CL-004 | HIGH | Ilmanvaihto, Sähkö | L1 grid D/5 | Exhaust duct ED-3 and cable tray CT-8; proposed: RAISE_LOWER | Sähkö | penetration missing for CL-004
+F-03 | CL-005, CL-006 | MEDIUM | Ilmanvaihto | L3 grid B/2 | Duct DU-5 and duct DU-6 share a crossing; proposed: RESIZE | Ilmanvaihto | none
+F-04 | CL-007 | MEDIUM | Arkkitehti, Kylmälaite | L1 grid A/1 | Refrigerant pipe RP-2 passes through wall W-04; proposed: ROUTE_AROUND | TO BE DECIDED BY COORDINATOR | Is a sleeve through wall W-04 acceptable?
+F-05 | CL-008 | LOW | Kylmälaite, Sähkö | L0 plant room | Refrigerant pipe RP-5 close to cable tray CT-2; proposed: ROUTE_AROUND | TO BE DECIDED BY COORDINATOR | none
+F-06 | - | HIGH | Arkkitehti, Sprinkler | L1 corridor group DG-1 | Door group DG-1 has no fire rating property in the model export | Arkkitehti | Which fire rating applies to door group DG-1?

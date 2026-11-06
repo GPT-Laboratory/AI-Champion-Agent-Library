@@ -1,0 +1,26 @@
+{
+  "bad_id": {
+    "tool": "query_item"
+  },
+  "bad_input": {
+    "tool": "query_item"
+  },
+  "empty_vs_error": {
+    "tool": "query_item"
+  },
+  "lookup_by_id": {
+    "tool": "query_item"
+  },
+  "lookup_first_item": {
+    "tool": "query_item"
+  },
+  "multilingual_fields": {
+    "tool": "query_item"
+  },
+  "projection": {
+    "tool": "query_item"
+  },
+  "tool_exists_lookup": {
+    "tool": "query_item"
+  }
+}

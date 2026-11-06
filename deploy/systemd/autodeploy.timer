@@ -1,0 +1,11 @@
+[Unit]
+Description=Check for signed AIC Agent Library releases
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=1min
+RandomizedDelaySec=15s
+Unit=autodeploy.service
+
+[Install]
+WantedBy=timers.target

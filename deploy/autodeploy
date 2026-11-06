@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Install root-owned in /usr/local/bin; execute as the rootless Podman owner.
+set -Eeuo pipefail
+umask 077
+export PATH=/usr/local/bin:/usr/bin:/bin
+export GIT_TERMINAL_PROMPT=0
+export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -oBatchMode=yes}"
+: "${AUTODEPLOY_REPO:?Set AUTODEPLOY_REPO}"
+: "${APP_ENV_FILE:?Set APP_ENV_FILE to an external absolute path}"
+[[ "$AUTODEPLOY_REPO" == /* && "$APP_ENV_FILE" == /* ]] || {
+  echo 'Checkout and environment file paths must be absolute' >&2; exit 1;
+}
+[[ -r "$APP_ENV_FILE" ]] || { echo 'Application environment file is not readable' >&2; exit 1; }
+export DEPLOY_STATE_DIR="${DEPLOY_STATE_DIR:-$HOME/.local/state/aic-deploy}"
+mkdir -p "$DEPLOY_STATE_DIR"
+exec 8>"$DEPLOY_STATE_DIR/autodeploy.lock"
+flock -n 8 || exit 0
+# Hold the same lock through fetch, checkout, deployment and state recording.
+exec 9>"$DEPLOY_STATE_DIR/deploy.lock"
+flock -n 9 || exit 0
+export AIC_DEPLOY_LOCK_FD=9
+stage=fetch
+trap 'echo "Autodeploy failed during $stage; see journalctl -u autodeploy.service" >&2' ERR
+cd "$AUTODEPLOY_REPO"
+[[ -z $(git status --porcelain) ]] || { echo 'Deployment checkout must be clean' >&2; exit 1; }
+git fetch --quiet --force --prune origin '+refs/heads/main:refs/remotes/origin/main' '+refs/tags/*:refs/tags/*'
+stage=verification
+previous=''
+if [[ -f "$DEPLOY_STATE_DIR/release" ]]; then
+  read -r previous previous_object previous_commit < "$DEPLOY_STATE_DIR/release"
+  # Also detect deletion when there are no release tags left at all.
+  [[ $(git rev-parse --verify "refs/tags/$previous") == "$previous_object" ]] || {
+    echo 'Previously deployed tag changed or was deleted' >&2; exit 1;
+  }
+fi
+# Same version ordering as the proposal. sed consumes the entire pipe (no SIGPIPE).
+# Never silently fall back to an older tag if the latest one fails verification.
+tag=$(git tag -l 'v*' --sort=-v:refname | sed -n '1p')
+[[ -n "$tag" ]] || exit 0
+object=$(git rev-parse "refs/tags/$tag")
+[[ $(git cat-file -t "$object") == tag ]] || { echo 'Release must be an annotated signed tag' >&2; exit 1; }
+git -c gpg.format=ssh -c gpg.ssh.program=/usr/bin/ssh-keygen \
+  -c gpg.openpgp.program=/bin/false -c gpg.x509.program=/bin/false \
+  -c gpg.ssh.allowedSignersFile=/etc/autodeploy/allowed_signers verify-tag "$object"
+# Bind the signed tag name to the fetched ref; reject renamed/replayed tag objects.
+signed_name=$(git cat-file tag "$object" | awk 'BEGIN {header=1} /^$/ {header=0} header && /^tag / {sub(/^tag /, ""); print}')
+[[ "$signed_name" == "$tag" ]] || { echo 'Signed tag name does not match the release ref' >&2; exit 1; }
+commit=$(git rev-parse "$object^{commit}")
+git merge-base --is-ancestor "$commit" refs/remotes/origin/main
+if [[ -n "$previous" ]]; then
+  [[ "$tag" != "$previous" ]] || exit 0
+  # Previous tag still exists and the candidate sorts above it. Also require
+  # forward history; publish a new revert commit/tag for an intentional rollback.
+  git merge-base --is-ancestor "$previous_commit" "$commit"
+fi
+stage=checkout
+git -c advice.detachedHead=false checkout --detach "$commit"
+stage=deployment
+bash ./deploy.sh
+stage=recording
+printf '%s %s %s\n' "$tag" "$object" "$commit" > "$DEPLOY_STATE_DIR/release.tmp"
+mv "$DEPLOY_STATE_DIR/release.tmp" "$DEPLOY_STATE_DIR/release"
+echo "Released $tag ($commit)"

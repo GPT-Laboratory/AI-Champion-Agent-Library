@@ -1,0 +1,22 @@
+# SYNTHETIC SAMPLE - invented data. Point names, readings, assets, tag hints and the low/high limits are invented; tag names are proposals in a Brick-like style, not validated against any real ontology; the limits are not real setpoints or alarm limits.
+## POINTS
+point_id,point_name,description,unit,reading
+P-01,AHU-01.SAT,supply air temperature,C,18.5
+P-02,RM-201.CO2,room co2,ppm,1350
+P-03,AHU-09.SAT,supply air temperature,C,17.0
+P-04,AHU-01.RAT,return air temp,C,21.0
+P-05,FAN-03.SPD,fan speed command,rpm,1200
+P-06,PMP-05.DP,pump discharge pressure,kPa,250
+## ASSETS
+asset_id,name,kind
+AHU-01,Air handling unit 1,equipment
+FAN-03,Fan 3,equipment
+RM-201,Meeting room 201,space
+PMP-05,Heating pump 5,equipment
+PMP-05,Pump 5 (duplicate id in export),equipment
+## TAG HINTS
+keyword,tag,expected_unit,low,high
+supply air temperature,SYN-Supply_Air_Temperature_Sensor,C,12,24
+fan speed command,SYN-Fan_Speed_Command,%,0,100
+co2,SYN-CO2_Sensor,ppm,400,1000
+discharge pressure,SYN-Discharge_Pressure_Sensor,kPa,100,400

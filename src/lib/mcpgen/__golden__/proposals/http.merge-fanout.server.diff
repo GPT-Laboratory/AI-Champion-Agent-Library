@@ -1,0 +1,225 @@
+@@ baseline line 267 @@
++class _Stop(Exception):
++    """Ends a composite tool early with a ready, caller-safe response."""
+@@ baseline line 268 @@
++    def __init__(self, response):
++        super().__init__("stop")
++        self.response = response
++
++
++def _kw(**kwargs):
++    return {key: value for key, value in kwargs.items() if value is not None}
++
++
++def _tag(result, source):
++    if isinstance(result, dict) and result.get("ok") is True:
++        tagged = dict(result)
++        tagged["source"] = source
++        return tagged
++    return result
++
++
++def _count_of(result):
++    count = result.get("count")
++    if isinstance(count, int):
++        return count
++    return 1 if result.get("result") else 0
++
++
++def _merged(parts):
++    good = [key for key, value in parts.items() if isinstance(value, dict) and value.get("ok") is True]
++    if not good:
++        for value in parts.values():
++            return value
++    return {
++        "ok": True,
++        "sources": parts,
++        "count": sum(_count_of(parts[key]) for key in good),
++        "failed": [key for key in parts if key not in good],
++    }
++
++
++def _sel(ctx, path):
++    """Walk dictionaries and lists along a fixed path. Missing anything gives None. No attribute access."""
++    current = ctx
++    for part in path:
++        if isinstance(part, int):
++            if isinstance(current, list) and -len(current) <= part < len(current):
++                current = current[part]
++            else:
++                return None
++        elif isinstance(current, dict) and part in current:
++            current = current[part]
++        else:
++            return None
++    return current
++
++
++def _as_list(value, cap):
++    return list(value)[:cap] if isinstance(value, list) else []
++
++
++def _step(budget, fn, args, required, soft=False):
++    """One grounded call of a read-only tool function, counted against the total call cap."""
++    for name in required:
++        if args.get(name) is None:
++            if soft:
++                return _no_results("item", "The previous step gave no value for this call.")
++            raise _Stop(_no_results("result", "An earlier step returned nothing to continue with."))
++    budget[0] += 1
++    if budget[0] > budget[1]:
++        raise _Stop(_err("limit", "The call limit of this tool was reached.", "Narrow the request."))
++    result = fn(**{key: value for key, value in args.items() if value is not None})
++    if isinstance(result, dict) and result.get("ok") is True:
++        return result
++    failure = _err(
++        result.get("kind", "internal") if isinstance(result, dict) else "internal",
++        result.get("message", _INTERNAL_MESSAGE) if isinstance(result, dict) else _INTERNAL_MESSAGE,
++        result.get("hint") if isinstance(result, dict) else None,
++    )
++    if soft:
++        return failure
++    raise _Stop(failure)
++
++
+@@ baseline line 303 @@
++def lookup_part_by_id(partId: str, fields: Optional[list[str]] = None) -> dict:
++    """Look up one part by id. Says clearly when it does not exist. Source note: Fetch one part
++
++    Args:
++        partId: Part code
++        fields: Optional list of field names to return (at most 12; unknown names are ignored).
++    """
++    try:
++        if len(str(partId)) > 256:
++            return _err("invalid_argument", "partId is too long (at most 256 characters).")
++        sel = _select_fields(fields, _ALLOWED["part"], _DEFAULT["part"])
++        query = {}
++        data = _http_json("/parts/" + _seg(partId), query or None)
++        item = _item(data)
++        if not item:
++            return _not_found("part", partId)
++        return {"ok": True, "result": _project(item, sel)}
++    except _Fail as exc:
++        if exc.kind == "not_found":
++            return _not_found("part", partId)
++        return _fail(exc)
++    except Exception:
++        return _err("internal", _INTERNAL_MESSAGE)
++
++
++def part_everywhere(key: str, page: Optional[int] = None, page_size: Optional[int] = None, q: Optional[str] = None, fields: Optional[list[str]] = None, value: Optional[str] = None, max_pages: Optional[int] = None) -> dict:
++    """Searches and filters parts in one call and labels each result by its source.
++
++    Calls every source operation with the same arguments and labels each result by its source; a failing source is reported, not hidden.
++
++    Args:
++        page: Page number, starting at 1.
++        page_size: Rows per page; larger values are reduced to the maximum.
++        q: Free text query
++        fields: Optional list of field names to return (at most 12; unknown names are ignored).
++        key: Key to look for in the nested entries.
++        value: Value to match.
++        max_pages: Candidate pages to scan, 1 to 10.
++    """
++    try:
++        if key is None:
++            return _err("invalid_argument", "key is required.")
++        parts = {}
++        parts["search"] = _op_search_part(**_kw(page=page, page_size=page_size, q=q, fields=fields))
++        parts["filter"] = _op_filter_part_by_features(**_kw(key=key, value=value, q=q, max_pages=max_pages, fields=fields))
++        return _merged(parts)
++    except _Stop as stop:
++        return stop.response
++    except Exception:
++        return _err("internal", _INTERNAL_MESSAGE)
++
++
++def _op_filter_part_by_features(key: str, value: Optional[str] = None, q: Optional[str] = None, max_pages: int = 5, fields: Optional[list[str]] = None) -> dict:
+-def filter_part_by_features(key: str, value: Optional[str] = None, q: Optional[str] = None, max_pages: int = 5, fields: Optional[list[str]] = None) -> dict:
+@@ baseline line 365 @@
++def _op_search_part(page: int = 1, page_size: int = 20, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
+-def lookup_part_by_id(partId: str, fields: Optional[list[str]] = None) -> dict:
+-    """Look up one part by id. Says clearly when it does not exist. Source note: Fetch one part
+-
+-    Args:
+-        partId: Part code
+-        fields: Optional list of field names to return (at most 12; unknown names are ignored).
+-    """
+-    try:
+-        if len(str(partId)) > 256:
+-            return _err("invalid_argument", "partId is too long (at most 256 characters).")
+-        sel = _select_fields(fields, _ALLOWED["part"], _DEFAULT["part"])
+-        query = {}
+-        data = _http_json("/parts/" + _seg(partId), query or None)
+-        item = _item(data)
+-        if not item:
+-            return _not_found("part", partId)
+-        return {"ok": True, "result": _project(item, sel)}
+-    except _Fail as exc:
+-        if exc.kind == "not_found":
+-            return _not_found("part", partId)
+-        return _fail(exc)
+-    except Exception:
+-        return _err("internal", _INTERNAL_MESSAGE)
+-
+-
+-def search_part(page: int = 1, page_size: int = 20, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
+@@ baseline line 425 @@
+-_OUT_LIST = {
+-    "type": "object",
+-    "properties": {
+-        "ok": {
+-            "type": "boolean",
+-        },
+-        "kind": {
+-            "type": "string",
+-        },
+-        "message": {
+-            "type": "string",
+-        },
+-        "hint": {
+-            "type": ["string", "null"],
+-        },
+-        "warning": {
+-            "type": "string",
+-        },
+-        "results": {
+-            "type": "array",
+-            "items": {
+-                "type": "object",
+-                "additionalProperties": True,
+-            },
+-        },
+-        "count": {
+-            "type": "integer",
+-        },
+-        "page": {
+-            "type": "integer",
+-        },
+-        "page_size": {
+-            "type": "integer",
+-        },
+-        "offset": {
+-            "type": "integer",
+-        },
+-        "limit": {
+-            "type": "integer",
+-        },
+-        "total_matches": {
+-            "type": "integer",
+-        },
+-    },
+-    "required": ["ok"],
+-    "additionalProperties": True,
+-}
+@@ baseline line 500 @@
+-    "filter_part_by_features": _OUT_LIST,
+@@ baseline line 502 @@
++    "part_everywhere": _OUT_ITEM,
+-    "search_part": _OUT_LIST,
+@@ baseline line 508 @@
+-    filter_part_by_features,
+@@ baseline line 510 @@
++    part_everywhere,
+-    search_part,

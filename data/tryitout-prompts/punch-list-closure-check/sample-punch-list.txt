@@ -1,0 +1,10 @@
+# SYNTHETIC SAMPLE - invented data. Items, names and dates are invented; the closure rules in the SKILL are own placeholder rules, not a contract requirement.
+as_of=2026-05-01
+## PUNCH ITEMS
+item_id,location,description,responsible,due,status,closed_date,verified_by
+P-01,Level 1 corridor,Touch up wall paint,Painter Oy,2026-04-25,closed,2026-04-20,Inspector A
+P-02,Level 1 lobby,Replace cracked tile,Floor Oy,2026-04-28,closed,2026-04-22,
+P-03,Level 2 office,Adjust door closer,Carpenter Oy,2026-04-10,open,,
+P-04,Level 2 roof,Seal pipe penetration,Roof Oy,2026-05-20,open,,
+P-05,Level 3 hall,Fix loose handrail,,2026-05-15,open,,
+P-06,Level 3 stair,Replace light fitting,Electric Oy,2026-04-30,closed,,Inspector B

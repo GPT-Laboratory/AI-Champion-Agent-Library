@@ -1,0 +1,6 @@
+# Data is supplied at test time from fixture/dump (never shown to a generator).
+{"id":"tool_exists_filter","type":"tool_exists","description":"A tool that filters or searches catalog rows exists","tool_hint":"filter|search","dimension":"D1"}
+{"id":"lookup_row","type":"call","description":"Fetch one row by its item code","tool_hint":"lookup|get","args":{"item_code":"ACD-00001"},"expect":{"no_error":true,"field_value":{"item_code":"ACD-00001"}},"dimension":"D2"}
+{"id":"numeric_filter_includes_wide","type":"call","description":"min_width_mm >= 100 returns a row with width 1000","tool_hint":"filter|search","args":{"min_width_mm":100},"expect":{"no_error":true,"field_value":{"item_code":"ACD-00002"}},"dimension":"D2"}
+{"id":"numeric_filter_not_text","type":"call","description":"min_width_mm >= 100 returns exactly the 20 numerically matching rows, not a text comparison","tool_hint":"filter|search","args":{"min_width_mm":100,"limit":50},"expect":{"no_error":true,"max_items":20},"dimension":"D2"}
+{"id":"unknown_row","type":"call","description":"Unknown item code yields a clean not-found","tool_hint":"lookup|get","args":{"item_code":"ACD-99999"},"expect":{"clean_not_found":true},"dimension":"D2"}

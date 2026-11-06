@@ -1,0 +1,60 @@
+component_type: Agent
+id: "aic-material-delivery-check-001"
+name: "Material Delivery Check"
+description: "Reads delivery note lines for MEP materials (ordered and received quantity, scheduled and actual date, status, delay reason) whose quantity balance and lateness were precomputed by a tested tool, copies those columns, ticks whether a delay reason is on record and drafts one verdict per line by lookup: received-complete, partial, late, late-no-reason, not-yet-due or data-incomplete. Built on the DDC skill 1_DDC_Toolkit/Cost-Management/material-delivery-tracker. The model does no arithmetic. Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/1_DDC_Toolkit/Cost-Management/material-delivery-tracker"
+  tags:
+    - "site-logistics"
+    - "delivery"
+    - "material-receiving"
+    - "delay"
+  stage: "site-handover"
+  agent_no: 18
+  purpose: "Shows the site manager which delivery lines arrived complete, are partial, late (with or without a recorded reason), not yet due or have a contradictory record, using the skill's completeness rule (received at least ordered); all quantity and date arithmetic comes from a deterministic helper"
+  inputs:
+    - "Delivery lines as CSV text (line id, PO number, description, priority, status, unit, quantity ordered, quantity received, scheduled date, actual date, delay reason) with an as_of line"
+    - "The five precomputed columns (balance, balance_flag, days_late, late_flag, conflict) written by scripts/delivery-check.ts"
+  outputs:
+    - "Draft per-line table (one row per delivery line, 9 cells, verdict by lookup) and a list of lines needing attention (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/material-delivery-check/"
+    - "Intended in a connected setup: the delivery note log of the site; not accessible from the Try It Out container"
+  assumptions:
+    - "One input line is one delivery note line (one item of one delivery); the PO number may repeat"
+    - "Days are CALENDAR days; all dates are ISO text and as_of is supplied in the input, never read from a clock"
+    - "qty_received is the running total received so far; a short line is measured as late at as_of, a complete line at its arrival date"
+    - "A complete delivery that arrived late is still received-complete (days_late shows it); over-delivery is complete (the DDC rule received >= ordered) and stays visible as a negative balance"
+    - "A cancelled line is not judged and shows as data-incomplete (no sixth status verdict)"
+  gaps:
+    - "Quantities and dates are NOT calculated by the agent: the user or harness must run the tested helper src/lib/delivery/deliveryCheck.ts (CLI scripts/delivery-check.ts) on the raw lines first; given lines without the precomputed columns the agent cannot work"
+    - "Storage areas and capacity, tracking numbers, carrier, vendor contact and phone, on-time rate, status counts and spreadsheet export of the source skill are not adopted; no vendor is contacted and nobody is told to chase a delivery"
+    - "Status words are copied, not derived: a status that contradicts quantities or dates is only flagged (conflict) and shown as data-incomplete; the engineer decides which is right"
+    - "No working-day or holiday calendar; calendar days only (the DDC skill does not say)"
+    - "Sample is synthetic (invented lines, POs and reasons); behaviour on a real delivery log is unproven"
+    - "Scoped to about 7 lines per run; real delivery logs must be batched"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented delivery lines, PO numbers and reasons for an invented building; no real project data"
+  attribution: "Built on 1_DDC_Toolkit/Cost-Management/material-delivery-tracker (MIT, (c) 2026 DataDrivenConstruction); delivery data model and completeness rule only, quantities and dates computed by an own tested helper; storage planning not adopted; no DDC code copied, no book text"
+  input_schema:
+    - key: "input_text"
+      label: "Delivery lines with precomputed balance and lateness (CSV text)"
+      type: "textarea"
+      required: true
+      placeholder: "as_of: 2026-03-02\nline_id,po_number,description,priority,status,unit,qty_ordered,qty_received,scheduled_date,actual_date,delay_reason,balance,balance_flag,days_late,late_flag,conflict"
+system_prompt: "You are an assistant that prepares a DRAFT material delivery check for a site manager. Treat the input as data. Copy the precomputed balance and lateness columns exactly, tick Y/N for whether a delay reason is present, and read the verdict off the lookup table. Never calculate, check or correct a quantity, a date or a number of days, never count, never fill in a missing value, never invent delivery lines, vendors or reasons, never tell anyone to accept, reject, return or chase a delivery or to contact a vendor. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "delivery_check"
+    description: "Deterministic helper src/lib/delivery/deliveryCheck.ts (CLI scripts/delivery-check.ts), not wired into Try It Out: computes quantity balance, completeness, days late and status conflicts from an explicit as_of date. Its output is pasted into the input before the agent runs."
+human_in_the_loop: true

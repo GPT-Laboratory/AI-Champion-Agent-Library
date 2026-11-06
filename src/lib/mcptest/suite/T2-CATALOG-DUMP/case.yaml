@@ -1,0 +1,29 @@
+id: T2-CATALOG-DUMP
+tier: 2
+title: Acme catalog tabular dump (synthetic)
+source: invented Acme catalog CSV supplied at test time; a generator only sees the header and dictionary
+auth: none
+transport: stdio
+provides_modalities: [dump]
+pass_thresholds:
+  d1_pass: true
+  d2_pct: 85
+scoring_notes: >
+  The generator fixture is header and data dictionary only. The server reads the synthetic CSV from the path in
+  the data-path environment variable. Numeric filters must compare numerically, not as strings: the
+  max_items check fails a server that treats widths as text. Needs a real Python process, so fake subjects
+  report PENDING_HUMAN instead of a fabricated result.
+x-env:
+  baseUrl: ACME_BASE_URL
+  dataPath: ACME_DATA_PATH
+x-identity:
+  idKeys: [item_code]
+  altKeys: []
+  partitionKeys: [category]
+  knownId: ACD-00001
+  badId: ACD-99999
+  partitionValue: Valves
+  expectedDerivedIds: []
+  maxPage: 50
+x-requires: real-runtime
+x-applies-to: [fake, generator]

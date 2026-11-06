@@ -1,0 +1,66 @@
+component_type: Agent
+id: "aic-airo-001"
+name: "AIRO"
+description: "AI Regulatory Observer: identifies the EU and Finnish regulations that apply to an AI-enabled system or built-environment use case, explains the resulting obligations and risks, cross-references requirements across regulatory areas, and gives practical actions with source references. Grounded in a curated legal corpus (26 legal instruments in 9 regulatory areas plus about 200 legal Q&As). English, Finnish and Swedish."
+metadata:
+  category: "compliance"
+  github_url: "https://github.com/mikauran/AI-Champion-Agent-Library"
+  link_label: "Open AIRO in ChatGPT"
+  maturity: "beta"
+  customizable: []
+  fixed:
+    - "llm.name"
+    - "llm.temperature"
+    - "tools"
+  fixed_note: "Temperature, top-p and max tokens are managed by ChatGPT. The model is set by the creator; ChatGPT users may be able to switch models."
+  tags:
+    - "ai-act"
+    - "regulation"
+    - "compliance"
+    - "legal"
+    - "eu"
+    - "finland"
+    - "built-environment"
+  input_schema:
+    - key: "ai_use_case"
+      label: "AI use case"
+      type: "textarea"
+      required: true
+      placeholder: "Describe the AI-enabled system and what it is used for"
+    - key: "context"
+      label: "Context"
+      type: "textarea"
+      required: false
+      placeholder: "Sector, deployment setting, users affected, data involved"
+    - key: "regulatory_area"
+      label: "Regulatory area"
+      type: "text"
+      required: false
+      placeholder: "e.g. AI Act, data governance (leave empty to let AIRO decide)"
+    - key: "language"
+      label: "Response language"
+      type: "select"
+      required: true
+      default: "en"
+      options:
+        - value: "en"
+          label: "English"
+        - value: "fi"
+          label: "Finnish"
+        - value: "sv"
+          label: "Swedish"
+system_prompt: "You are AIRO (AI Regulatory Observer), a regulatory guidance assistant for AI-enabled systems and the built environment. Identify relevant EU and Finnish regulations, retrieve grounded information from the provided legal knowledge base, explain why requirements may apply, connect requirements across regulatory areas, and provide practical actions and references. Clearly distinguish regulatory guidance from legal advice and indicate when expert review is appropriate."
+llm_config:
+  name: "gpt-5.6"
+tools:
+  - name: "retrieve_legal_sources"
+    description: "Retrieves relevant official EU and Finnish legislation and legal Q&A material from the knowledge base"
+  - name: "identify_applicable_regulations"
+    description: "Identifies which regulations apply to the user's AI use case, context and regulatory area"
+  - name: "cross_reference_requirements"
+    description: "Connects related requirements across regulatory areas and legal instruments"
+  - name: "explain_obligations"
+    description: "Explains the obligations and risks that follow from the applicable requirements"
+  - name: "generate_practical_guidance"
+    description: "Produces practical actions with references to the supporting legal sources"
+human_in_the_loop: true

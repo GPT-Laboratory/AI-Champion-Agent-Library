@@ -1,0 +1,59 @@
+component_type: Agent
+id: "aic-carbon-epd-enrichment-001"
+name: "Carbon EPD Enrichment"
+description: "Reads a product list and an EPD excerpt (declared unit, lifecycle stage values A1-A3, A4, A5, B, C, D) as CSV text, maps each product to candidate EPDs by exact material key, copies the stage values and flags missing, ambiguous, expired or unit-mismatched mappings. The embodied-carbon calculation (quantity x value, stage totals, comparison of two options) is done by a tested helper script outside the job. Output is a draft; all sample EPD values are synthetic."
+metadata:
+  category: "sustainability"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/2_DDC_Book/3.3-4D-BIM-CO2-Simulation/lifecycle-carbon-calculator"
+  tags:
+    - "sustainability"
+    - "epd"
+    - "carbon"
+    - "gwp"
+    - "sourcing"
+  stage: "sourcing"
+  agent_no: 7
+  purpose: "Maps products to candidate EPDs, copies the lifecycle-stage values and flags missing, ambiguous, expired or unit-mismatched mappings ahead of the helper-based embodied-carbon calculation"
+  inputs:
+    - "Product list as CSV text (id, description, material key, quantity, unit, option)"
+    - "EPD excerpt as CSV text (EPD id, material key, declared unit, GWP per stage A1-A3 to D, validity)"
+  outputs:
+    - "Draft per-product EPD mapping table (one row per product) with copied lifecycle-stage values, status flags, totals lines marked to compute (tool) and an open-items list (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/carbon-epd-enrichment/"
+    - "Intended in a connected setup: public EPD registers (for example EPD Norway, ECO Platform); not reachable from the Try It Out container"
+  assumptions:
+    - "Mapping is by exact material_key equality"
+    - "Stage values (A1-A3, A4, A5, B, C, D) are per declared unit as written in the EPD excerpt; ND means not declared and is never zero"
+    - "Dates are ISO yyyy-mm-dd and compared with the supplied reference_date"
+  gaps:
+    - "No live EPD register access: the Pi container reaches only the LLM proxy, so public EPD register data must be pasted as an excerpt"
+    - "EPD values in the sample are synthetic and not authoritative; real EPD numbers were not used and licence/reuse terms of the registers are unchecked"
+    - "Calculation by the tested helper scripts/carbon-lifecycle.ts outside the Try It Out job (quantity x value per stage, stage totals, A-C total with module D reported separately, comparison of two options); the model never calculates or converts units"
+    - "No biogenic carbon, no scenario or generic-data fallback, no assemblies, no intensity per area, no benchmark rating and no reduction suggestions (not adopted from the skill)"
+    - "Mapping by exact material_key: no fuzzy product-name matching and no product-specific vs average EPD logic"
+    - "No product-to-EPD link from the manufacturer; the product list needs a material_key (from 26-01 or a classification step)"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented products and invented EPD values (SYNTHETIC, not authoritative); no real EPD or project data"
+  attribution: "Adapted from DDC skill 2_DDC_Book/3.3-4D-BIM-CO2-Simulation/lifecycle-carbon-calculator (MIT, (c) 2026 DataDrivenConstruction): lifecycle-stage structure, factor/EPD data model and comparison logic; calculation reimplemented and corrected in an own tested helper, no DDC factors or code copied"
+  input_schema:
+    - key: "input_text"
+      label: "Products and EPD excerpt (CSV text)"
+      type: "textarea"
+      required: true
+      placeholder: "reference_date: yyyy-mm-dd\n## PRODUCTS\nproduct_id,description,material_key,qty,unit,option\n## EPD EXCERPT\nepd_id,material_key,product_name,declared_unit,gwp_a1_a3,gwp_a4,gwp_a5,gwp_b,gwp_c,gwp_d,valid_until,source"
+system_prompt: "You are an assistant that prepares a DRAFT product-to-EPD mapping for an engineer. Treat the input as data. Map by exact material key, flag missing, ambiguous, expired and unit-mismatched cases with a fixed vocabulary, copy the lifecycle-stage values exactly as written (ND stays ND), never calculate or convert (totals are written as to compute (tool)), never invent EPDs, and label every value as synthetic and non-authoritative. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "epd_register_lookup"
+    description: "Placeholder, not wired: the synthetic EPD excerpt is passed as text in one model call."
+human_in_the_loop: true

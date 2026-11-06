@@ -13,9 +13,15 @@ vi.mock('$lib/server/db', () => {
   }
 })
 
+const relatedMock = vi.fn()
+vi.mock('$lib/server/search/index.js', () => ({ related: (...a: unknown[]) => relatedMock(...a) }))
+
+vi.mock('$lib/server/tryitout/service', () => ({ warmForSession: vi.fn() }))
+
 // Mock drizzle-orm eq
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn(),
+  inArray: vi.fn(),
 }))
 
 // Mock @sveltejs/kit error helper
@@ -31,16 +37,20 @@ describe('Agent detail load function', () => {
   let load: (args: { params: { slug: string } }) => Promise<unknown>
   let mockDb: { select: ReturnType<typeof vi.fn> }
   let mockGet: ReturnType<typeof vi.fn>
+  let mockAll: ReturnType<typeof vi.fn>
 
   beforeEach(async () => {
     vi.clearAllMocks()
     const dbModule = await import('$lib/server/db')
-    mockDb = dbModule.db as typeof mockDb
+    mockDb = dbModule.db as unknown as typeof mockDb
     // Rebuild the mock chain fresh each test
     mockGet = vi.fn()
-    const mockWhere = vi.fn(() => ({ get: mockGet }))
+    mockAll = vi.fn(() => [])
+    const mockWhere = vi.fn(() => ({ get: mockGet, all: mockAll }))
     const mockFrom = vi.fn(() => ({ where: mockWhere }))
     mockDb.select = vi.fn(() => ({ from: mockFrom }))
+    relatedMock.mockReset()
+    relatedMock.mockResolvedValue([])
 
     // Re-import load after mocks are set
     const mod = await import('./[slug]/+page.server.js')
@@ -134,5 +144,57 @@ describe('Agent detail load function', () => {
     } catch (err) {
       expect((err as { status: number }).status).toBe(404)
     }
+  })
+
+  describe('related agents', () => {
+    const row = {
+      slug: 'test-agent',
+      title: 'Test Agent',
+      summary: '',
+      systemPrompt: 'p',
+      llmName: 'gpt-4o',
+      toolNames: '[]',
+      category: null,
+      maturityStatus: 'beta',
+      tags: '[]',
+      tryItOutMode: 'none',
+    }
+    const rel = (slug: string) => ({ slug, title: slug.toUpperCase(), summary: 's', category: null })
+    type R = { related: { slug: string }[] }
+
+    it('returns related agents in ranked order, up to 4', async () => {
+      mockGet.mockReturnValue(row)
+      relatedMock.mockResolvedValue(['c', 'a', 'b'].map((slug) => ({ slug, score: 1, via: 'fallback' })))
+      mockAll.mockReturnValue([rel('a'), rel('b'), rel('c')])
+      const result = (await load({ params: { slug: 'test-agent' } })) as R
+      expect(relatedMock).toHaveBeenCalledWith('test-agent', 4)
+      expect(result.related.map((r) => r.slug)).toEqual(['c', 'a', 'b'])
+    })
+
+    it('excludes the agent itself', async () => {
+      mockGet.mockReturnValue(row)
+      relatedMock.mockResolvedValue(['test-agent', 'a'].map((slug) => ({ slug, score: 1, via: 'fallback' })))
+      mockAll.mockReturnValue([rel('test-agent'), rel('a')])
+      const result = (await load({ params: { slug: 'test-agent' } })) as R
+      expect(result.related.map((r) => r.slug)).toEqual(['a'])
+    })
+
+    it('yields [] when related() rejects', async () => {
+      mockGet.mockReturnValue(row)
+      relatedMock.mockRejectedValue(new Error('boom'))
+      const result = (await load({ params: { slug: 'test-agent' } })) as R & { agent: { slug: string } }
+      expect(result.agent.slug).toBe('test-agent')
+      expect(result.related).toEqual([])
+    })
+
+    it('yields [] when there are no hits or the lookup throws', async () => {
+      mockGet.mockReturnValue(row)
+      expect(((await load({ params: { slug: 'test-agent' } })) as R).related).toEqual([])
+      relatedMock.mockResolvedValue([{ slug: 'a', score: 1, via: 'fallback' }])
+      mockAll.mockImplementation(() => {
+        throw new Error('db')
+      })
+      expect(((await load({ params: { slug: 'test-agent' } })) as R).related).toEqual([])
+    })
   })
 })

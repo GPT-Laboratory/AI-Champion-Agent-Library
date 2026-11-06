@@ -40,4 +40,16 @@ describe('TechAccordion', () => {
     details.open = true
     expect(container.textContent).toContain('gpt-4o')
   })
+
+  it('hides fields already shown as fixed in the customization panel', () => {
+    const { container } = render(TechAccordion, {
+      props: { agent: { ...defaultAgent, fixedFields: ['llm.name', 'llm.temperature', 'tools'] } },
+    })
+    const text = container.textContent ?? ''
+    expect(text).not.toContain('gpt-4o')
+    expect(text).not.toContain('Temperature:')
+    expect(text).not.toContain('Tools:')
+    expect(text).toContain('Human Approval:')
+    expect(text).toContain('System Prompt:')
+  })
 })

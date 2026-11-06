@@ -1,0 +1,13 @@
+D3:
+  title: Large response handling (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: limit_param, text: The tool exposes a limit or cursor parameter, auto: true }
+    - { id: truncation_signal, text: Truncation or coverage is stated in the result, auto: true }
+D5:
+  title: Not applicable
+  scale: "0-3"
+  criteria: []
+checklist_per_subject:
+  - { id: bounded_output, text: Response bytes under the cap, auto: true }
+  - { id: no_silent_truncation, text: A cut-off result says so, auto: true }

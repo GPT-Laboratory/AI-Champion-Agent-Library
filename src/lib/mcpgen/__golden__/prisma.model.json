@@ -1,0 +1,301 @@
+{
+  "auth": {
+    "scheme": "none"
+  },
+  "backend": {
+    "dsnEnv": "ACME_PRISMA_DB_PATH",
+    "kind": "sql"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "name": "customer_name",
+          "nameLike": true,
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "classLike": true,
+          "name": "segment",
+          "type": "string"
+        },
+        {
+          "description": "Unique.",
+          "name": "email",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "name": "credit",
+          "type": "number"
+        },
+        {
+          "name": "profile",
+          "type": "string"
+        },
+        {
+          "name": "tags",
+          "type": "string"
+        },
+        {
+          "name": "createdAt",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "id": "customer",
+      "identifierFields": [
+        "id"
+      ],
+      "label": "customer",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "description": "References customer.id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "enum": [
+            "OPEN",
+            "SHIPPED",
+            "cancelled"
+          ],
+          "name": "state",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "name": "total",
+          "type": "number"
+        }
+      ],
+      "id": "orders",
+      "identifierFields": [
+        "id"
+      ],
+      "label": "orders",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "description": "References orders.id",
+          "identifier": true,
+          "name": "orderId",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "identifier": true,
+          "name": "lineNo",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "name": "sku",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "name": "quantity",
+          "type": "integer"
+        }
+      ],
+      "id": "OrderLine",
+      "identifierFields": [
+        "orderId",
+        "lineNo"
+      ],
+      "label": "OrderLine",
+      "nested": []
+    }
+  ],
+  "gaps": [
+    {
+      "code": "sqlite-backend-only",
+      "message": "The generated sql server reads a read-only SQLite database file. This Prisma schema only describes the tables: provide a SQLite file with the same table and column names (after @map and @@map) for the server to open.",
+      "severity": "info"
+    },
+    {
+      "code": "config-blocks-ignored",
+      "message": "2 datasource or generator blocks ignored; nothing inside them was read or copied.",
+      "severity": "info"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "The Json type is not supported; the column is exposed as text.",
+      "path": "Customer.profile",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "A list field is not supported; the column is exposed as text.",
+      "path": "Customer.tags",
+      "severity": "warn"
+    },
+    {
+      "code": "relation-fields-skipped",
+      "message": "4 relation fields (links to other models) are not columns; foreign keys come from the scalar fields they use.",
+      "severity": "info"
+    },
+    {
+      "code": "limit-default",
+      "message": "No page size is known from the schema; the default of 100 rows per call was used. Override it with options.limits.maxPageSize.",
+      "severity": "info"
+    }
+  ],
+  "limits": {
+    "maxPageSize": 100,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Prisma",
+  "operations": [
+    {
+      "entity": "customer",
+      "id": "list_customer",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of customer"
+    },
+    {
+      "entity": "customer",
+      "id": "get_customer",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "id",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of customer by primary key"
+    },
+    {
+      "entity": "orders",
+      "id": "list_orders",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of orders"
+    },
+    {
+      "entity": "orders",
+      "id": "get_orders",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "id",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of orders by primary key"
+    },
+    {
+      "entity": "OrderLine",
+      "id": "list_OrderLine",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of OrderLine"
+    },
+    {
+      "entity": "OrderLine",
+      "id": "get_OrderLine",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "orderId",
+          "required": true,
+          "type": "integer"
+        },
+        {
+          "in": "column",
+          "name": "lineNo",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of OrderLine by primary key"
+    }
+  ],
+  "writeOperationsDropped": []
+}

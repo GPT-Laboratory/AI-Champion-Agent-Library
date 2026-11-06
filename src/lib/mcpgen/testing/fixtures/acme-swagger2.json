@@ -1,0 +1,74 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "Acme Swagger Orders API", "version": "2.0.0" },
+  "host": "orders.acme.example",
+  "basePath": "/api",
+  "schemes": ["https", "http"],
+  "produces": ["application/json"],
+  "securityDefinitions": {
+    "AcmeOAuth": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://auth.acme.example/authorize",
+      "tokenUrl": "https://auth.acme.example/token",
+      "scopes": { "orders:read": "Read orders" }
+    }
+  },
+  "security": [{ "AcmeOAuth": ["orders:read"] }],
+  "paths": {
+    "/orders": {
+      "get": {
+        "operationId": "listOrders",
+        "summary": "List orders",
+        "parameters": [
+          { "name": "status", "in": "query", "type": "string", "enum": ["open", "closed"] },
+          { "name": "limit", "in": "query", "type": "integer", "maximum": 100 },
+          { "name": "offset", "in": "query", "type": "integer" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orders",
+            "schema": { "type": "array", "items": { "$ref": "#/definitions/Order" } }
+          }
+        }
+      }
+    },
+    "/orders/{orderId}": {
+      "get": {
+        "operationId": "getOrder",
+        "parameters": [{ "name": "orderId", "in": "path", "required": true, "type": "string" }],
+        "responses": { "200": { "$ref": "#/responses/OrderOk" } }
+      },
+      "put": {
+        "operationId": "replaceOrder",
+        "consumes": ["application/json"],
+        "parameters": [
+          { "name": "orderId", "in": "path", "required": true, "type": "string" },
+          { "name": "body", "in": "body", "schema": { "$ref": "#/definitions/Order" } }
+        ],
+        "responses": { "200": { "description": "Replaced" } }
+      }
+    },
+    "/reports": {
+      "get": {
+        "operationId": "downloadReport",
+        "produces": ["text/csv"],
+        "responses": { "200": { "description": "CSV", "schema": { "type": "file" } } }
+      }
+    }
+  },
+  "responses": {
+    "OrderOk": { "description": "One order", "schema": { "$ref": "#/definitions/Order" } }
+  },
+  "definitions": {
+    "Order": {
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "closed"] },
+        "total": { "type": "number" },
+        "customerName": { "type": "string" }
+      }
+    }
+  }
+}

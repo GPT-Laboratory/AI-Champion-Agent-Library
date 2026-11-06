@@ -1,0 +1,79 @@
+{
+  "assumptions": [
+    "FastMCP is pinned as fastmcp>=3.4,<5 (verified on 3.4.8 and 4.1.0 on 2026-10-14).",
+    "Tools are registered with mcp.tool(function) and called directly in the generated tests. UNVERIFIED against the pinned FastMCP version.",
+    "The generated Python was syntax-checked at most; it was never executed or installed by the generator.",
+    "SQL backend supports SQLite files only (Python standard library, read-only connection). Other database systems are out of scope.",
+    "No result ceiling was supplied, so no ceiling warning is emitted."
+  ],
+  "envVars": [
+    {
+      "name": "ACME_PGDUMP_DB_PATH",
+      "purpose": "Location of the SQLite database file (opened read-only)"
+    }
+  ],
+  "gaps": [
+    {
+      "code": "no-identifier",
+      "message": "The table has no primary key; only list and query access is generated, no lookup.",
+      "path": "note_log",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-statement",
+      "message": "CREATE FUNCTION statement is not supported and was ignored.",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-statement",
+      "message": "CREATE VIEW statement is not supported and was ignored.",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "A composite or array type is not supported; the column is exposed as text.",
+      "path": "customer.profile",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "A composite or array type is not supported; the column is exposed as text.",
+      "path": "customer.tags",
+      "severity": "warn"
+    },
+    {
+      "code": "dialect-noise-ignored",
+      "message": "15 housekeeping statements (for example SET, COMMENT ON, GRANT, OWNER TO, sequences, indexes, DROP IF EXISTS) were ignored; they do not change the table model.",
+      "severity": "info"
+    },
+    {
+      "code": "limit-default",
+      "message": "No page size is known from the schema; the default of 100 rows per call was used. Override it with options.limits.maxPageSize.",
+      "severity": "info"
+    },
+    {
+      "code": "projection-default",
+      "message": "No identifier, name-like or class-like field is marked on note_log; the first fields were used.",
+      "path": "note_log",
+      "severity": "info"
+    },
+    {
+      "code": "sql-dialect-detected",
+      "message": "The input was recognised as PostgreSQL (pg_dump) output.",
+      "severity": "info"
+    },
+    {
+      "code": "sqlite-backend-only",
+      "message": "The generated sql server reads a read-only SQLite database file. This PostgreSQL (pg_dump) schema only describes the tables: provide a SQLite file with the same tables and columns (same names) for the server to open.",
+      "severity": "info"
+    }
+  ],
+  "toolsDropped": [],
+  "toolsEmitted": [
+    "describe_acme_pgdump",
+    "query_customer",
+    "query_note_log",
+    "query_order",
+    "query_order_line"
+  ]
+}

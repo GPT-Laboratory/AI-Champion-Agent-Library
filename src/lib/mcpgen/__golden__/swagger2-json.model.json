@@ -1,0 +1,123 @@
+{
+  "auth": {
+    "envVar": "ACME_SWAGGER_ORDERS_ACCESS_TOKEN",
+    "oauth2": true,
+    "scheme": "bearer"
+  },
+  "backend": {
+    "baseUrlEnv": "ACME_SWAGGER_ORDERS_BASE_URL",
+    "kind": "http"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "orderId",
+          "type": "string"
+        },
+        {
+          "enum": [
+            "open",
+            "closed"
+          ],
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "total",
+          "type": "number"
+        },
+        {
+          "name": "customerName",
+          "nameLike": true,
+          "type": "string"
+        }
+      ],
+      "id": "order",
+      "identifierFields": [
+        "orderId"
+      ],
+      "label": "Order",
+      "nested": []
+    }
+  ],
+  "gaps": [
+    {
+      "code": "base-path-in-env",
+      "message": "The document declares a base path (servers url or basePath); operation paths are relative to it, but it is not copied. Include it in ACME_SWAGGER_ORDERS_BASE_URL.",
+      "severity": "info"
+    },
+    {
+      "code": "missing-response-schema",
+      "message": "GET /reports: no JSON response schema for a success status; the operation was omitted.",
+      "path": "downloadReport",
+      "severity": "warn"
+    },
+    {
+      "code": "oauth2-flow-not-implemented",
+      "message": "The API uses OAuth2; no flow is implemented. The server reads an access token you obtained from ACME_SWAGGER_ORDERS_ACCESS_TOKEN and sends it as a bearer token; it never stores or refreshes it.",
+      "severity": "warn"
+    }
+  ],
+  "limits": {
+    "maxPageSize": 100,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Swagger Orders API",
+  "operations": [
+    {
+      "entity": "order",
+      "id": "getOrder",
+      "kind": "get",
+      "method": "GET",
+      "params": [
+        {
+          "in": "path",
+          "name": "orderId",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "path": "/orders/{orderId}"
+    },
+    {
+      "entity": "order",
+      "id": "listOrders",
+      "kind": "list",
+      "method": "GET",
+      "offsetParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "enum": [
+            "open",
+            "closed"
+          ],
+          "in": "query",
+          "name": "status",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "in": "query",
+          "max": 100,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "path": "/orders",
+      "summary": "List orders"
+    }
+  ],
+  "writeOperationsDropped": [
+    "replaceOrder"
+  ]
+}

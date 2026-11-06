@@ -1,0 +1,9 @@
+WG010,WG020,WG030,WG040,WG050,WG060
+Widget code,Widget name,Group,Quantity,Unit price,Listed
+ZZ-9001,Sample gizmo,Gadgets,12,3.5,true
+ZZ-9002,Sample sprocket,Gears,7,10.25,false
+# options
+name=Acme Widgets
+entity=widget
+skip_rows=1
+identifier=WG010

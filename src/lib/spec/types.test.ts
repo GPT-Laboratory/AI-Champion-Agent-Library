@@ -27,6 +27,7 @@ describe('Field name isolation (PIPE-02)', () => {
       'systemPrompt',
       'llm',
       'toolNames',
+      'inputFields',
       'requiresHumanApproval',
       'category',
       'githubUrl',

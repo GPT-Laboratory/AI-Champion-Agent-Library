@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: Acme Gadget Registry (partial, invented)
+  version: "0.3"
+servers:
+  - url: http://127.0.0.1:8080
+paths:
+  /gadgets:
+    get:
+      summary: List gadgets
+      description: Lists gadgets. Callers must also send a tenant header (not listed under parameters).
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: A page of gadgets
+  /gadgets/{id}:
+    get:
+      summary: Get one gadget
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: One gadget
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gadget"
+              example:
+                id: GDG-0001
+                title: Example Gadget
+                legacy_flag: true
+components:
+  schemas:
+    Gadget:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        size: { type: string }

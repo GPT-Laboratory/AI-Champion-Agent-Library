@@ -1,0 +1,16 @@
+D3:
+  title: Acme profile checklist (advisory, pass at 90 percent)
+  scale: "0-3"
+  criteria:
+    - { id: required_tools, text: Required tool set present, auto: true }
+    - { id: naming, text: Tool names follow the profile pattern, auto: true }
+    - { id: descriptions, text: Tool descriptions non-empty, auto: true }
+    - { id: server_info, text: Server name and version reported, auto: true }
+    - { id: annotations, text: Read-only tools carry a readOnlyHint annotation where supported, auto: true }
+    - { id: real_mapping, text: Mapping to the real profile document, auto: false }
+D5:
+  title: Not applicable
+  scale: "0-3"
+  criteria: []
+checklist_per_subject:
+  - { id: real_profile_pending, text: Real profile mapping pending human, auto: false }

@@ -1,0 +1,17 @@
+# Synthetic fixture (Example/Acme): a plain single Agent, handled by the existing normalizer.
+component_type: Agent
+id: example-single-agent
+name: Example Single Agent
+description: A single Acme agent used to check the delegation path.
+metadata:
+  category: Support
+  tags: [support]
+  github_url: https://example.com/acme/single-agent
+  maturity: beta
+system_prompt: You are a helpful Example assistant.
+llm_config:
+  name: example-model
+  default_generation_parameters:
+    temperature: 0.2
+tools:
+  - name: lookup

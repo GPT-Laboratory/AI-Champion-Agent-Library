@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "baseline": { "fingerprint": "dfdfb94042e3adecd3ede978d10d7fca89a48d71dbd23cf732e7a8f14e7c2bb4" },
+  "producer": { "kind": "external-agent", "note": "Written by a Claude agent session from the context pack only (README-FOR-AGENT, FINGERPRINT, tool-inventory, examples, schema). Synthetic Acme fixture. Human review pending." },
+  "ops": [
+    {
+      "op": "rename_tool", "id": "rename-search", "tool": "search_part", "name": "find_parts",
+      "reason": "The baseline name is singular and generic. find_parts says what a user asks for: finding parts by words."
+    },
+    {
+      "op": "describe_tool", "id": "describe-search", "tool": "search_part",
+      "text": "Find parts in the Acme catalogue by free text, one page at a time. Returns part code, name, category and features by default. Read-only. Use find_part_details to also read the best match in one call.",
+      "reason": "The baseline text only repeats the upstream summary. This one says what comes back, that it pages, and points to the composite tool for the common follow-up."
+    },
+    {
+      "op": "describe_arg", "id": "describe-search-q", "tool": "search_part", "arg": "q",
+      "text": "Words to look for, for example bolt.",
+      "reason": "Baseline text is 'Free text query', which gives no example. The example word bolt comes from the source spec; the spec does not say which fields the text is matched against, so the text avoids claiming any."
+    },
+    {
+      "op": "set_arg_default", "id": "default-page-size", "tool": "search_part", "arg": "page_size", "value": 10,
+      "reason": "Default 20 rows of 4 fields each is more than an agent usually needs to pick a candidate. 10 keeps answers short; the caller can still ask for up to 50."
+    },
+    {
+      "op": "rename_tool", "id": "rename-lookup", "tool": "lookup_part_by_id", "name": "get_part",
+      "reason": "Shorter, and the verb get matches the upstream operation."
+    },
+    {
+      "op": "describe_tool", "id": "describe-lookup", "tool": "lookup_part_by_id",
+      "text": "Get one part by its part code, with its default fields. Says clearly when no part has that code. Read-only.",
+      "reason": "Drops the 'Source note' suffix from the upstream summary and states the not-found behaviour the server really has."
+    },
+    {
+      "op": "describe_arg", "id": "describe-lookup-id", "tool": "lookup_part_by_id", "arg": "partId",
+      "text": "The part code exactly as returned by find_parts, for example from the partId field.",
+      "reason": "Tells the agent where a valid code comes from, which avoids guessed codes."
+    },
+    {
+      "op": "hide_tool", "id": "hide-filter", "tool": "filter_part_by_features",
+      "reason": "It fetches up to 10 pages and filters them in memory, so it is slow and only reports scan coverage, not full results. find_parts with a text query covers most needs. Trade-off for the reviewer: this removes the feature-key filter from the server; revert this op if that filter matters."
+    },
+    {
+      "op": "composite_tool", "id": "composite-details", "name": "find_part_details",
+      "description": "Search parts by text, take the first match and return its details in one call. Says clearly when nothing matches. Read-only.",
+      "args": [ { "name": "text", "type": "string", "description": "Words to look for in part names, for example bolt." } ],
+      "steps": [
+        { "id": "find", "tool": "search_part", "args": { "q": { "from": "input.text" }, "page_size": { "const": 1 } }, "select": ["partId"] },
+        { "id": "detail", "tool": "lookup_part_by_id", "args": { "partId": { "from": "find.results[0].partId" } } }
+      ],
+      "reason": "The most common two-step question (find a part, then read it) becomes one call, so an agent does not have to chain tools. It only uses the two existing read tools; the first match is the upstream ranking, not necessarily the best."
+    }
+  ]
+}

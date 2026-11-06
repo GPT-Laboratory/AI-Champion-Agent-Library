@@ -1,0 +1,12 @@
+D3:
+  title: Code handling (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: code_described, text: The tool description states the code format and check digit, auto: true }
+D5:
+  title: Not applicable
+  scale: "0-3"
+  criteria: []
+checklist_per_subject:
+  - { id: prevalidates, text: Invalid codes never reach the upstream, auto: true }
+  - { id: utf8_intact, text: Non-ASCII letters round-trip unchanged, auto: true }

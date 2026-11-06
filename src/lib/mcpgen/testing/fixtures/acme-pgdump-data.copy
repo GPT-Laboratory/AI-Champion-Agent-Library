@@ -1,0 +1,8 @@
+COPY public.customer (customer_id, customer_name, segment, credit, profile, tags, external_ref, created_at, search_key) FROM stdin;
+1	Zed Distinctive Row	standard	10.00	{"k": "v"}	{a,b}	\N	2026-01-01 00:00:00+00	zed distinctive row
+2	Second Row Value	premium	\N	\N	\N	\N	2026-01-02 00:00:00+00	second row value
+\.
+
+COPY public.note_log (note_text, created) FROM stdin;
+remember to call Nowhere Corp	2026-02-03 04:05:06
+\.

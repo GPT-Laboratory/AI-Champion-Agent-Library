@@ -1,0 +1,21 @@
+name: Example Research Graph
+kind: system
+summary: A synthetic multi-step research system built with a code-only graph framework.
+category: Research
+tags: [research, graph]
+maturity: beta
+framework: langgraph
+topology: graph
+repo_url: https://example.com/acme/research-graph
+link_label: View source
+members:
+  - name: Planner
+    role: manager
+    description: Breaks the question into sub-questions.
+  - name: Searcher
+    role: worker
+    description: Gathers notes for each sub-question.
+  - name: Writer
+    role: step
+    description: Drafts the final report.
+owner_team: Acme Labs

@@ -1,0 +1,27 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE `customer` (
+  `customer_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  `customer_name` TEXT NOT NULL,
+  "segment" TEXT DEFAULT 'standard',
+  [city] TEXT
+);
+CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE "order" (
+  order_id INTEGER NOT NULL,
+  customer_id INTEGER NOT NULL REFERENCES customer(customer_id),
+  state TEXT,
+  total REAL,
+  PRIMARY KEY (order_id)
+) WITHOUT ROWID;
+CREATE TABLE order_line (
+  order_id INTEGER NOT NULL,
+  line_no INTEGER NOT NULL,
+  sku TEXT NOT NULL,
+  quantity INTEGER,
+  PRIMARY KEY (order_id, line_no),
+  FOREIGN KEY (order_id) REFERENCES "order" (order_id)
+) STRICT;
+CREATE INDEX idx_order_state ON "order" (state);
+CREATE VIEW open_orders AS SELECT order_id FROM "order" WHERE state = 'open';
+COMMIT;

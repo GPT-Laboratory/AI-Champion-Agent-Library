@@ -1,0 +1,16 @@
+@@ baseline line 363 @@
++def query_customer(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 10, offset: int = 0) -> dict:
+-def query_customer(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+@@ baseline line 429 @@
++def query_order(field: Optional[str] = None, value: Optional[str] = None, match: str = "contains", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-def query_order(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+@@ baseline line 462 @@
++def query_order_line(field: Optional[str] = None, value: Optional[str] = None, fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-def query_order_line(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+@@ baseline line 472 @@
+-        match: equals, contains or startsWith (case-insensitive for ASCII letters only).
+@@ baseline line 476 @@
++
++    Fixed: match is always equals.
+@@ baseline line 478 @@
++        match = "equals"

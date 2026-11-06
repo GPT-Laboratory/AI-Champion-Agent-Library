@@ -1,0 +1,5 @@
+# Same operations as the stdio case, exercised over Streamable HTTP.
+{"id":"tool_exists_lookup","type":"tool_exists","description":"Lookup tool listed over HTTP","tool_hint":"^lookup_item$","dimension":"D1"}
+{"id":"tool_exists_search","type":"tool_exists","description":"Search tool listed over HTTP","tool_hint":"^search_items$","dimension":"D1"}
+{"id":"http_lookup","type":"call","description":"Lookup the reference item over HTTP","tool_hint":"^lookup_item$","args":{"id":"ACM-000042"},"expect":{"no_error":true,"field_value":{"id":"ACM-000042"}},"dimension":"D2"}
+{"id":"http_search","type":"call","description":"Keyword search over HTTP","tool_hint":"^search_items$","args":{"query":"Reference Bearing"},"expect":{"no_error":true,"field_present":"id"},"dimension":"D2"}

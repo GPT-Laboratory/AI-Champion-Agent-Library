@@ -1,0 +1,4 @@
+{"id":"tool_exists_gtin","type":"tool_exists","description":"A tool that looks a product up by its code exists","tool_hint":"gtin","dimension":"D1"}
+{"id":"valid_code_found","type":"call","description":"A valid code returns the product","tool_hint":"gtin","args":{"gtin":"9900000010010"},"expect":{"no_error":true,"field_value":{"name":"Acme Product 1"}},"dimension":"D2"}
+{"id":"invalid_code_rejected","type":"call","description":"A code with a wrong check digit is rejected before any upstream call","tool_hint":"gtin","args":{"gtin":"9900000010014"},"expect":{"no_leak":true},"check_kind":"i18n_codes","dimension":"D4"}
+{"id":"utf8_roundtrip","type":"call","description":"Finnish and Swedish names with non-ASCII letters survive intact","tool_hint":"^lookup_item$","args":{"id":"ACM-000042"},"expect":{"no_error":true,"field_value":{"fi":"Acme Viitelaakeri (pääsarja)","sv":"Acme Referenslager (säker)"}},"dimension":"D4"}

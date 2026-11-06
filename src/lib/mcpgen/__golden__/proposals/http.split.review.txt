@@ -1,0 +1,23 @@
+Proposal review (strict mode)
+  proposal file sha256: 783a948e7da7d614ee4199eee96bd1a7491e8685d94d37b95b846c0752ac1128
+  baseline fingerprint: dfdfb94042e3adecd3ede978d10d7fca89a48d71dbd23cf732e7a8f14e7c2bb4
+  result: ACCEPTED
+
+Applied ops (1):
+  - split-search [split_tool]: test
+
+Changes per tool (before -> after):
+  search_part
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  NEW quick_part_search (split)
+    description: A short preview page of the part search.
+    arguments: (page?, q?, fields?)
+    calls: search_part with page_size=5
+  NEW wide_part_search (split)
+    description: A wide page of the part search.
+    arguments: (page?, q?, fields?)
+    calls: search_part with page_size=40
+
+Tools offered after applying (4): filter_part_by_features, lookup_part_by_id, quick_part_search, wide_part_search
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

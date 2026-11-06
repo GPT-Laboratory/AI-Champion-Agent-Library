@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+#
+# Generic Pi runner image for container-backed Try it out (Phase 8, D-02).
+# One image for every agent: per-agent files are staged into the running
+# container at warm time, nothing agent-specific or secret is baked in.
+#
+# Build:  podman build -t localhost/pi-runner:latest -f Containerfile.pi-runner .
+
+ARG NODE_VERSION=22-bookworm-slim
+
+FROM node:${NODE_VERSION}
+
+# Pi needs Node >= 22.19.
+RUN node -e "const [a,b]=process.versions.node.split('.').map(Number); if(a<22||(a===22&&b<19)) process.exit(1)"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash ca-certificates ripgrep fd-find coreutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Pinned version, install scripts disabled (supply chain).
+RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.0.4 \
+    && npm cache clean --force
+
+# The node image ships user node at uid/gid 1000; rename it to pi.
+RUN usermod -l pi -d /home/pi -m node && groupmod -n pi node
+
+RUN mkdir -p /work /home/pi/agent && chown -R pi:pi /work /home/pi
+
+ENV HOME=/home/pi \
+    PI_CODING_AGENT_DIR=/home/pi/agent \
+    PI_OFFLINE=1 \
+    PI_SKIP_VERSION_CHECK=1 \
+    PI_TELEMETRY=0
+
+WORKDIR /work
+USER pi
+
+CMD ["sleep", "infinity"]

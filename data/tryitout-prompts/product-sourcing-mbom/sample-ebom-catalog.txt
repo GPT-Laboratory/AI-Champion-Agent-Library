@@ -1,0 +1,17 @@
+# SYNTHETIC SAMPLE - invented data. Generic product catalog layout, not a real export, not real classification codes.
+## E-BOM
+line_id,description,req_class,req_dn,req_material,qty,unit
+BL-01,Water pipe,SYN-EC101,22,copper,120,m
+BL-02,Radiator valve,SYN-EC105,15,brass,20,pcs
+BL-03,Expansion vessel,SYN-EC106,,steel,1,pcs
+BL-04,Floor drain,SYN-EC109,50,stainless,6,pcs
+BL-05,Pipe clamp,SYN-EC107,22,steel,100,pcs
+BL-06,Circulation pump,SYN-EC104,,cast iron,2,pcs
+## CATALOG EXCERPT
+product_id,supplier,name,class,dn,material,sales_unit,in_stock
+CP-01,SynSupplier A,Copper pipe 22 straight,SYN-EC101,22,copper,m,Y
+CP-02,SynSupplier A,Radiator valve straight 15,SYN-EC105,15,brass,pcs,Y
+CP-03,SynSupplier B,Radiator valve angle 15,SYN-EC105,15,brass,pcs,Y
+CP-04,SynSupplier B,Pipe clamp 22 pack of 10,SYN-EC107,22,steel,pack10,Y
+CP-05,SynSupplier A,Expansion vessel 18 l,SYN-EC106,,stainless steel,pcs,Y
+CP-06,SynSupplier B,Circulation pump 25-60,SYN-EC104,,cast iron,pcs,Y

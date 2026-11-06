@@ -1,0 +1,10 @@
+# SYNTHETIC SAMPLE - invented data for an invented building, not from any real project
+as_of: 2026-03-02
+line_id,po_number,description,priority,status,unit,qty_ordered,qty_received,scheduled_date,actual_date,delay_reason,balance,balance_flag,days_late,late_flag,conflict
+D-01,PO-2001,Spiraalikanava DN400,normal,delivered,m,120,120,2026-02-24,2026-02-24,,0 m,complete,0,N,N
+D-02,PO-2002,Kaapelihylly 300 mm,high,partial,m,300,180,2026-03-05,2026-02-27,,120 m,short,0,N,N
+D-03,PO-2003,Pumppu P-3,critical,delayed,kpl,2,0,2026-02-20,,Tehdasviive,2 kpl,short,10,Y,N
+D-04,PO-2004,Kupariputki 54 mm,normal,in_transit,m,200,0,2026-02-27,,,200 m,short,3,Y,N
+D-05,PO-2005,Ilmanvaihtokone IV-2,critical,scheduled,kpl,1,0,2026-03-16,,,1 kpl,short,0,N,N
+D-06,PO-2006,Sulkupellit,low,delivered,kpl,10,8,2026-02-26,2026-02-26,,2 kpl,short,4,Y,Y
+D-07,PO-2007,Teraskanava DN200,normal,in_transit,m,80,0,,,,80 m,short,-,-,N

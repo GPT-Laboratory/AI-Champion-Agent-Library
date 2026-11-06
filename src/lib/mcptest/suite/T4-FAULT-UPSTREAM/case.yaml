@@ -1,0 +1,17 @@
+id: T4-FAULT-UPSTREAM
+tier: 4
+title: Acme upstream fault injection (synthetic)
+source: invented Acme catalog with a seeded fault controller and an attempt log
+auth: none
+transport: stdio
+provides_modalities: [spec]
+scoring_notes: >
+  Tier 4 raises risk flags, not points. Expected: retry with backoff on 429 and 5xx (observed in the mock
+  attempt log, then success), bounded retries, deadline respected on timeout, malformed bodies reported as an
+  honest tool error and never as a confident answer. Flags: confident wrong answer is a blocker, raw error
+  leak is a blocker, no retry is a warning.
+x-upstream:
+  a: { datasets: [catalog], maxPageSize: 50, ceiling: 200, seed: 1 }
+x-env:
+  baseUrl: ACME_BASE_URL
+x-applies-to: [fake, generator, submitted]

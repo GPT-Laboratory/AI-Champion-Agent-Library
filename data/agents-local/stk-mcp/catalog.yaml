@@ -1,0 +1,26 @@
+name: STK MCP
+kind: mcp-server
+summary: >-
+  Read-only MCP server that lets an agent search and look up electrical products from a local STK
+  (sahkonumerot.fi) Excel catalog. Two tools: free-text product search and single-product lookup.
+  Built with FastMCP over stdio. The Excel source is not public and is not shipped with this entry.
+  Answers are drafts for engineer review, not purchasing decisions. This is the recommended STK
+  server (see docs/consortium-agents-gaps.md, G-005).
+category: Data
+tags: [mcp, stk, etim, catalog, sourcing]
+maturity: experimental
+framework: fastmcp
+link_label: Source repository
+repo_url: https://github.com/villelaaksotuni/mcp-gen-comparison
+tools:
+  - search_products
+  - get_product
+transport: stdio
+package: stk-mcp
+command: stk-mcp
+env:
+  STK_STARTUP_CHECK: "<set locally>"
+data_source: "local STK Excel (not public, not shipped)"
+used_by_phases: [26]
+stage: sourcing
+sample_data: "none (non-public source; no samples in repo)"

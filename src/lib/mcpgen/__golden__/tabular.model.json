@@ -1,0 +1,68 @@
+{
+  "auth": {
+    "scheme": "none"
+  },
+  "backend": {
+    "datasetPathEnv": "ACME_WIDGETS_DATA_PATH",
+    "kind": "dataset"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "description": "Column code: WG010. Stable widget code",
+          "identifier": true,
+          "label": "Widget code",
+          "name": "WG010",
+          "type": "string"
+        },
+        {
+          "description": "Column code: WG020. Display name",
+          "label": "Widget name",
+          "name": "WG020",
+          "nameLike": true,
+          "type": "string"
+        },
+        {
+          "classLike": true,
+          "description": "Column code: WG030. Product group",
+          "label": "Widget group",
+          "name": "WG030",
+          "type": "string"
+        },
+        {
+          "description": "Column code: WG040",
+          "label": "Quantity on hand",
+          "name": "WG040",
+          "type": "integer"
+        },
+        {
+          "description": "Column code: WG050. Price per unit",
+          "label": "Unit price",
+          "name": "WG050",
+          "type": "number"
+        },
+        {
+          "description": "Column code: WG060",
+          "label": "Listed in catalog",
+          "name": "WG060",
+          "type": "boolean"
+        }
+      ],
+      "id": "widget",
+      "identifierFields": [
+        "WG010"
+      ],
+      "label": "widget",
+      "nested": []
+    }
+  ],
+  "gaps": [],
+  "limits": {
+    "maxPageSize": 50,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Widgets",
+  "operations": [],
+  "writeOperationsDropped": []
+}

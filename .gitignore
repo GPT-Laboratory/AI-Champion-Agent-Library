@@ -6,3 +6,10 @@ db/
 .env.local
 .svelte-kit/
 build/
+.tryitout-work/
+.claude/worktrees/
+.gsd/
+runtime/
+data/fixtures-scale/
+override.tryitout.yml
+.tryitout-runs/

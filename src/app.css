@@ -1,1 +1,124 @@
 @import "tailwindcss";
+
+/* Global keyboard focus indicator (WCAG 2.4.7, 1.4.11): indigo-600 on white is 6.46:1.
+   Controls with their own ring utilities keep them; this covers everything else
+   (selects, links, summary, login inputs) and survives `outline-none` resets. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-indigo-600);
+    outline-offset: 2px;
+  }
+}
+
+/* UI-02 dark theme (UI_DARK_MODE, D-380..D-384). Inert unless <html data-theme> is "dark" (or
+   "system" with a dark OS preference); the attribute is only ever written when the flag is on.
+   Dark mode remaps the colour tokens components already use, so no component class changes.
+   The values mirror DARK_SWAP in src/lib/a11y/contrastDark.ts (checked by darkTheme.css.test.ts)
+   and every pair is WCAG-AA checked in contrast.dark.test.ts. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-white: oklch(13% 0.028 261.692);
+  --color-gray-50: oklch(21% 0.034 264.665);
+  --color-gray-100: oklch(27.8% 0.033 256.848);
+  --color-gray-200: oklch(37.3% 0.034 259.733);
+  --color-gray-300: oklch(44.6% 0.03 256.802);
+  --color-gray-400: oklch(55.1% 0.027 264.364);
+  --color-gray-500: oklch(70.7% 0.022 261.325);
+  --color-gray-600: oklch(87.2% 0.01 258.338);
+  --color-gray-700: oklch(92.8% 0.006 264.531);
+  --color-gray-800: oklch(96.7% 0.003 264.542);
+  --color-gray-900: oklch(98.5% 0.002 247.839);
+  --color-slate-50: oklch(20.8% 0.042 265.755);
+  --color-slate-200: oklch(37.2% 0.044 257.287);
+  --color-slate-700: oklch(92.9% 0.013 255.508);
+  --color-slate-900: oklch(98.4% 0.003 247.858);
+  --color-indigo-50: oklch(25.7% 0.09 281.288);
+  --color-indigo-200: oklch(39.8% 0.195 277.366);
+  --color-indigo-300: oklch(45.7% 0.24 277.023);
+  --color-indigo-500: oklch(67.3% 0.182 276.935);
+  --color-indigo-600: oklch(67.3% 0.182 276.935);
+  --color-indigo-700: oklch(78.5% 0.115 274.713);
+  --color-indigo-800: oklch(87% 0.065 274.039);
+  --color-green-50: oklch(26.6% 0.065 152.934);
+  --color-green-100: oklch(39.3% 0.095 152.535);
+  --color-green-200: oklch(44.8% 0.119 151.328);
+  --color-green-300: oklch(52.7% 0.154 150.069);
+  --color-green-800: oklch(92.5% 0.084 155.995);
+  --color-green-900: oklch(96.2% 0.044 156.743);
+  --color-yellow-50: oklch(28.6% 0.066 53.813);
+  --color-yellow-100: oklch(42.1% 0.095 57.708);
+  --color-yellow-200: oklch(47.6% 0.114 61.907);
+  --color-yellow-700: oklch(90.5% 0.182 98.111);
+  --color-yellow-800: oklch(94.5% 0.129 101.54);
+  --color-yellow-900: oklch(97.3% 0.071 103.193);
+  --color-amber-50: oklch(27.9% 0.077 45.635);
+  --color-amber-300: oklch(55.5% 0.163 48.998);
+  --color-amber-700: oklch(87.9% 0.169 91.605);
+  --color-amber-900: oklch(96.2% 0.059 95.617);
+  --color-red-50: oklch(25.8% 0.092 26.042);
+  --color-red-100: oklch(39.6% 0.141 25.723);
+  --color-red-200: oklch(44.4% 0.177 26.899);
+  --color-red-700: oklch(80.8% 0.114 19.571);
+  --color-red-800: oklch(88.5% 0.062 18.334);
+  --color-red-900: oklch(93.6% 0.032 17.717);
+  --color-blue-500: oklch(70.7% 0.165 254.624);
+  --color-blue-700: oklch(80.9% 0.105 251.813);
+  --color-blue-800: oklch(88.2% 0.059 254.128);
+  --color-emerald-900: oklch(95% 0.052 163.051);
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    color-scheme: dark;
+    --color-white: oklch(13% 0.028 261.692);
+    --color-gray-50: oklch(21% 0.034 264.665);
+    --color-gray-100: oklch(27.8% 0.033 256.848);
+    --color-gray-200: oklch(37.3% 0.034 259.733);
+    --color-gray-300: oklch(44.6% 0.03 256.802);
+    --color-gray-400: oklch(55.1% 0.027 264.364);
+    --color-gray-500: oklch(70.7% 0.022 261.325);
+    --color-gray-600: oklch(87.2% 0.01 258.338);
+    --color-gray-700: oklch(92.8% 0.006 264.531);
+    --color-gray-800: oklch(96.7% 0.003 264.542);
+    --color-gray-900: oklch(98.5% 0.002 247.839);
+    --color-slate-50: oklch(20.8% 0.042 265.755);
+    --color-slate-200: oklch(37.2% 0.044 257.287);
+    --color-slate-700: oklch(92.9% 0.013 255.508);
+    --color-slate-900: oklch(98.4% 0.003 247.858);
+    --color-indigo-50: oklch(25.7% 0.09 281.288);
+    --color-indigo-200: oklch(39.8% 0.195 277.366);
+    --color-indigo-300: oklch(45.7% 0.24 277.023);
+    --color-indigo-500: oklch(67.3% 0.182 276.935);
+    --color-indigo-600: oklch(67.3% 0.182 276.935);
+    --color-indigo-700: oklch(78.5% 0.115 274.713);
+    --color-indigo-800: oklch(87% 0.065 274.039);
+    --color-green-50: oklch(26.6% 0.065 152.934);
+    --color-green-100: oklch(39.3% 0.095 152.535);
+    --color-green-200: oklch(44.8% 0.119 151.328);
+    --color-green-300: oklch(52.7% 0.154 150.069);
+    --color-green-800: oklch(92.5% 0.084 155.995);
+    --color-green-900: oklch(96.2% 0.044 156.743);
+    --color-yellow-50: oklch(28.6% 0.066 53.813);
+    --color-yellow-100: oklch(42.1% 0.095 57.708);
+    --color-yellow-200: oklch(47.6% 0.114 61.907);
+    --color-yellow-700: oklch(90.5% 0.182 98.111);
+    --color-yellow-800: oklch(94.5% 0.129 101.54);
+    --color-yellow-900: oklch(97.3% 0.071 103.193);
+    --color-amber-50: oklch(27.9% 0.077 45.635);
+    --color-amber-300: oklch(55.5% 0.163 48.998);
+    --color-amber-700: oklch(87.9% 0.169 91.605);
+    --color-amber-900: oklch(96.2% 0.059 95.617);
+    --color-red-50: oklch(25.8% 0.092 26.042);
+    --color-red-100: oklch(39.6% 0.141 25.723);
+    --color-red-200: oklch(44.4% 0.177 26.899);
+    --color-red-700: oklch(80.8% 0.114 19.571);
+    --color-red-800: oklch(88.5% 0.062 18.334);
+    --color-red-900: oklch(93.6% 0.032 17.717);
+    --color-blue-500: oklch(70.7% 0.165 254.624);
+    --color-blue-700: oklch(80.9% 0.105 251.813);
+    --color-blue-800: oklch(88.2% 0.059 254.128);
+    --color-emerald-900: oklch(95% 0.052 163.051);
+  }
+}

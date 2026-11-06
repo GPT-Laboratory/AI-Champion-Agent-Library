@@ -1,0 +1,16 @@
+D3:
+  title: HTTP tool surface (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: same_tools, text: The HTTP server lists the same tools as the stdio variant, auto: true }
+    - { id: descriptions, text: Every tool has a description, auto: true }
+D5:
+  title: Deployment configuration (manual)
+  scale: "0-3"
+  criteria:
+    - { id: env_config, text: Listen port, base URL and key come from environment variables, auto: false }
+    - { id: health_endpoint, text: A health GET answers without authentication, auto: false }
+    - { id: no_literals, text: No URL or secret literal in the source, auto: false }
+checklist_per_subject:
+  - { id: streamable_http, text: initialize succeeds over Streamable HTTP, auto: true }
+  - { id: health_ok, text: The configured health path answers 200, auto: true }

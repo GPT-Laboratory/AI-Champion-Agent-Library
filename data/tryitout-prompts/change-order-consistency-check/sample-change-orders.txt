@@ -1,0 +1,17 @@
+# SYNTHETIC SAMPLE - invented data. Change orders, amounts and names are invented; no real project or contract.
+## CHANGE ORDER LOG
+co_id,title,amount,currency,status,approved_by,approval_date
+CO-01,Extra ceiling access panels,12500,EUR,approved,Project Manager A,2026-02-10
+CO-02,Revised duct routing,8400,EUR,approved,Project Manager A,2026-02-14
+CO-03,Added fire damper,3200,EUR,approved,,2026-02-20
+CO-04,Changed floor finish,5600,EUR,pending,,
+CO-05,Extra cable tray,3000,EUR,approved,Project Manager B,2026-03-01
+CO-06,Relocated riser,7100,EUR,approved,Project Manager B,2026-03-05
+## CHANGE ORDER FORMS
+co_id,amount,currency,days_impact,signed
+CO-01,12500,EUR,0,yes
+CO-02,8040,EUR,2,yes
+CO-03,3200,EUR,0,yes
+CO-04,5600,EUR,0,no
+CO-05,3000,SEK,0,yes
+CO-60,900,EUR,0,yes

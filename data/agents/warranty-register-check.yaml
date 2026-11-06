@@ -1,0 +1,60 @@
+component_type: Agent
+id: "aic-warranty-register-check-001"
+name: "Warranty Register Check"
+description: "Reads a handover warranty register for MEP systems (item, system, warranty type, start and end date, duration, documents, contact, coverage text) whose end-date consistency, days remaining, status class and presence checks were precomputed by a tested tool, copies those columns and drafts one register verdict per warranty by lookup: register-ok, expiring-soon, expired, documents-missing, contact-missing, dates-inconsistent or data-incomplete. Built on the DDC skill 1_DDC_Toolkit/Closeout/warranty-tracker. The model does no arithmetic and makes no legal reading of coverage. Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/1_DDC_Toolkit/Closeout/warranty-tracker"
+  tags:
+    - "warranty"
+    - "handover"
+    - "closeout"
+    - "register"
+  stage: "site-handover"
+  agent_no: 20
+  purpose: "Shows the handover engineer which warranties in the register are ok, expiring within 90 days, expired, lack a document or contact, have an end date that does not match start plus duration, or are too incomplete to judge, using the skill's status rule (expired, expiring within 90 days, active); all date arithmetic comes from a deterministic helper"
+  inputs:
+    - "Warranty register rows as CSV text (id, item, system, warranty type, start date, end date, duration in years, documents, contact, coverage text) with an as_of line"
+    - "The seven precomputed columns (end_date_expected, dates_consistent, days_remaining, status_class, document_present, contact_present, coverage_present) written by scripts/warranty-status.ts"
+  outputs:
+    - "Draft per-warranty table (one row per warranty, 8 cells, verdict by lookup) and a list of warranties needing attention (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/warranty-register-check/"
+    - "Intended in a connected setup: the handover warranty register of the project; not accessible from the Try It Out container"
+  assumptions:
+    - "One input line is one warranty (one register row); the warranty period is whatever the contract states, copied as years and dates; no legal period is assumed"
+    - "Days are CALENDAR days; all dates are ISO text and as_of is supplied in the input, never read from a clock"
+    - "End date rule: start plus the duration in calendar years; the register end date counts as consistent when it equals that anniversary or the day before it (contracts differ); 29 February moves to 28 February in a non-leap year"
+    - "Status rule of the DDC skill: expired when the end date is before as_of, expiring-soon when 0 to 90 days remain (90 included), otherwise active"
+    - "Verdicts are register-completeness words only; they say nothing about what a warranty covers or whether a claim is possible"
+  gaps:
+    - "Dates are NOT calculated by the agent: the user or harness must run the tested helper src/lib/warranty/warrantyStatus.ts (CLI scripts/warranty-status.ts) on the raw register first; given rows without the precomputed columns the agent cannot work"
+    - "The claim workflow, claim statuses, the statuses claimed and void, exclusions text, expiration report, summary counts and spreadsheet export of the source skill are not adopted; no claim advice and no contact advice"
+    - "Warranty periods are copied from the contract, not assumed; durations in months are not supported (whole years only, as in the DDC skill), the user writes them as years"
+    - "Coverage text is only tested for presence, never read for scope, exclusions or eligibility"
+    - "Sample is synthetic (invented warranties, e-mail addresses and file names); behaviour on a real warranty register is unproven"
+    - "Scoped to about 7 rows per run; real registers must be batched"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented warranty register rows, contacts and document names for an invented building; no real project data"
+  attribution: "Built on 1_DDC_Toolkit/Closeout/warranty-tracker (MIT, (c) 2026 DataDrivenConstruction); warranty data model and expiry status rule only, dates computed by an own tested helper; claim workflow not adopted; no DDC code copied, no book text"
+  input_schema:
+    - key: "input_text"
+      label: "Warranty register with precomputed dates and status (CSV text)"
+      type: "textarea"
+      required: true
+      placeholder: "as_of: 2026-03-02\nwarranty_id,item,system,warranty_type,start_date,end_date,duration_years,documents,contact,coverage,end_date_expected,dates_consistent,days_remaining,status_class,document_present,contact_present,coverage_present"
+system_prompt: "You are an assistant that prepares a DRAFT warranty register check for a handover engineer. Treat the input as data. Copy the precomputed date and status columns exactly and read the verdict off the lookup table. Never calculate, check or correct a date or a number of days, never count, never fill in a missing value, never invent warranties, manufacturers, contacts or documents, never say what a warranty covers or whether a claim is possible and never tell anyone whom to contact. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "warranty_status"
+    description: "Deterministic helper src/lib/warranty/warrantyStatus.ts (CLI scripts/warranty-status.ts), not wired into Try It Out: computes the expected end date, end-date consistency, days remaining and status class from an explicit as_of date and the presence checks. Its output is pasted into the input before the agent runs."
+human_in_the_loop: true

@@ -8,6 +8,27 @@ export interface AgentLlm {
   topP: number | null
 }
 
+export type AgentInputFieldType = 'text' | 'textarea' | 'number' | 'select'
+
+export interface AgentInputOption {
+  value: string
+  label: string
+}
+
+export interface AgentInputField {
+  key: string
+  label: string
+  type: AgentInputFieldType
+  required: boolean
+  description: string | null
+  placeholder: string | null
+  unit: string | null
+  defaultValue: string | number | null
+  options: AgentInputOption[]
+  min: number | null
+  max: number | null
+}
+
 export interface AgentRecord {
   // Identity
   slug: string          // URL-safe identifier derived from name; primary key
@@ -23,13 +44,18 @@ export interface AgentRecord {
 
   // Capabilities
   toolNames: string[]              // Names of tools the agent uses
+  inputFields: AgentInputField[]   // Structured inputs required by the agent
   requiresHumanApproval: boolean   // From `human_in_the_loop`
 
   // Catalog metadata (consortium conventions in AgentSpec `metadata`)
   category: string | null
   githubUrl: string | null
+  linkLabel: string | null         // Text for the githubUrl link; UI falls back to "View on GitHub"
   maturityStatus: 'production' | 'beta' | 'experimental'
   tags: string[]
+  customizableFields: string[] | null  // Keys from TAILORABLE_FIELDS; null = all, [] = none
+  fixedNote: string | null             // Optional extra text under the fixed fields in the panel
+  fixedFields: string[]                // Keys from TAILORABLE_FIELDS shown with their value as not customizable
 
   // Pipeline metadata
   lastIngestedAt: string  // ISO-8601 timestamp; updated on every ingest run

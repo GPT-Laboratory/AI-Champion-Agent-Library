@@ -1,0 +1,26 @@
+name: STK Catalog MCP
+kind: mcp-server
+summary: >-
+  Read-only MCP server over a local STK (sahkonumerot.fi) Excel workbook, implemented as a plain
+  JSON-RPC stdio loop without an MCP framework. Five tools: catalog overview, field search, product
+  search, single-product lookup and a structured query. The workbook is not public and is not
+  shipped with this entry. Has no automated tests. Answers are drafts for engineer review.
+category: Data
+tags: [mcp, stk, etim, catalog, sourcing]
+maturity: experimental
+framework: json-rpc
+tools:
+  - catalog_overview
+  - search_fields
+  - search_products
+  - get_product
+  - query_products
+transport: stdio
+command: python
+args: [server.py]
+env:
+  STK_WORKBOOK_PATH: "<set locally>"
+data_source: "local STK Excel (not public, not shipped)"
+used_by_phases: [26]
+stage: sourcing
+sample_data: "none (non-public source; no samples in repo)"

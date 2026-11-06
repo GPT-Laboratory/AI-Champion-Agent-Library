@@ -1,0 +1,10 @@
+# SYNTHETIC SAMPLE - invented data for an invented building, not from any real project
+as_of: 2026-03-02
+warranty_id,item,system,warranty_type,start_date,end_date,duration_years,documents,contact,coverage,end_date_expected,dates_consistent,days_remaining,status_class,document_present,contact_present,coverage_present
+W-01,Ilmanvaihtokone IV-1,hvac,manufacturer,2025-06-01,2030-06-01,5,takuukirja-IV1.pdf,huolto@iv-valmistaja.example.test,Osat ja tyo valmistusvirheiden osalta,2030-06-01,Y,1552,active,Y,Y,Y
+W-02,Kiertovesipumppu P-2,plumbing,installer,2024-03-15,2026-03-14,2,takuuasiakirja-P2.pdf,asennus@putkiasennus.example.test,Asennustyon virheet,2026-03-15,Y,12,expiring-soon,Y,Y,Y
+W-03,Sprinklerilaitteisto,fire_protection,contractor,2023-02-10,2026-02-10,3,takuuasiakirja-SPR.pdf,takuu@sprinkleri.example.test,Urakoitsijan takuu laitteistolle,2026-02-10,Y,-20,expired,Y,Y,Y
+W-04,Lampimanvesivaraaja,plumbing,contractor,2025-09-01,2027-09-01,2,,takuu@putki-urakoitsija.example.test,Urakoitsijan takuu putkistolle,2027-09-01,Y,548,active,N,Y,Y
+W-05,Paakeskus PK-1,electrical,manufacturer,2025-11-20,2030-11-20,5,takuukirja-PK1.pdf,,Valmistajan takuu keskukselle,2030-11-20,Y,1724,active,Y,N,Y
+W-06,Jaahdytyskone JK-1,hvac,extended,2025-04-01,2028-04-01,5,laajennettu-takuu-JK1.pdf,takuu@jaahdytys.example.test,Laajennettu takuu kompressorille,2030-04-01,N,761,active,Y,Y,Y
+W-07,Painekorotuspumppu PK-3,plumbing,installer,2025-08-15,,2,takuuasiakirja-PK3.pdf,asennus@putkiasennus.example.test,Asennustyon virheet,2027-08-15,-,-,-,Y,Y,Y

@@ -1,0 +1,366 @@
+{
+  "auth": {
+    "scheme": "none"
+  },
+  "backend": {
+    "dsnEnv": "ACME_PGDUMP_DB_PATH",
+    "kind": "sql"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "customer_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "name": "customer_name",
+          "nameLike": true,
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "classLike": true,
+          "name": "segment",
+          "type": "string"
+        },
+        {
+          "name": "credit",
+          "type": "number"
+        },
+        {
+          "name": "profile",
+          "type": "string"
+        },
+        {
+          "name": "tags",
+          "type": "string"
+        },
+        {
+          "description": "Unique.",
+          "name": "external_ref",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "name": "search_key",
+          "type": "string"
+        }
+      ],
+      "id": "customer",
+      "identifierFields": [
+        "customer_id"
+      ],
+      "label": "customer",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "order_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "description": "References customer.customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "enum": [
+            "open",
+            "shipped",
+            "cancelled"
+          ],
+          "name": "state",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "name": "total",
+          "type": "number"
+        },
+        {
+          "name": "placed_on",
+          "type": "string"
+        }
+      ],
+      "id": "order",
+      "identifierFields": [
+        "order_id"
+      ],
+      "label": "order",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "description": "References order.order_id",
+          "identifier": true,
+          "name": "order_id",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "identifier": true,
+          "name": "line_no",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "name": "sku",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "name": "quantity",
+          "type": "integer"
+        }
+      ],
+      "id": "order_line",
+      "identifierFields": [
+        "order_id",
+        "line_no"
+      ],
+      "label": "order line",
+      "nested": []
+    },
+    {
+      "fields": [
+        {
+          "name": "note_text",
+          "type": "string"
+        },
+        {
+          "name": "created",
+          "type": "string"
+        }
+      ],
+      "id": "note_log",
+      "identifierFields": [],
+      "label": "note log",
+      "nested": []
+    }
+  ],
+  "gaps": [
+    {
+      "code": "sql-dialect-detected",
+      "message": "The input was recognised as PostgreSQL (pg_dump) output.",
+      "severity": "info"
+    },
+    {
+      "code": "sqlite-backend-only",
+      "message": "The generated sql server reads a read-only SQLite database file. This PostgreSQL (pg_dump) schema only describes the tables: provide a SQLite file with the same tables and columns (same names) for the server to open.",
+      "severity": "info"
+    },
+    {
+      "code": "unsupported-statement",
+      "message": "CREATE FUNCTION statement is not supported and was ignored.",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-statement",
+      "message": "CREATE VIEW statement is not supported and was ignored.",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "A composite or array type is not supported; the column is exposed as text.",
+      "path": "customer.profile",
+      "severity": "warn"
+    },
+    {
+      "code": "unsupported-type",
+      "message": "A composite or array type is not supported; the column is exposed as text.",
+      "path": "customer.tags",
+      "severity": "warn"
+    },
+    {
+      "code": "dialect-noise-ignored",
+      "message": "15 housekeeping statements (for example SET, COMMENT ON, GRANT, OWNER TO, sequences, indexes, DROP IF EXISTS) were ignored; they do not change the table model.",
+      "severity": "info"
+    },
+    {
+      "code": "limit-default",
+      "message": "No page size is known from the schema; the default of 100 rows per call was used. Override it with options.limits.maxPageSize.",
+      "severity": "info"
+    },
+    {
+      "code": "no-identifier",
+      "message": "The table has no primary key; only list and query access is generated, no lookup.",
+      "path": "note_log",
+      "severity": "warn"
+    }
+  ],
+  "limits": {
+    "maxPageSize": 100,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Pgdump",
+  "operations": [
+    {
+      "entity": "customer",
+      "id": "list_customer",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of customer"
+    },
+    {
+      "entity": "customer",
+      "id": "get_customer",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "customer_id",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of customer by primary key"
+    },
+    {
+      "entity": "order",
+      "id": "list_order",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of order"
+    },
+    {
+      "entity": "order",
+      "id": "get_order",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "order_id",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of order by primary key"
+    },
+    {
+      "entity": "order_line",
+      "id": "list_order_line",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of order_line"
+    },
+    {
+      "entity": "order_line",
+      "id": "get_order_line",
+      "kind": "get",
+      "method": "SELECT",
+      "params": [
+        {
+          "in": "column",
+          "name": "order_id",
+          "required": true,
+          "type": "integer"
+        },
+        {
+          "in": "column",
+          "name": "line_no",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "summary": "Fetch one row of order_line by primary key"
+    },
+    {
+      "entity": "note_log",
+      "id": "list_note_log",
+      "kind": "list",
+      "method": "SELECT",
+      "pageParam": "offset",
+      "pageSizeParam": "limit",
+      "params": [
+        {
+          "in": "query",
+          "max": 100,
+          "min": 1,
+          "name": "limit",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "min": 0,
+          "name": "offset",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "summary": "List rows of note_log"
+    }
+  ],
+  "writeOperationsDropped": []
+}

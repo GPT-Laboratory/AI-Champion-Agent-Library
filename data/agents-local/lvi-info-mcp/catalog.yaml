@@ -1,0 +1,34 @@
+name: LVI-INFO MCP
+kind: mcp-server
+summary: >-
+  Read-only MCP server wrapping the LVI-INFO Read-API, a Finnish building-products catalog for HVAC,
+  plumbing and electrical supplies with ETIM classification data. Exposes lookup by LVI number,
+  product link or GTIN, product search, filtering by ETIM class, a supplier list and a changed-
+  products feed. This is the hand-authored reference server of the MCP generation comparison and
+  the canonical entry; the five generated variants are listed, not catalogued separately. An API
+  key is needed and is not shipped. Answers are drafts for engineer review.
+category: Data
+tags: [mcp, lvi-info, etim, catalog, sourcing]
+maturity: experimental
+framework: fastmcp
+link_label: Source repository
+repo_url: https://github.com/villelaaksotuni/mcp-gen-comparison
+tools:
+  - lookup_by_lvi_number
+  - get_product_by_link
+  - get_product_by_gtin
+  - search_products
+  - filter_by_etim_class
+  - list_suppliers
+  - get_changed_products
+transport: stdio
+command: python
+args: [server.py]
+env:
+  LVI_API_BASE: "<set locally>"
+  LVI_API_KEY: "<set locally>"
+variants: [gsd, plain, mcpybarra, from_openapi, openapi-mcp-generator]
+data_source: "LVI-INFO Read-API (API key required, not shipped)"
+used_by_phases: [26]
+stage: sourcing
+sample_data: "none (non-public source; no samples in repo)"

@@ -1,0 +1,100 @@
+{
+  "auth": {
+    "envVar": "ACME_LEDGER_ACCESS_TOKEN",
+    "oauth2": true,
+    "scheme": "bearer"
+  },
+  "backend": {
+    "baseUrlEnv": "ACME_LEDGER_BASE_URL",
+    "kind": "http"
+  },
+  "entities": [
+    {
+      "fields": [
+        {
+          "identifier": true,
+          "name": "entryId",
+          "type": "string"
+        },
+        {
+          "name": "account",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "memo",
+          "type": "string"
+        }
+      ],
+      "id": "entry",
+      "identifierFields": [
+        "entryId"
+      ],
+      "label": "Entry",
+      "nested": []
+    }
+  ],
+  "gaps": [
+    {
+      "code": "base-path-in-env",
+      "message": "The document declares a base path (servers url or basePath); operation paths are relative to it, but it is not copied. Include it in ACME_LEDGER_BASE_URL.",
+      "severity": "info"
+    },
+    {
+      "code": "oauth2-flow-not-implemented",
+      "message": "The API uses OAuth2; no flow is implemented. The server reads an access token you obtained from ACME_LEDGER_ACCESS_TOKEN and sends it as a bearer token; it never stores or refreshes it.",
+      "severity": "warn"
+    }
+  ],
+  "limits": {
+    "maxPageSize": 40,
+    "maxResponseItems": 200
+  },
+  "name": "Acme Ledger API",
+  "operations": [
+    {
+      "entity": "entry",
+      "id": "getEntry",
+      "kind": "get",
+      "method": "GET",
+      "params": [
+        {
+          "in": "path",
+          "name": "entryId",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "path": "/entries/{entryId}"
+    },
+    {
+      "entity": "entry",
+      "id": "listEntries",
+      "kind": "list",
+      "method": "GET",
+      "pageParam": "page",
+      "pageSizeParam": "size",
+      "params": [
+        {
+          "in": "query",
+          "name": "page",
+          "required": false,
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "max": 40,
+          "name": "size",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "path": "/entries",
+      "summary": "List ledger entries"
+    }
+  ],
+  "writeOperationsDropped": []
+}

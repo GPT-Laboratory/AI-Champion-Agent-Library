@@ -299,15 +299,23 @@ function cmdStateUpdateProgress(cwd, raw) {
   const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(barWidth - filled);
   const progressStr = `[${bar}] ${percent}%`;
 
-  // Try **Progress:** bold format first, then plain Progress: format
+  // Try **Progress:** bold format first, then plain Progress: format.
+  // Match against the BODY only (post-frontmatter) — the YAML frontmatter
+  // always has its own `progress:` key (progress.total_phases/etc.), and
+  // the plain pattern's case-insensitive, unanchored-to-body regex would
+  // otherwise match that key instead of the body's "Progress:" field,
+  // clobbering the frontmatter block on write.
+  const fmMatch = content.match(/^---\n[\s\S]*?\n---\n*/);
+  const fmBlock = fmMatch ? fmMatch[0] : '';
+  const body = fmMatch ? content.slice(fmBlock.length) : content;
   const boldProgressPattern = /(\*\*Progress:\*\*\s*).*/i;
   const plainProgressPattern = /^(Progress:\s*).*/im;
-  if (boldProgressPattern.test(content)) {
-    content = content.replace(boldProgressPattern, (_match, prefix) => `${prefix}${progressStr}`);
+  if (boldProgressPattern.test(body)) {
+    content = fmBlock + body.replace(boldProgressPattern, (_match, prefix) => `${prefix}${progressStr}`);
     writeStateMd(statePath, content, cwd);
     output({ updated: true, percent, completed: totalSummaries, total: totalPlans, bar: progressStr }, raw, progressStr);
-  } else if (plainProgressPattern.test(content)) {
-    content = content.replace(plainProgressPattern, (_match, prefix) => `${prefix}${progressStr}`);
+  } else if (plainProgressPattern.test(body)) {
+    content = fmBlock + body.replace(plainProgressPattern, (_match, prefix) => `${prefix}${progressStr}`);
     writeStateMd(statePath, content, cwd);
     output({ updated: true, percent, completed: totalSummaries, total: totalPlans, bar: progressStr }, raw, progressStr);
   } else {

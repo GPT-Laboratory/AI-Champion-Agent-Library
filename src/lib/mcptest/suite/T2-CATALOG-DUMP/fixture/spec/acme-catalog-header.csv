@@ -1,0 +1,7 @@
+item_code,name,category,min_width_mm,weight_g
+# Data dictionary (header only, no rows are provided to a generator)
+# item_code:    text identifier of one catalog row
+# name:         text, display name
+# category:     text, one of four product families
+# min_width_mm: integer, millimetres; filters on this column must compare numerically
+# weight_g:     integer, grams

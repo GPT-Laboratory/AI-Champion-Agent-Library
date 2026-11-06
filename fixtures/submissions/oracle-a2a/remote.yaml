@@ -1,0 +1,13 @@
+# Synthetic fixture (Example/Acme). The URL is kept as text only and is never fetched.
+component_type: A2AAgent
+id: example-remote-agent
+name: Example Remote Agent
+description: A remote Acme agent reachable over A2A.
+metadata:
+  category: Integration
+  tags: [a2a, remote]
+  github_url: https://example.com/acme/remote-agent
+  maturity: experimental
+agent_url: https://example.com/a2a/agent
+connection_config:
+  timeout_seconds: 30

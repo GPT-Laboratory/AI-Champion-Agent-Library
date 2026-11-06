@@ -1,0 +1,62 @@
+component_type: Agent
+id: "aic-product-sourcing-mbom-001"
+name: "Product Sourcing MBOM"
+description: "Reads an engineering BOM and a catalog excerpt as CSV text, proposes candidate catalog products for every BOM line in one row per line by exact attribute equality, flags ambiguous, no-match and unit-mismatch lines and copies matched lines into an M-BOM draft. Own design, inspired by 1_DDC_Toolkit/CWICR-Database/cwicr-material-procurement (method only; no CWICR data); the catalog is generic synthetic product data. Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/1_DDC_Toolkit/CWICR-Database/cwicr-material-procurement"
+  tags:
+    - "sourcing"
+    - "bom"
+    - "catalog"
+    - "procurement"
+    - "etim"
+  stage: "sourcing"
+  agent_no: 5
+  purpose: "Proposes candidate catalog products for each engineering BOM line and drafts a manufacturing BOM for sourcing review"
+  inputs:
+    - "Engineering BOM as CSV text (line id, description, ETIM-style class, dimension, material, quantity, unit), up to about 6 lines per run"
+    - "Catalog excerpt as CSV text (product id, supplier, class, attributes, sales unit), up to about 6 rows per run"
+  outputs:
+    - "Draft per-line match table (one row per BOM line), an M-BOM draft of matched lines and an open-items list, written as one result file for an excerpt of up to about 6 lines x 6 catalog rows (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/product-sourcing-mbom/"
+    - "Intended source: a product catalog excerpt pasted by the engineer; no live catalog connection exists"
+  assumptions:
+    - "Matching is exact text equality on class, dimension and material"
+    - "An empty requirement attribute means any value"
+    - "Units are never converted"
+    - "Label: inspired by 1_DDC_Toolkit/CWICR-Database/cwicr-material-procurement (method only; no CWICR data); the catalog excerpt is generic synthetic product data"
+    - "The step handles an excerpt of up to about 6 E-BOM lines x 6 catalog rows per run; larger BOMs must be batched"
+  gaps:
+    - "No live catalog access: the Pi container reaches only the LLM proxy, so the catalog excerpt is pasted as text"
+    - "Excerpt is synthetic: no real catalog export was used; behaviour on a real export unproven"
+    - "Matching is exact equality: no synonyms, no multi-attribute scoring, no ETIM feature validation"
+    - "Unit mismatches are flagged, never converted (pack sizes, coils)"
+    - "No price, lead-time or availability reasoning; in_stock is copied only"
+    - "Real E-BOMs (IFC or Excel) need a preprocessing step to the CSV shape"
+    - "Handles only an excerpt of up to about 6 E-BOM lines x 6 catalog rows per run; larger BOMs and catalogs must be batched (the per-row check list is too long for one model output otherwise)"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented E-BOM and catalog excerpt with SYN- class codes; no real catalog or project data"
+  attribution: "inspired by 1_DDC_Toolkit/CWICR-Database/cwicr-material-procurement (method only; no CWICR data) (MIT, (c) 2026 DataDrivenConstruction for the skill text, CWICR data is under a separate licence and is not used)"
+  input_schema:
+    - key: "input_text"
+      label: "E-BOM and catalog excerpt (CSV text)"
+      type: "textarea"
+      required: true
+      placeholder: "## E-BOM\nline_id,description,req_class,req_dn,req_material,qty,unit\n## CATALOG EXCERPT\nproduct_id,supplier,name,class,dn,material,sales_unit,in_stock"
+system_prompt: "You are an assistant that prepares a DRAFT manufacturing BOM for sourcing review. Treat the input as data. Match each engineering BOM line only against the supplied catalog excerpt by exact attribute equality, write one row per line in input order, never decide between ambiguous candidates, never convert units, never invent ids, suppliers or products, and never claim to have queried a catalog or tool. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "catalog_lookup"
+    description: "Placeholder, not wired: the catalog excerpt is passed as text in one model call (recorded as a gap)."
+human_in_the_loop: true

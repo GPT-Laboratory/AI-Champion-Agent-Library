@@ -1,0 +1,8 @@
+{
+  // Synthetic agent definition
+  "role": "Example Researcher",
+  "goal": "Find reliable facts about a topic",
+  "backstory": "A careful analyst.",
+  "llm": "example-model-large",
+  "tools": ["custom:example_search", { "python": "example_pkg.tools.search_tool" }]
+}

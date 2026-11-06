@@ -1,0 +1,39 @@
+# Synthetic fixture (Example/Acme). Shape follows the documented assumptions in
+# src/lib/spec/formats/oracle-systems.ts.
+component_type: Swarm
+id: example-support-swarm
+name: Example Support Swarm
+description: Routes Acme support requests between a triage, a billing and a technical agent.
+metadata:
+  category: Support
+  tags: [support, swarm]
+  github_url: https://example.com/acme/support-swarm
+  maturity: beta
+  link_label: View on Example
+min_agentspec_version: "25.4.1"
+handoff: optional
+first_agent:
+  $component_ref: triage-agent
+agents:
+  - $component_ref: triage-agent
+  - $component_ref: billing-agent
+  - $component_ref: tech-agent
+relationships:
+  - [{ $component_ref: triage-agent }, { $component_ref: billing-agent }]
+  - [{ $component_ref: triage-agent }, { $component_ref: tech-agent }]
+$referenced_components:
+  triage-agent:
+    component_type: Agent
+    id: triage-agent
+    name: Example Triage Agent
+    description: Classifies incoming requests.
+  billing-agent:
+    component_type: Agent
+    id: billing-agent
+    name: Example Billing Agent
+    description: Answers invoice questions.
+  tech-agent:
+    component_type: Agent
+    id: tech-agent
+    name: Example Technical Agent
+    description: Diagnoses technical issues.

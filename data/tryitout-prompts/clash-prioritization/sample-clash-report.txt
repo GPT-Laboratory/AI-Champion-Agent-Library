@@ -1,0 +1,10 @@
+# SYNTHETIC SAMPLE - invented data for an invented building (Harbour Annex), not from any real project
+clash_id,discipline_a,discipline_b,element_a,element_b,level,grid,penetration_mm,clash_type,status
+CL-001,Ilmanvaihto,Rakenne,Supply duct SD-12,Beam B-L2-04,L2,C/3,140,hard,open
+CL-002,Ilmanvaihto,Rakenne,Supply duct SD-12,Beam B-L2-05,L2,C/4,90,hard,open
+CL-003,Ilmanvaihto,Rakenne,Supply duct SD-12,Beam B-L2-07,L2,C/6,35,soft,assigned
+CL-004,Putkisto,Sähkö,Riser RS-3,Cable tray CT-7,L1,E/2,40,hard,in_progress
+CL-005,Putkisto,Sprinkler,Riser RS-3,Sprinkler branch SP-9,L1,E/2,130,hard,open
+CL-006,Ilmanvaihto,Sähkö,Exhaust duct ED-2,Cable tray CT-4,L2,B/1,70,hard,resolved
+CL-007,Sähkö,Rakenne,Conduit bank CB-1,Wall W-L1-09,L1,A/3,,hard,open
+CL-008,Sprinkler,Sähkö,Sprinkler main SP-1,Cable tray CT-9,L3,F/4,8,soft,open

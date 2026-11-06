@@ -1,0 +1,5 @@
+# Static profile checks; each line is evaluated against the x-config.profile block.
+{"id":"profile_required_tools","type":"tool_exists","description":"All tools required by the Acme profile are listed","check_kind":"profile","dimension":"D3"}
+{"id":"profile_name_pattern","type":"tool_exists","description":"Every tool name matches the profile naming pattern","check_kind":"profile","dimension":"D3"}
+{"id":"profile_descriptions","type":"tool_exists","description":"Every tool has a non-empty description","check_kind":"profile","dimension":"D3"}
+{"id":"profile_server_info","type":"tool_exists","description":"initialize reports a server name and version","check_kind":"profile","dimension":"D3"}

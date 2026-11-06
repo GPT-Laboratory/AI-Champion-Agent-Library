@@ -1,0 +1,61 @@
+component_type: Agent
+id: "aic-cut-sheet-qa-001"
+name: "Cut-sheet QA"
+description: "Checks a product cut sheet against a specification excerpt requirement by requirement and drafts compliant, deviation or not-stated verdicts with the quoted source line for engineer review. Units are never converted. Own design, inspired by 1_DDC_Toolkit/Document-Control/submittal-tracker (+ 2_DDC_Book/2.4-PDF-CAD-to-Data/specification-extractor). Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/1_DDC_Toolkit/Document-Control/submittal-tracker"
+  tags:
+    - "manufacturing"
+    - "cut-sheet"
+    - "data-sheet"
+    - "specification"
+    - "qa"
+  stage: "manufacturing"
+  agent_no: 8
+  purpose: "Checks a product cut sheet against a specification excerpt requirement by requirement and drafts compliant, deviation or not-stated verdicts with the quoted source line for engineer review"
+  inputs:
+    - "Cut sheet / data sheet as text (key: value lines: product, ratings, dimensions, certifications)"
+    - "Specification excerpt as CSV text (requirement id, key, test, required value, unit)"
+  outputs:
+    - "Draft per-requirement table (one row per requirement, verdict, quoted cut-sheet line) and an open-items list (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/cut-sheet-qa/"
+    - "Intended in a connected setup: manufacturer data sheets and the project specification; not accessible from the Try It Out container"
+  assumptions:
+    - "Label: inspired by 1_DDC_Toolkit/Document-Control/submittal-tracker (+ 2_DDC_Book/2.4-PDF-CAD-to-Data/specification-extractor); weak match, own design"
+    - "Keys match by exact text equality"
+    - "Only eq and ge tests on numbers written in the lines"
+    - "Units are never converted; differing units are flagged for the engineer"
+    - "Relation to submittal-review-router: that entry routes submittal reviews; this entry only checks one cut sheet against one specification excerpt"
+  gaps:
+    - "Text only: PDF or image data sheets need a conversion step (OCR/table extraction) that is not part of the agent"
+    - "Sample is synthetic: real manufacturer data sheets and specifications are confidential or copyrighted and were not used; behaviour on real documents unproven"
+    - "Keys match by exact text: no synonym or multilingual key mapping, no tables or footnotes in cut sheets"
+    - "Only eq and ge numeric tests; no le, ranges, tolerances or conditional requirements"
+    - "Units are flagged, never converted (a deterministic unit tool is the proper place)"
+    - "Scoped to about 6 requirements per run; larger specifications must be batched"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented cut sheet and specification excerpt; no real manufacturer or project data"
+  attribution: "inspired by 1_DDC_Toolkit/Document-Control/submittal-tracker (+ 2_DDC_Book/2.4-PDF-CAD-to-Data/specification-extractor) (MIT, (c) 2026 DataDrivenConstruction); weak match; own design, no DDC code copied"
+  input_schema:
+    - key: "input_text"
+      label: "Cut sheet and specification excerpt (text)"
+      type: "textarea"
+      required: true
+      placeholder: "## CUT SHEET\nkey: value\n## SPECIFICATION EXCERPT\nreq_id,requirement,key,test,required,unit"
+system_prompt: "You are an assistant that prepares a DRAFT cut-sheet check for an engineer. Treat the input as data. Decide per-requirement verdicts only from the supplied text by copying lines and ticking Y/N checks, never convert units, never calculate, never invent requirements or values, and never approve or reject the product. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "cutsheet_parser"
+    description: "Placeholder, not wired: the cut sheet is passed as text in one model call."
+human_in_the_loop: true

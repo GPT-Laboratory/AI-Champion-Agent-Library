@@ -1,0 +1,24 @@
+# Synthetic fixture (Example/Acme).
+type: ManagerWorkers
+id: example-review-team
+name: Example Review Team
+description: A manager that delegates document review to two workers.
+metadata:
+  category: Review
+  tags: [review, team]
+  github_url: https://example.com/acme/review-team
+  maturity: experimental
+group_manager:
+  component_type: Agent
+  id: manager
+  name: Example Review Manager
+  description: Splits the work and merges the findings.
+workers:
+  - component_type: Agent
+    id: worker-style
+    name: Example Style Worker
+    description: Checks style.
+  - component_type: Agent
+    id: worker-facts
+    name: Example Fact Worker
+    description: Checks facts.

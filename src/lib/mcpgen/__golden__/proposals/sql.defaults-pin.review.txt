@@ -1,0 +1,25 @@
+Proposal review (strict mode)
+  proposal file sha256: 33598729b2124fe3f63ed8037af12677a4d585edf82cb6d59fb4f6c5bdac9a2f
+  baseline fingerprint: 8fc43262e49d20764ada5b7941533ad640fbb608bd3b35b78bcadcfcb18d52eb
+  result: ACCEPTED
+
+Applied ops (3):
+  - default-match [set_arg_default]: test
+  - pin-match [pin_arg]: test
+  - paging [set_paging_default]: test
+
+Changes per tool (before -> after):
+  query_customer
+    arguments: before: (field?, value?, match="equals", fields?, limit=20, offset=0)
+               after:  (field?, value?, match="equals", fields?, limit=10, offset=0)
+  query_order
+    arguments: before: (field?, value?, match="equals", fields?, limit=20, offset=0)
+               after:  (field?, value?, match="contains", fields?, limit=20, offset=0)
+  query_order_line
+    arguments: before: (field?, value?, match="equals", fields?, limit=20, offset=0)
+               after:  (field?, value?, fields?, limit=20, offset=0)
+    pinned: match = "equals" (not an argument any more)
+
+Tools offered after applying (5): describe_acme_schema, query_customer, query_note_log, query_order, query_order_line
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

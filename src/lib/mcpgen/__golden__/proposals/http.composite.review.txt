@@ -1,0 +1,17 @@
+Proposal review (strict mode)
+  proposal file sha256: 49c5986d264c2e81ade489d50afc31bc38217d6831af15ed458501523f937438
+  baseline fingerprint: dfdfb94042e3adecd3ede978d10d7fca89a48d71dbd23cf732e7a8f14e7c2bb4
+  result: ACCEPTED
+
+Applied ops (1):
+  - composite-details [composite_tool]: test
+
+Changes per tool (before -> after):
+  NEW find_part_details (composite)
+    description: Searches parts by text, takes the first match and returns its full record. Says clearly when nothing matches.
+    arguments: (text)
+    steps: find -> search_part; detail -> lookup_part_by_id; at most 2 read-only calls
+
+Tools offered after applying (4): filter_part_by_features, find_part_details, lookup_part_by_id, search_part
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

@@ -1,0 +1,18 @@
+D3:
+  title: Tool surface quality (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: names_snake_case, text: Tool names are snake_case verbs or nouns, auto: true }
+    - { id: descriptions_present, text: Every tool has a non-empty description, auto: true }
+    - { id: params_named, text: Parameters are named after the catalog fields (id, query, page), auto: true }
+    - { id: pagination_params, text: The search tool exposes page and page size parameters, auto: true }
+D5:
+  title: Generated package hygiene (manual)
+  scale: "0-3"
+  criteria:
+    - { id: env_config, text: Base URL and key are read from environment variables, auto: false }
+    - { id: no_literals, text: No URL or secret literal in the source, auto: false }
+checklist_per_subject:
+  - { id: launches, text: Process launches and answers initialize, auto: true }
+  - { id: tools_listed, text: tools/list returns at least lookup and search, auto: true }
+  - { id: readme, text: Package ships a short usage note, auto: false }

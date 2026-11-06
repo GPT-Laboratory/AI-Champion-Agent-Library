@@ -1,0 +1,14 @@
+D3:
+  title: Composite tool design (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: single_call, text: One tool call returns the joined view, auto: true }
+    - { id: partial_notice, text: A degraded answer names the missing backend, auto: false }
+D5:
+  title: Configuration (manual)
+  scale: "0-3"
+  criteria:
+    - { id: two_base_urls, text: Both backend URLs come from separate environment variables, auto: false }
+checklist_per_subject:
+  - { id: join_correct, text: Joined fields match the two backends, auto: true }
+  - { id: degrade_honestly, text: Backend failure is reported, not hidden, auto: true }

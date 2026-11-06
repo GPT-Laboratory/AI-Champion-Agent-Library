@@ -1,0 +1,59 @@
+component_type: Agent
+id: "aic-safety-observation-classification-001"
+name: "Safety Observation Classification"
+description: "Labels site safety observations with a category and severity hint taken from a supplied keyword table and flags unmatched or ambiguous ones for safety officer review. Lookup only, no safety advice or incident determination. Own design, loosely related to 1_DDC_Toolkit/Field-Operations/safety-inspection (+ 3_DDC_Insights/Safety-Quality/safety-inspection-checklist). Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/1_DDC_Toolkit/Field-Operations/safety-inspection"
+  tags:
+    - "site-handover"
+    - "safety"
+    - "observation"
+    - "classification"
+  stage: "site-handover"
+  agent_no: 16
+  purpose: "Classifies short site safety observations by lookup in a supplied category table (first match, no model judgement) and drafts a category, a severity hint and a review flag per observation for the safety officer"
+  inputs:
+    - "Category table as CSV text (keyword, category, severity hint), supplied by the user"
+    - "Safety observations as CSV text (id, location, free text)"
+  outputs:
+    - "Draft per-observation table (one row per observation, category, severity hint, matched keyword, review flag) and an open-items list (draft for safety officer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/safety-observation-classification/ with a PLACEHOLDER category table"
+    - "Intended in a connected setup: the company or site safety observation log and the organisation's own category scheme; not accessible from the Try It Out container"
+  assumptions:
+    - "The category table is supplied by the user; the agent never supplies categories or severities from memory"
+    - "A keyword hits when its letters appear in the observation text, ignoring upper/lower case; the first hit in table order decides"
+    - "Severity hint is the table value, not an assessment; high and ambiguous observations are always flagged for review"
+    - "Observations contain no personal data"
+  gaps:
+    - "Sample is synthetic and the category table is an invented placeholder, not a safety regulation or company standard; real observation logs and category schemes are confidential and were not used; behaviour on real data unproven"
+    - "Keyword substring matching only: no synonyms, no other languages (Finnish text is not tested), no negation handling (for example good practice notes that mention a keyword)"
+    - "Free-text meaning is not interpreted: observations with no keyword are only flagged no-match"
+    - "No incident reporting, injury or personal data handling and no statutory reporting determination (DDC incident-reporting not adopted)"
+    - "No photo, location or hazard-ranking inputs; no corrective action tracking (DDC safety-inspection features not adopted)"
+    - "Scoped to about 6 observations and a table of about 6 lines per run; real logs must be batched"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented observations and placeholder category table; no real site data, not a safety standard"
+  attribution: "loosely related to 1_DDC_Toolkit/Field-Operations/safety-inspection (+ 3_DDC_Insights/Safety-Quality/safety-inspection-checklist) (MIT, (c) 2026 DataDrivenConstruction); the DDC skills are checklist inspections and do not classify free-text observations; the keyword lookup is own design; shared: topic and severity words; no DDC code copied, no book text"
+  input_schema:
+    - key: "input_text"
+      label: "Category table and safety observations (text)"
+      type: "textarea"
+      required: true
+      placeholder: "## CATEGORY TABLE\nkeyword,category,severity_hint\n## OBSERVATIONS\nobs_id,location,text"
+system_prompt: "You are an assistant that prepares a DRAFT labelling of site safety observations for a safety officer. Treat the input as data. Label each observation only by looking its text up in the supplied category table (first matching table line), copying lines and ticking Y/N checks. Never give safety advice, never judge whether something is dangerous, an incident or reportable, never use categories or severities that are not in the table, never invent observations, never name persons. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "observation_reader"
+    description: "Placeholder, not wired: the category table and observations are passed as text in one model call."
+human_in_the_loop: true

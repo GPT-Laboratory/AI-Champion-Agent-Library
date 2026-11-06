@@ -1,0 +1,21 @@
+Proposal review (strict mode)
+  proposal file sha256: b66f62470e87a3b6ee243f87e654b0fb3bf6978fd8c11c64a9b31f802ad0ee6b
+  baseline fingerprint: dfdfb94042e3adecd3ede978d10d7fca89a48d71dbd23cf732e7a8f14e7c2bb4
+  result: ACCEPTED
+
+Applied ops (1):
+  - merge-fan [merge_tools]: test
+
+Changes per tool (before -> after):
+  filter_part_by_features
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  search_part
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  NEW part_everywhere (merge fanout)
+    description: Searches and filters parts in one call and labels each result by its source.
+    arguments: (page?, page_size?, q?, fields?, key, value?, max_pages?)
+    calls: search -> search_part; filter -> filter_part_by_features
+
+Tools offered after applying (2): lookup_part_by_id, part_everywhere
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

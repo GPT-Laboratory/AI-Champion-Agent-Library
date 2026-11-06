@@ -1,0 +1,54 @@
+# syntax=docker/dockerfile:1
+#
+# Runner image for the MCP test platform (Phase 15). DEFINITION ONLY: building it is pending human.
+# It holds Node, python3 and the dependencies of the in-container driver (src/lib/mcptest/driver.ts).
+# The platform stages the repository sources, the package under test and the request at run time and
+# execs the driver; nothing agent-specific or secret is baked in.
+#
+# Build:  podman build -t localhost/mcp-test-runner:latest -f Containerfile.mcp-test-runner .
+#
+# Everything is installed at BUILD time. The running container needs no network.
+
+ARG NODE_VERSION=22.19-bookworm-slim
+
+FROM node:${NODE_VERSION}
+
+# The driver needs Node >= 22.19.
+RUN node -e "const [a,b]=process.versions.node.split('.').map(Number); if(a<22||(a===22&&b<19)) process.exit(1)"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node dependencies under /node_modules: ESM resolution walks up from /work, so the staged sources find them.
+# Versions equal the ones in package.json (a test compares them). Installed in /deps and moved to /, because
+# `npm install --prefix /` with cwd / fails on npm 10.9 ("Tracker idealTree already exists", E9 defect D4).
+RUN mkdir /deps && cd /deps \
+    && npm install --no-save --no-audit --no-fund --ignore-scripts \
+      yaml@2.9.1 zod@4.6.7 fflate@0.8.3 sax@1.6.1 tsx@4.23.15 \
+    && cd / && mv /deps/node_modules /node_modules && rm -rf /deps \
+    && npm cache clean --force
+
+# Python dependencies of generated servers, in a venv (Debian marks the system Python as externally managed).
+# UNVERIFIED: the fastmcp pin mirrors src/lib/mcpgen/emit/requirements.ts and has not been checked against
+# the package index; the human decides the pin before the first build.
+RUN python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --no-cache-dir "fastmcp>=3.4,<5" "httpx>=0.27" pyyaml
+# /node_modules/.bin holds tsx (installed above); the driver command also uses its absolute path.
+ENV PATH=/node_modules/.bin:/opt/venv/bin:$PATH
+
+# Non-root user "pi", same convention as Containerfile.pi-runner and the Try It Out runtime (D-464, decided by
+# Ville): the node image ships user node at uid/gid 1000; rename it to pi (home /home/pi). The platform creates
+# the container with User "pi" (containerRun.RUNNER_USER; a test keeps the two in step) and mounts no
+# /home/pi/agent tmpfs. /work is a tmpfs at run time (mode 1777, so uid 1000 can write it), and everything the
+# driver needs is staged into it. The dependency trees are installed as root at build time and made
+# world-readable and executable, so pi can read /node_modules, run /node_modules/.bin/tsx and use /opt/venv.
+RUN usermod -l pi -d /home/pi -m node && groupmod -n pi node \
+    && chmod -R a+rX /node_modules /opt/venv
+RUN mkdir -p /work/in /work/out /work/pkg && chown -R pi:pi /work /home/pi
+ENV HOME=/home/pi
+USER pi
+WORKDIR /work
+
+# The platform creates the container, stages files and execs the driver; no server starts by itself.
+CMD ["sleep", "infinity"]

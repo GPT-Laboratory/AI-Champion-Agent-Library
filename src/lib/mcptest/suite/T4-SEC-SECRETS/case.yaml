@@ -1,0 +1,27 @@
+id: T4-SEC-SECRETS
+tier: 4
+title: Acme secret handling and read-only discipline (synthetic)
+source: invented Acme catalog with key auth; a canary key value is injected at run time only
+auth: api_key_header
+transport: stdio
+provides_modalities: [spec]
+scoring_notes: >
+  The runner injects a canary key through the environment variable only; no key value is stored in the suite.
+  All tool outputs and captured stderr are scanned for the canary. A read-only source must produce no write
+  tool (tool names, readOnlyHint where present, non-GET requests in the mock log). Injection-style arguments
+  are recorded raw by the mock and must be escaped or validated. A leak or a write tool is a blocker.
+x-upstream:
+  a:
+    datasets: [catalog]
+    auth: { header: X-Api-Key, mode: '401' }
+    maxPageSize: 50
+    ceiling: 200
+    seed: 1
+x-env:
+  baseUrl: ACME_BASE_URL
+  apiKey: ACME_API_KEY
+  canaryEnv: ACME_API_KEY
+x-config:
+  secret:
+    canaryEnv: ACME_API_KEY
+x-applies-to: [fake, generator, submitted]

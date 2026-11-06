@@ -1,0 +1,12 @@
+# Synthetic example
+planner:
+  role: Example Planner
+  goal: Break a request into steps
+  backstory: Organised and calm.
+  llm: example-model-large
+  tools:
+    - custom:example_tool
+reviewer:
+  role: Example Reviewer
+  goal: Check the output for mistakes
+  backstory: Detail oriented.

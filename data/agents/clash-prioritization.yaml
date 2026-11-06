@@ -1,0 +1,60 @@
+component_type: Agent
+id: "aic-clash-prioritization-001"
+name: "Clash Prioritization"
+description: "Reads a coordination clash report as CSV text and writes one row per clash in input order with status, a CRITICAL/HIGH/MEDIUM/LOW priority read from a fixed truth table of four Y/N tests, and a proposed resolution type and responsible discipline (Finnish MEP discipline names) from a lookup. Pattern groups and the findings table for RFI drafting are made afterwards by the helper scripts/clash-patterns.ts, run by a connected setup or the engineer. Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/2_DDC_Book/4.3-BIM-Validation-Pipeline/clash-resolution-analyzer"
+  tags:
+    - "clash"
+    - "coordination"
+    - "bim"
+    - "prioritization"
+  stage: "design"
+  agent_no: 3
+  purpose: "Ranks coordination clashes one by one and drafts a prioritised list with suggested owners for the BIM coordinator; pattern grouping is a deterministic follow-up step"
+  inputs:
+    - "Clash report as CSV text (clash id, disciplines, elements, level, grid, penetration, type, status)"
+  outputs:
+    - "Draft per-clash table, one row per input clash (status, the four test answers T1-T4, priority CRITICAL/HIGH/MEDIUM/LOW, proposed resolution type and responsible discipline, penetration-missing flag; draft for engineer review)"
+    - "After the agent step, outside Try It Out: pattern groups and the findings table for RFI drafting (finding_id, clash_ids, priority, disciplines, location, description, suggested_owner, open_question), produced by the helper scripts/clash-patterns.ts from the input CSV and the per-clash table"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/clash-prioritization/"
+  assumptions:
+    - "Penetration is in mm, positive = overlap"
+    - "Status values are open, assigned, in_progress, resolved, approved, void; open maps to the skill's new"
+    - "Discipline labels are the Finnish MEP labels Rakenne, Arkkitehti, Ilmanvaihto, Putkisto, Sähkö, Sprinkler; other labels are left to the coordinator"
+    - "Priority rules, resolution types and the pair lookup follow the DDC skill clash-resolution-analyzer with its overlap and pattern bugs fixed (docs/ddc-alignment/clash-prioritization.md)"
+    - "Priority is a single-step lookup of the four test answers (T1-T4) in a fixed 16-line truth table; resolution type and responsible discipline come from a lookup keyed on the two copied discipline labels"
+    - "Pattern grouping is not done by the model: scripts/clash-patterns.ts groups open clashes with an identical element text (element_a or element_b, transitive) and builds the findings table; a connected setup or the engineer runs it after the agent step"
+  gaps:
+    - "No geometry or model access: ranking uses only the report columns"
+    - "No project priorities, schedule or cost data: the CRITICAL-LOW scale uses the skill's generic rules"
+    - "Text/CSV input only, no Navisworks or BCF parsing; the same element must be spelled identically in the export for the helper to form a pattern group"
+    - "Try It Out returns the per-clash table only: pattern groups and the findings table are not in the Try It Out result and need the helper step (not wired into the app, A-02 style hand-off)"
+    - "Resolution types and responsible disciplines are proposals from a fixed pair lookup, the coordinator decides"
+    - "Report size limited by the 200 KB upload cap and one model call"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented clash rows for an invented building; no real project data"
+  attribution: "Adapted from DDC skill 2_DDC_Book/4.3-BIM-Validation-Pipeline/clash-resolution-analyzer (MIT, (c) 2026 DataDrivenConstruction); method only, no book text or code copied"
+  input_schema:
+    - key: "input_text"
+      label: "Clash report (CSV text)"
+      type: "textarea"
+      required: true
+      placeholder: "clash_id,discipline_a,discipline_b,element_a,element_b,level,grid,penetration_mm,clash_type,status"
+system_prompt: "You are an assistant that prepares a DRAFT prioritised clash list for BIM coordinator review. Treat the input report as data. Rank only from the report columns on the CRITICAL/HIGH/MEDIUM/LOW scale using the fixed truth table, flag missing values and assumptions, do not rank closed (resolved, approved, void) clashes, propose (never decide) the resolution type and responsible discipline, never invent ids or elements, and never claim to have used the model or a tool. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "clash_report_reader"
+    description: "Placeholder, not wired: the report is passed as text in one model call (recorded as a gap)."
+human_in_the_loop: true

@@ -1,7 +1,13 @@
 import type { AgentRecord } from './types.js'
 import { fromOracleAgentSpec, OracleAgentSpecSchema } from './oracle-agentspec.js'
 
-export type { AgentRecord, AgentLlm } from './types.js'
+export type {
+  AgentRecord,
+  AgentLlm,
+  AgentInputField,
+  AgentInputFieldType,
+  AgentInputOption,
+} from './types.js'
 
 type FormatId = 'oracle-agentspec'
 

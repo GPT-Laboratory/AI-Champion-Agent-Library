@@ -1,0 +1,20 @@
+# SYNTHETIC SAMPLE - invented data. Not a real manufacturer data sheet, not a real specification, SYN- codes are invented.
+## CUT SHEET
+product: SynValve BV-22
+type: ball valve
+nominal_diameter_dn: 22
+body_material: brass
+max_working_pressure: 16 bar
+test_pressure: 25 bar
+max_temperature: 110 C
+connection: compression
+seal_material: EPDM
+certification: SYN-CERT-A
+## SPECIFICATION EXCERPT
+req_id,requirement,key,test,required,unit
+S-01,Body material,body_material,eq,brass,
+S-02,Working pressure,max_working_pressure,ge,10,bar
+S-03,Temperature rating,max_temperature,ge,120,C
+S-04,Connection type,connection,eq,press,
+S-05,Test pressure,test_pressure,ge,1.6,MPa
+S-06,Fire class,fire_class,eq,SYN-FR-1,

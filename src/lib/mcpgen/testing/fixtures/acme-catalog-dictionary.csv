@@ -1,0 +1,7 @@
+code,label,type,description
+WG010,Widget code / Tuotekoodi,string,Stable widget code
+WG020,Widget name / Nimi,string,Display name
+WG030,Widget group,string,Product group
+WG040,Quantity on hand,integer,
+WG050,Unit price,number,Price per unit
+WG060,Listed in catalog,boolean,

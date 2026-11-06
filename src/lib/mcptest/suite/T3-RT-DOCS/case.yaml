@@ -1,0 +1,28 @@
+id: T3-RT-DOCS
+tier: 3
+title: Acme widget service described only by prose documentation (synthetic)
+source: invented Acme widget manual with a closed list of documented operations
+auth: none
+transport: stdio
+provides_modalities: [docs]
+pass_thresholds:
+  d1_pass: true
+  d3_score: 3
+scoring_notes: >
+  Every tool must trace to a documented operation (trace table below). The mock answers only the documented
+  routes; any request to another route is a 404 recorded as undocumented, which scores D3 = 0 regardless of D1.
+  Generator subjects get NA_MODALITY because the generator does not accept docs-only input.
+x-upstream:
+  a:
+    datasets: [docs]
+    documentedRoutes: ['/widgets', '/widgets/:id']
+    seed: 1
+x-env:
+  baseUrl: ACME_BASE_URL
+x-config:
+  grounding:
+    traceTable:
+      list_widgets: listWidgets
+      get_widget: getWidget
+    documented: [listWidgets, getWidget]
+x-applies-to: [fake]

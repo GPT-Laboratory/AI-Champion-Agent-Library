@@ -4,12 +4,27 @@ name: "Customer Support Triager"
 description: "Routes incoming customer support tickets to the appropriate team based on content analysis and urgency classification."
 metadata:
   category: "customer-support"
-  github_url: "https://github.com/aic-consortium/customer-support-triager"
+  github_url: "https://github.com/mikauran/AI-Champion-Agent-Library"
   maturity: "production"
   tags:
     - "nlp"
     - "classification"
     - "customer-support"
+  input_schema:
+    - key: "ticket_text"
+      label: "Ticket text"
+      type: "textarea"
+      required: true
+      description: "The customer message to classify and route"
+    - key: "customer_tier"
+      label: "Customer tier"
+      type: "select"
+      required: false
+      options:
+        - value: "standard"
+          label: "Standard"
+        - value: "priority"
+          label: "Priority"
 system_prompt: "You are a customer support triage agent. Analyze incoming tickets and route them to the correct team."
 llm_config:
   name: "gpt-4o"

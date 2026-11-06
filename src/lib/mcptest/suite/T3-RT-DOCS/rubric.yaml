@@ -1,0 +1,15 @@
+D3:
+  title: Grounding in the documented operations
+  scale: "0-3"
+  criteria:
+    - { id: trace_table, text: Each tool maps to a documented operation (listWidgets, getWidget), auto: true }
+    - { id: no_invented_routes, text: The mock log shows no request to an undocumented route, auto: true }
+    - { id: no_extra_tools, text: No search, update or delete tool is offered, auto: true }
+D5:
+  title: Documentation-derived package (manual)
+  scale: "0-3"
+  criteria:
+    - { id: env_config, text: Base URL comes from an environment variable, auto: false }
+checklist_per_subject:
+  - { id: launches, text: Process launches and lists tools, auto: true }
+  - { id: no_hallucinated_ops, text: Tool count equals the documented operation count, auto: true }

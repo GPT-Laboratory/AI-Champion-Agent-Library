@@ -1,0 +1,49 @@
+# Consortium agent catalog entry template (Oracle AgentSpec YAML).
+# Copy to data/agents/<slug>.yaml, replace every TEMPLATE value, then run:
+#   npm run validate-submission -- data/agents/<slug>.yaml
+#   npm run validate-entries -- data/agents/<slug>.yaml
+# This file lives in docs/templates/ on purpose: ingest must not pick it up.
+component_type: Agent
+id: "aic-template-agent-001"          # aic-<slug>-001, unique across the catalog
+name: "TEMPLATE Agent Name"           # short display name
+description: "TEMPLATE: one or two sentences on what the agent reads and what draft it produces."
+metadata:
+  category: "project-management"      # existing category, e.g. mechanical, electrical, plumbing, compliance
+  maturity: "experimental"            # production | beta | experimental
+  github_url: "https://github.com/<owner>/<repo>"  # public repo or documentation link
+  tags:                               # lowercase keywords for search
+    - "template"
+  stage: "design"                     # design | sourcing | manufacturing | site-handover
+  agent_no: 1                         # consortium agent number 1-12 (see docs/consortium-agents-inventory.md)
+  purpose: "TEMPLATE: the one semantic step this agent performs (read, interpret, map or draft) and for whom."
+  inputs:                             # what the user or upstream tool supplies
+    - "TEMPLATE: input 1"
+  outputs:                            # what the agent returns; always a draft
+    - "TEMPLATE: output 1 (draft for engineer review)"
+  data_sources:                       # where facts come from; empty list if none
+    - "TEMPLATE: public or synthetic source"
+  assumptions:                        # what the agent takes for granted
+    - "TEMPLATE: assumption 1"
+  gaps:                               # known limits; key must be present, list may be empty
+    - "TEMPLATE: gap 1"
+  draft_for_review: true              # must be true: every output is reviewed by an engineer
+  sample_data:                        # label the sample data used in the repo
+    kind: "synthetic"                 # public | synthetic
+    label: "TEMPLATE: where the sample comes from and why it is safe to publish"
+  # attribution: "Adapted from DDC skill <name>, MIT, (c) 2026 DataDrivenConstruction"  # only if adapted from a DDC skill
+  input_schema:                       # fields shown in the Try It Out form
+    - key: "input_text"
+      label: "Input text"
+      type: "textarea"
+      required: true
+      placeholder: "TEMPLATE: example input"
+system_prompt: "TEMPLATE: You are an assistant that prepares a DRAFT for engineer review. State what you read, list your assumptions, flag anything uncertain or missing instead of guessing, and never present your output as a final decision."
+llm_config:
+  name: "claude-sonnet-4-6"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:                                # tools the agent may call; use a placeholder entry if none yet
+  - name: "template_tool"
+    description: "TEMPLATE: what the tool does"
+human_in_the_loop: true

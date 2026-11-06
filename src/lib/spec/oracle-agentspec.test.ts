@@ -63,6 +63,18 @@ describe('fromOracleAgentSpec - valid agent', () => {
     const record = fromOracleAgentSpec(parsed.data)
     expect(record.llm.topP).toBe(0.9)
   })
+
+  it('normalizes metadata input_schema fields', () => {
+    if (!parsed.success) throw new Error('Fixture did not parse')
+    const record = fromOracleAgentSpec(parsed.data)
+    expect(record.inputFields).toHaveLength(2)
+    expect(record.inputFields[0]).toMatchObject({
+      key: 'ticket_text',
+      type: 'textarea',
+      required: true,
+    })
+    expect(record.inputFields[1].options).toHaveLength(2)
+  })
 })
 
 describe('fromOracleAgentSpec - minimal agent (no optional fields)', () => {
@@ -100,6 +112,12 @@ describe('fromOracleAgentSpec - minimal agent (no optional fields)', () => {
     if (!parsed.success) throw new Error('Fixture did not parse')
     const record = fromOracleAgentSpec(parsed.data)
     expect(record.requiresHumanApproval).toBe(false)
+  })
+
+  it('returns an empty inputFields array when input_schema is not present', () => {
+    if (!parsed.success) throw new Error('Fixture did not parse')
+    const record = fromOracleAgentSpec(parsed.data)
+    expect(record.inputFields).toEqual([])
   })
 
   it('returns null for category when metadata not present', () => {

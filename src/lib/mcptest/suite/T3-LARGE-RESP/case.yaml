@@ -1,0 +1,24 @@
+id: T3-LARGE-RESP
+tier: 3
+title: Acme large category listing (synthetic)
+source: invented Acme bulk category of 5000 seeded items served by the offline mock
+auth: none
+transport: stdio
+provides_modalities: [spec]
+pass_thresholds:
+  d1_pass: true
+  d4_pct: 80
+  result_cap_present: true
+scoring_notes: >
+  A category holds 5000 items with nested attributes. The tool must bound its response (bytes and item count)
+  and signal truncation or coverage; silent truncation fails. Token budget is approximated as bytes / 4.
+x-upstream:
+  a: { datasets: [bulk], seed: 1 }
+x-env:
+  baseUrl: ACME_BASE_URL
+x-config:
+  large_response:
+    maxBytes: 100000
+    maxItems: 1000
+    category: Bearings
+x-applies-to: [fake, generator, submitted]

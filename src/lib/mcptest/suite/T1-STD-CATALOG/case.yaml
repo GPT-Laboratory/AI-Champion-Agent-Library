@@ -1,0 +1,25 @@
+id: T1-STD-CATALOG
+tier: 1
+title: Acme standard catalog gate (synthetic)
+source: invented Acme catalog served by the offline mock; no real data
+auth: none
+transport: stdio
+provides_modalities: [spec]
+pass_thresholds:
+  d1_pass: true
+  d2_pct: 95
+  d3_score: 3
+scoring_notes: >
+  Tier 1 gate. A subject must launch, answer initialize and tools/list (D1), pass at least 95 percent of the
+  scored calls (D2: one lookup plus five keyword searches) and score 3 on the advisory profile checks (D3).
+  Failing this case disqualifies the subject for the source; Tier 2-4 results are still shown.
+x-upstream:
+  a: { datasets: [catalog], size: 30, maxPageSize: 50, ceiling: 200, seed: 1 }
+x-env:
+  baseUrl: ACME_BASE_URL
+x-config:
+  profile:
+    requiredTools: [lookup_item, search_items]
+    namePattern: '^[a-z][a-z0-9_]*$'
+    requireDescriptions: true
+x-applies-to: [fake, generator, submitted]

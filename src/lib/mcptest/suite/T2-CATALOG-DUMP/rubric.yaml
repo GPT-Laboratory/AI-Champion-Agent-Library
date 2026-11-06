@@ -1,0 +1,16 @@
+D3:
+  title: Dump-backed tool surface (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: columns_exposed, text: Tool parameters reflect the dictionary columns, auto: true }
+    - { id: numeric_params, text: Numeric columns are typed as numbers in the input schema, auto: true }
+    - { id: descriptions, text: Tool descriptions mention units (millimetres, grams), auto: false }
+D5:
+  title: Generated package hygiene (manual)
+  scale: "0-3"
+  criteria:
+    - { id: data_path_env, text: The data path is read from an environment variable, auto: false }
+    - { id: no_embedded_rows, text: No data rows are embedded in the source, auto: false }
+checklist_per_subject:
+  - { id: launches, text: Process launches with the data path set, auto: true }
+  - { id: numeric_compare, text: Width comparisons are numeric, auto: false }

@@ -1,0 +1,127 @@
+swagger: "2.0"
+info:
+  title: Acme Swagger Parts API
+  version: "1.0.0"
+  description: Invented parts catalogue used only as a test fixture.
+host: api.acme.example
+basePath: /v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  AcmeKeyAuth:
+    type: apiKey
+    in: header
+    name: X-Acme-Key
+security:
+  - AcmeKeyAuth: []
+parameters:
+  PageSize:
+    name: size
+    in: query
+    type: integer
+    minimum: 1
+    maximum: 50
+paths:
+  /parts:
+    get:
+      operationId: listParts
+      summary: Search and list parts
+      parameters:
+        - name: q
+          in: query
+          description: Free text query
+          type: string
+        - name: page
+          in: query
+          type: integer
+          minimum: 1
+        - $ref: "#/parameters/PageSize"
+        - name: X-Trace
+          in: header
+          type: string
+      responses:
+        "200":
+          description: A page of parts
+          schema:
+            $ref: "#/definitions/PartPage"
+    post:
+      operationId: createPart
+      summary: Create a part
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/Part"
+      responses:
+        "201":
+          description: Created
+  /parts/{partId}:
+    parameters:
+      - name: partId
+        in: path
+        required: true
+        description: Part code
+        type: string
+    get:
+      operationId: getPart
+      summary: Fetch one part
+      responses:
+        "200":
+          description: The part
+          schema:
+            $ref: "#/definitions/Part"
+    delete:
+      operationId: deletePart
+      summary: Delete a part
+      responses:
+        "204":
+          description: Deleted
+definitions:
+  PartPage:
+    type: object
+    properties:
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/Part"
+      total:
+        type: integer
+  Part:
+    type: object
+    properties:
+      partId:
+        type: string
+        description: Stable part code
+      name:
+        type: string
+        description: Display name
+      category:
+        type: string
+        description: Part group
+      price:
+        type: number
+      inStock:
+        type: boolean
+      status:
+        type: string
+        enum: [active, retired]
+      note:
+        type: string
+        x-nullable: true
+      features:
+        type: array
+        description: Technical features as code and value entries
+        items:
+          $ref: "#/definitions/Feature"
+  Feature:
+    type: object
+    properties:
+      featureCode:
+        type: string
+      value:
+        type: string

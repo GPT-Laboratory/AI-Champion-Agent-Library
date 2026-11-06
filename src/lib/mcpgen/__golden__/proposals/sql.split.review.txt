@@ -1,0 +1,23 @@
+Proposal review (strict mode)
+  proposal file sha256: 4fa1e0f0977828a48e75cac5cc9f654f8709644cd742241bc8b1e726e2aef703
+  baseline fingerprint: 8fc43262e49d20764ada5b7941533ad640fbb608bd3b35b78bcadcfcb18d52eb
+  result: ACCEPTED
+
+Applied ops (1):
+  - split-customer [split_tool]: test
+
+Changes per tool (before -> after):
+  query_customer
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  NEW customers_exact (split)
+    description: Customers whose value equals the text.
+    arguments: (field?, value?, fields?, limit?, offset?)
+    calls: query_customer with match="equals"
+  NEW customers_starting_with (split)
+    description: Customers whose value starts with the text.
+    arguments: (field?, value?, fields?, limit?, offset?)
+    calls: query_customer with match="startsWith"
+
+Tools offered after applying (6): customers_exact, customers_starting_with, describe_acme_schema, query_note_log, query_order, query_order_line
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

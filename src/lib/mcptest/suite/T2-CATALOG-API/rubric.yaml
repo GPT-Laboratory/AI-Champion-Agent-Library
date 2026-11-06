@@ -1,0 +1,21 @@
+D3:
+  title: Fidelity of the tool surface to the catalog contract (advisory)
+  scale: "0-3"
+  criteria:
+    - { id: tool_names, text: Tool names reflect the documented operations, auto: true }
+    - { id: param_names, text: Parameter names match the contract (id, code, query, page, per_page, supplier), auto: true }
+    - { id: multilingual, text: Multilingual name fields are passed through (en, fi, sv), auto: true }
+    - { id: pagination_named, text: Pagination parameters are named and documented in the schema, auto: true }
+    - { id: filters_documented, text: Supplier and attribute filters are described, auto: false }
+D5:
+  title: Generated package hygiene (manual)
+  scale: "0-3"
+  criteria:
+    - { id: env_config, text: Base URL and key come from environment variables, auto: false }
+    - { id: no_literals, text: No URL or secret literal in the package source, auto: false }
+    - { id: typed, text: Type hints present on public functions, auto: false }
+    - { id: tests, text: A test file ships with the package, auto: false }
+checklist_per_subject:
+  - { id: launches, text: Process launches and answers initialize, auto: true }
+  - { id: tools_listed, text: tools/list names lookup, search, supplier and attribute operations, auto: true }
+  - { id: key_from_env, text: Key read from the environment, never from arguments, auto: false }

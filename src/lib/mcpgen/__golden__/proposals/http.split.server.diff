@@ -1,0 +1,127 @@
+@@ baseline line 267 @@
++class _Stop(Exception):
++    """Ends a composite tool early with a ready, caller-safe response."""
+@@ baseline line 268 @@
++    def __init__(self, response):
++        super().__init__("stop")
++        self.response = response
++
++
++def _kw(**kwargs):
++    return {key: value for key, value in kwargs.items() if value is not None}
++
++
++def _tag(result, source):
++    if isinstance(result, dict) and result.get("ok") is True:
++        tagged = dict(result)
++        tagged["source"] = source
++        return tagged
++    return result
++
++
++def _count_of(result):
++    count = result.get("count")
++    if isinstance(count, int):
++        return count
++    return 1 if result.get("result") else 0
++
++
++def _merged(parts):
++    good = [key for key, value in parts.items() if isinstance(value, dict) and value.get("ok") is True]
++    if not good:
++        for value in parts.values():
++            return value
++    return {
++        "ok": True,
++        "sources": parts,
++        "count": sum(_count_of(parts[key]) for key in good),
++        "failed": [key for key in parts if key not in good],
++    }
++
++
++def _sel(ctx, path):
++    """Walk dictionaries and lists along a fixed path. Missing anything gives None. No attribute access."""
++    current = ctx
++    for part in path:
++        if isinstance(part, int):
++            if isinstance(current, list) and -len(current) <= part < len(current):
++                current = current[part]
++            else:
++                return None
++        elif isinstance(current, dict) and part in current:
++            current = current[part]
++        else:
++            return None
++    return current
++
++
++def _as_list(value, cap):
++    return list(value)[:cap] if isinstance(value, list) else []
++
++
++def _step(budget, fn, args, required, soft=False):
++    """One grounded call of a read-only tool function, counted against the total call cap."""
++    for name in required:
++        if args.get(name) is None:
++            if soft:
++                return _no_results("item", "The previous step gave no value for this call.")
++            raise _Stop(_no_results("result", "An earlier step returned nothing to continue with."))
++    budget[0] += 1
++    if budget[0] > budget[1]:
++        raise _Stop(_err("limit", "The call limit of this tool was reached.", "Narrow the request."))
++    result = fn(**{key: value for key, value in args.items() if value is not None})
++    if isinstance(result, dict) and result.get("ok") is True:
++        return result
++    failure = _err(
++        result.get("kind", "internal") if isinstance(result, dict) else "internal",
++        result.get("message", _INTERNAL_MESSAGE) if isinstance(result, dict) else _INTERNAL_MESSAGE,
++        result.get("hint") if isinstance(result, dict) else None,
++    )
++    if soft:
++        return failure
++    raise _Stop(failure)
++
++
+@@ baseline line 390 @@
++def quick_part_search(page: int = 1, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
++    """A short preview page of the part search.
++
++    Args:
++        page: Page number, starting at 1.
++        q: Free text query
++        fields: Optional list of field names to return (at most 12; unknown names are ignored).
++    """
++    try:
++        return _op_search_part(**_kw(page_size=5, page=page, q=q, fields=fields))
++    except _Stop as stop:
++        return stop.response
++    except Exception:
++        return _err("internal", _INTERNAL_MESSAGE)
++
++
++def wide_part_search(page: int = 1, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
++    """A wide page of the part search.
++
++    Args:
++        page: Page number, starting at 1.
++        q: Free text query
++        fields: Optional list of field names to return (at most 12; unknown names are ignored).
++    """
++    try:
++        return _op_search_part(**_kw(page_size=40, page=page, q=q, fields=fields))
++    except _Stop as stop:
++        return stop.response
++    except Exception:
++        return _err("internal", _INTERNAL_MESSAGE)
++
++
++def _op_search_part(page: int = 1, page_size: int = 20, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
+-def search_part(page: int = 1, page_size: int = 20, q: Optional[str] = None, fields: Optional[list[str]] = None) -> dict:
+@@ baseline line 502 @@
++    "quick_part_search": _OUT_ITEM,
++    "wide_part_search": _OUT_ITEM,
+-    "search_part": _OUT_LIST,
+@@ baseline line 510 @@
++    quick_part_search,
++    wide_part_search,
+-    search_part,

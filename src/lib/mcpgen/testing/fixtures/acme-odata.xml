@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:Reference Uri="https://vocab.acme.example/Org.OData.Capabilities.V1.xml">
+    <edmx:Include Alias="Capabilities" Namespace="Org.OData.Capabilities.V1" />
+  </edmx:Reference>
+  <edmx:Reference Uri="https://vocab.acme.example/Org.OData.Core.V1.xml">
+    <edmx:Include Alias="Core" Namespace="Org.OData.Core.V1" />
+  </edmx:Reference>
+  <edmx:DataServices>
+    <Schema Namespace="Acme.Catalog" Alias="C" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EnumType Name="ProductStatus">
+        <Member Name="Draft" Value="0" />
+        <Member Name="Active" Value="1" />
+        <Member Name="Retired" Value="2" />
+      </EnumType>
+      <ComplexType Name="Dimensions">
+        <Property Name="Width" Type="Edm.Double" />
+        <Property Name="Height" Type="Edm.Double" />
+      </ComplexType>
+      <EntityType Name="Product">
+        <Key><PropertyRef Name="ID" /></Key>
+        <Property Name="ID" Type="Edm.Guid" Nullable="false" />
+        <Property Name="Name" Type="Edm.String" Nullable="false" MaxLength="80" />
+        <Property Name="Status" Type="C.ProductStatus" />
+        <Property Name="Price" Type="Edm.Decimal" Precision="12" Scale="2" />
+        <Property Name="Stock" Type="Edm.Int32" />
+        <Property Name="Weight" Type="Edm.Double" />
+        <Property Name="ReleaseDate" Type="Edm.Date" />
+        <Property Name="UpdatedAt" Type="Edm.DateTimeOffset" />
+        <Property Name="Active" Type="Edm.Boolean" />
+        <Property Name="Size" Type="C.Dimensions" />
+        <Property Name="Tags" Type="Collection(Edm.String)" />
+        <Property Name="Photo" Type="Edm.Binary" />
+        <NavigationProperty Name="Supplier" Type="C.Supplier" />
+        <NavigationProperty Name="Reviews" Type="Collection(C.Review)" />
+        <Annotation Term="Core.Description" String="A product in the Acme catalog." />
+      </EntityType>
+      <EntityType Name="SpecialProduct" BaseType="C.Product">
+        <Property Name="Edition" Type="Edm.String" />
+      </EntityType>
+      <EntityType Name="Supplier">
+        <Key><PropertyRef Name="SupplierCode" /></Key>
+        <Property Name="SupplierCode" Type="Edm.String" Nullable="false" />
+        <Property Name="Name" Type="Edm.String" />
+        <Property Name="Country" Type="Edm.String" />
+        <Property Name="Rating" Type="Edm.Int64" />
+      </EntityType>
+      <EntityType Name="OrderLine">
+        <Key>
+          <PropertyRef Name="OrderID" />
+          <PropertyRef Name="LineNumber" />
+        </Key>
+        <Property Name="OrderID" Type="Edm.Int32" Nullable="false" />
+        <Property Name="LineNumber" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Quantity" Type="Edm.Int32" />
+        <Property Name="UnitPrice" Type="Edm.Decimal" />
+        <Property Name="Note" Type="Edm.String" />
+      </EntityType>
+      <EntityType Name="Review">
+        <Key><PropertyRef Name="ReviewID" /></Key>
+        <Property Name="ReviewID" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Text" Type="Edm.String" />
+      </EntityType>
+      <Action Name="ArchiveProduct" IsBound="true">
+        <Parameter Name="product" Type="C.Product" />
+      </Action>
+      <Function Name="TopProducts">
+        <ReturnType Type="Collection(C.Product)" />
+      </Function>
+      <EntityContainer Name="Container">
+        <EntitySet Name="Products" EntityType="C.Product">
+          <NavigationPropertyBinding Path="Supplier" Target="Suppliers" />
+          <Annotation Term="Core.Description" String="Products you can order." />
+        </EntitySet>
+        <EntitySet Name="Suppliers" EntityType="C.Supplier" />
+        <EntitySet Name="OrderLines" EntityType="C.OrderLine">
+          <Annotation Term="Capabilities.FilterRestrictions">
+            <Record>
+              <PropertyValue Property="NonFilterableProperties">
+                <Collection><PropertyPath>Note</PropertyPath></Collection>
+              </PropertyValue>
+            </Record>
+          </Annotation>
+        </EntitySet>
+        <Singleton Name="Company" Type="C.Supplier" />
+        <FunctionImport Name="TopProducts" Function="C.TopProducts" EntitySet="Products" />
+        <ActionImport Name="ResetCatalog" Action="C.ResetCatalog" />
+        <Annotation Term="Org.OData.Authorization.V1.Authorizations">
+          <Collection>
+            <Record Type="Org.OData.Authorization.V1.OAuth2AuthCode">
+              <PropertyValue Property="Name" String="oauth" />
+            </Record>
+          </Collection>
+        </Annotation>
+      </EntityContainer>
+      <Annotations Target="C.Container/Suppliers">
+        <Annotation Term="Core.Description" String="Applied from outside." />
+      </Annotations>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

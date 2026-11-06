@@ -1,0 +1,42 @@
+# Synthetic fixture (Example/Acme). Nodes are deliberately listed out of control-flow order.
+component_type: Flow
+id: example-report-flow
+name: Example Report Flow
+description: Drafts, reviews and publishes an Acme report.
+metadata:
+  category: Reporting
+  tags: [report, flow]
+  github_url: https://example.com/acme/report-flow
+  maturity: production
+start_node:
+  $component_ref: draft
+nodes:
+  - component_type: AgentNode
+    id: review
+    name: Review step
+    agent:
+      component_type: Agent
+      id: reviewer
+      name: Example Reviewer
+      description: Reviews the draft.
+  - component_type: LLMNode
+    id: summarize
+    name: Summarize
+  - component_type: AgentNode
+    id: draft
+    name: Draft step
+    agent:
+      component_type: Agent
+      id: drafter
+      name: Example Drafter
+      description: Writes the first draft.
+  - component_type: FlowNode
+    id: publish
+    name: Publish sub-flow
+control_flow_connections:
+  - from_node: { $component_ref: draft }
+    to_node: { $component_ref: review }
+  - from_node: { $component_ref: review }
+    to_node: { $component_ref: summarize }
+  - from_node: { $component_ref: summarize }
+    to_node: { $component_ref: publish }

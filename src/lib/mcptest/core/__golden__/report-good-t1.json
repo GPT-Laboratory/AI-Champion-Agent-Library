@@ -1,0 +1,264 @@
+{
+  "schema": "mcptest-report/1",
+  "run": {
+    "id": "golden-run",
+    "runtime": "fake",
+    "runtimeLabel": "fake runtime (in-process scorer fixtures)",
+    "platformVersion": "0.1.0",
+    "reruns": 1
+  },
+  "subject": {
+    "id": "fake:good",
+    "kind": "fake",
+    "labelNote": "scorer fixture",
+    "transport": "stdio",
+    "protocolVersion": "2025-11-25",
+    "serverInfo": {
+      "name": "scorer-fixture-good",
+      "version": "0.0.0"
+    },
+    "toolNames": [
+      "assemble_composite",
+      "find_items_by_attribute",
+      "get_widget",
+      "list_category_items",
+      "list_items_by_supplier",
+      "list_widgets",
+      "lookup_item",
+      "lookup_product_by_gtin",
+      "search_items"
+    ]
+  },
+  "cases": [
+    {
+      "caseId": "T1-STD-CATALOG",
+      "tier": 1,
+      "origin": "native",
+      "state": "PASS",
+      "checks": [
+        {
+          "id": "tool_exists_lookup",
+          "kind": "tool_exists",
+          "dimension": "D1",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "tool lookup_item present"
+        },
+        {
+          "id": "tool_exists_search",
+          "kind": "tool_exists",
+          "dimension": "D1",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "tool search_items present"
+        },
+        {
+          "id": "lookup_first_item",
+          "kind": "call",
+          "dimension": "D2",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "ok"
+        },
+        {
+          "id": "search_pump",
+          "kind": "call",
+          "dimension": "D2",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "ok"
+        },
+        {
+          "id": "search_gasket",
+          "kind": "call",
+          "dimension": "D2",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "ok"
+        },
+        {
+          "id": "search_valve",
+          "kind": "call",
+          "dimension": "D2",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "ok"
+        },
+        {
+          "id": "search_sensor",
+          "kind": "call",
+          "dimension": "D2",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "ok"
+        },
+        {
+          "id": "search_bearing",
+          "kind": "call",
+          "dimension": "D2",
+          "status": "PASS",
+          "boundBy": "hint",
+          "reason": "ok"
+        },
+        {
+          "id": "profile.required_tools",
+          "kind": "profile",
+          "dimension": "D3",
+          "status": "PASS",
+          "boundBy": "none",
+          "reason": "all 2 required tools present"
+        },
+        {
+          "id": "profile.naming",
+          "kind": "profile",
+          "dimension": "D3",
+          "status": "PASS",
+          "boundBy": "none",
+          "reason": "all tool names match the pattern"
+        },
+        {
+          "id": "profile.descriptions",
+          "kind": "profile",
+          "dimension": "D3",
+          "status": "PASS",
+          "boundBy": "none",
+          "reason": "all tools have descriptions"
+        },
+        {
+          "id": "profile.server_info",
+          "kind": "profile",
+          "dimension": "D3",
+          "status": "PASS",
+          "boundBy": "none",
+          "reason": "server name and version reported"
+        }
+      ],
+      "dims": {
+        "D1": true,
+        "D2": {
+          "passed": 6,
+          "total": 6,
+          "pct": 100
+        },
+        "D3": {
+          "score": 3,
+          "max": 3,
+          "basis": "advisory"
+        },
+        "D4": null,
+        "D5": {
+          "basis": "not_scored"
+        },
+        "D6": {
+          "tokens": 0,
+          "cost": 0,
+          "llm": false,
+          "reproducibility": {
+            "reruns": 1,
+            "equivalent": true
+          }
+        }
+      },
+      "thresholds": {
+        "d1_pass": {
+          "required": true,
+          "actual": true,
+          "met": true
+        },
+        "d2_pct": {
+          "required": 95,
+          "actual": 100,
+          "met": true
+        },
+        "d3_score": {
+          "required": 3,
+          "actual": 3,
+          "met": true
+        }
+      },
+      "flags": [],
+      "findings": [],
+      "reruns": [
+        {
+          "state": "PASS",
+          "checks": [
+            {
+              "id": "tool_exists_lookup",
+              "status": "PASS"
+            },
+            {
+              "id": "tool_exists_search",
+              "status": "PASS"
+            },
+            {
+              "id": "lookup_first_item",
+              "status": "PASS"
+            },
+            {
+              "id": "search_pump",
+              "status": "PASS"
+            },
+            {
+              "id": "search_gasket",
+              "status": "PASS"
+            },
+            {
+              "id": "search_valve",
+              "status": "PASS"
+            },
+            {
+              "id": "search_sensor",
+              "status": "PASS"
+            },
+            {
+              "id": "search_bearing",
+              "status": "PASS"
+            },
+            {
+              "id": "profile.required_tools",
+              "status": "PASS"
+            },
+            {
+              "id": "profile.naming",
+              "status": "PASS"
+            },
+            {
+              "id": "profile.descriptions",
+              "status": "PASS"
+            },
+            {
+              "id": "profile.server_info",
+              "status": "PASS"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "gate": "pass",
+    "score": {
+      "value": null,
+      "basis": "unweighted mean of Tier 2 and Tier 3 case pass-rates (percent), NA excluded; Tier 1 is a gate; Tier 4 flags only",
+      "casesRun": 0,
+      "casesApplicable": 0
+    },
+    "flags": {
+      "blockers": 0,
+      "warnings": 0
+    },
+    "verdict": "INCOMPLETE"
+  },
+  "pendingHuman": [
+    {
+      "id": "real-fastmcp-run",
+      "reason": "A generated Python server must be scored by a person in an unsandboxed shell; CI never executes generated code.",
+      "command": "npm run generate-mcp -- --adapter openapi src/lib/mcpgen/testing/fixtures/acme-openapi.yaml --out /tmp/acme-server && npm run mcp-test -- --subject cmd:\"/tmp/mcp-venv/bin/python /tmp/acme-server/<server-dir>/server.py\" --case T2-CATALOG-API --reruns 3 --allow-local-exec --out /tmp/report.json"
+    },
+    {
+      "id": "container-run",
+      "reason": "The sandboxed runner image must be built before container runs are possible.",
+      "command": "podman build -t localhost/mcp-test-runner:latest -f Containerfile.mcp-test-runner ."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+Proposal review (strict mode)
+  proposal file sha256: a276df51ed5e6bd14f0642cd74f93d58131b5276ddda7c22d941ab36f770f90c
+  baseline fingerprint: dfdfb94042e3adecd3ede978d10d7fca89a48d71dbd23cf732e7a8f14e7c2bb4
+  result: ACCEPTED
+
+Applied ops (1):
+  - merge-lookup-search [merge_tools]: test
+
+Changes per tool (before -> after):
+  lookup_part_by_id
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  search_part
+    not offered to clients: now a private function used by a merged, split or composite tool (or hidden)
+  NEW part_finder (merge dispatch)
+    description: One entry point for parts: look one up by code, or search by free text. Choose with the operation argument.
+    arguments: (operation, partId?, fields?, page?, page_size?, q?)
+    calls: lookup -> lookup_part_by_id; search -> search_part
+
+Tools offered after applying (2): filter_part_by_features, part_finder
+
+Human review is required before any proposal-assisted package is published. Nothing was published.

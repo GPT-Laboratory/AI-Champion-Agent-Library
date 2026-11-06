@@ -1,0 +1,9 @@
+# SYNTHETIC SAMPLE - invented data for an invented building, not from any real project
+record_id,point,hold_point,status,result,sign_off_by,defect_id,severity,corrective_action,ncr_status,ncr_response
+Q-01,Vesiputkiston painekoe,Y,passed,pass,Insinööri Aalto,-,-,-,-,-
+Q-02,Ilmamäärämittaus huone 2.14,N,pending,-,-,-,-,-,-,-
+Q-03,Eristysresistanssimittaus kaapeli K-7,N,passed,-,-,-,-,-,-,-
+Q-04,Palokatkojen tarkastus,Y,passed,pass,-,-,-,-,-,-
+Q-05,Ilmanvaihtokanavan tiiveysmittaus,N,failed,fail,-,DEF-05,major,-,-,-
+Q-06,Lämmönjakohuoneen painekoe,Y,failed,fail,-,DEF-06,minor,Uusitaan laippaliitos,accepted,-
+Q-07,Pumpun käyttöönottokoe,N,failed,fail,-,DEF-07,major,Vaihdetaan tiiviste,in_remediation,Korjaussuunnitelma toimitettu

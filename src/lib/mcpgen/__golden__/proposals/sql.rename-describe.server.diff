@@ -1,0 +1,21 @@
+@@ baseline line 216 @@
++            "query_tool": "find_customer",
+-            "query_tool": "query_customer",
+@@ baseline line 363 @@
++def find_customer(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, row_limit: Optional[int] = None, limit: int = 20, offset: int = 0) -> dict:
++    """Finds customers by one field. Read-only; at most 100 rows per call.
+-def query_customer(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-    """Query customers by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+@@ baseline line 375 @@
++        row_limit: Rows to return (1 to 100).
++        limit: Alias of row_limit (kept for compatibility).
+-        limit: Rows to return (1 to 100).
+@@ baseline line 379 @@
++        if row_limit is not None:
++            limit = row_limit
+@@ baseline line 590 @@
++    "find_customer": _OUT_LIST,
+-    "query_customer": _OUT_LIST,
+@@ baseline line 600 @@
++    find_customer,
+-    query_customer,

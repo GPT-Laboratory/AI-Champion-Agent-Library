@@ -1,0 +1,21 @@
+id: T4-I18N-CODES
+tier: 4
+title: Acme checksum codes and multilingual text (synthetic)
+source: invented 13-digit codes with a check digit plus the multilingual catalog
+auth: none
+transport: stdio
+provides_modalities: [spec]
+scoring_notes: >
+  An invalid code (wrong check digit) must be rejected before any upstream call: the mock hit counter on the
+  product route stays at zero. Multilingual fields with non-ASCII letters must round-trip intact. Accepting
+  an invalid code is the unvalidated-code warning.
+x-upstream:
+  a: { datasets: [codes, catalog], maxPageSize: 50, ceiling: 200, seed: 1 }
+x-env:
+  baseUrl: ACME_BASE_URL
+x-config:
+  i18n:
+    invalidCode: '9900000010014'
+    validCode: '9900000010010'
+    expectedName: Acme Product 1
+x-applies-to: [fake, generator, submitted]

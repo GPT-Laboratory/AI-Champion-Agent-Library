@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE edmx:Edmx [
+  <!ENTITY xxe SYSTEM "file:///nonexistent/acme-secret.txt">
+]>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Acme.Hostile" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="Thing">
+        <Key><PropertyRef Name="ID" /></Key>
+        <Property Name="ID" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Name" Type="Edm.String" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="&xxe;" />
+      </EntityType>
+      <EntityContainer Name="Container">
+        <EntitySet Name="Things" EntityType="Acme.Hostile.Thing" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

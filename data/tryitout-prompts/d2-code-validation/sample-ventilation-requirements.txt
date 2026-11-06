@@ -1,0 +1,19 @@
+# SYNTHETIC SAMPLE - invented data. The requirement values below are PLACEHOLDERS, not quotes of any building code or regulation. Room ids and SYN- ids are invented.
+## DESIGN EXTRACT
+room_id,key,value,unit
+R101,supply_air,24,l/s
+R101,sfp,1.8,kW/(m3/s)
+R101,room_type,office,
+R102,supply_air,12,l/s
+R102,co2_design,0.09,%
+R103,heat_recovery_eff,70,%
+R103,extract_air,30,l/s
+R104,supply_air,8,l/s
+## REQUIREMENT ROWS
+req_id,room_id,requirement,key,test,required,unit
+Q-01,R101,SYN-REQ Supply air,supply_air,ge,20,l/s
+Q-02,R101,SYN-REQ Specific fan power,sfp,le,2.0,kW/(m3/s)
+Q-03,R102,SYN-REQ Supply air,supply_air,ge,15,l/s
+Q-04,R102,SYN-REQ CO2 design level,co2_design,le,900,ppm
+Q-05,R103,SYN-REQ Heat recovery efficiency,heat_recovery_eff,ge,65,%
+Q-06,R103,SYN-REQ Noise level,noise_level,le,35,dB

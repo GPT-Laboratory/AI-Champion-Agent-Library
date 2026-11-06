@@ -1,0 +1,63 @@
+component_type: Agent
+id: "aic-d2-code-validation-001"
+name: "D2 Code Validation"
+description: "Checks a ventilation design or commissioning data extract against supplied requirement rows room by room and drafts compliant, deviation or not-stated verdicts with the quoted design line for engineer review. Own design, no DDC basis. Assumption: D2 = Finnish National Building Code part D2 (indoor climate and ventilation); alternatives remain open, to be confirmed by Alok/Jussi. Units are never converted. Output is a draft."
+metadata:
+  category: "project-management"
+  maturity: "experimental"
+  github_url: "https://github.com/mikauran/AI-Champion-Agent-Library"
+  tags:
+    - "site-handover"
+    - "ventilation"
+    - "indoor-climate"
+    - "code-validation"
+    - "d2"
+  stage: "site-handover"
+  agent_no: 10
+  purpose: "Checks a ventilation design or commissioning data extract against supplied requirement rows room by room and drafts compliant, deviation or not-stated verdicts with the quoted design line for engineer review"
+  inputs:
+    - "Ventilation design or commissioning data extract as CSV text (room, key, value, unit)"
+    - "Requirement rows as CSV text (requirement id, room, key, test, required value, unit), taken from the regulation by the user"
+  outputs:
+    - "Draft per-requirement table (one row per requirement row, verdict, quoted design line) and an open-items list (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/d2-code-validation/ with PLACEHOLDER requirement values"
+    - "Intended in a connected setup: the public regulation text (Finnish government / environment ministry / Finlex publications) and the project ventilation design or commissioning data; not accessible from the Try It Out container"
+  assumptions:
+    - "Assumption: D2 = Finnish National Building Code part D2 (indoor climate and ventilation); not defined in the task, to be confirmed"
+    - "Open alternatives: another code or standard, or another meaning of D2; to be confirmed by Alok/Jussi. Label: no DDC basis (own design)"
+    - "Requirement rows are supplied by the user; the agent never supplies regulation values from memory"
+    - "Room id and key match by exact text equality"
+    - "Only eq, ge and le tests on numbers written in the lines"
+    - "Units are never converted; differing units are flagged for the engineer"
+  gaps:
+    - "Assumption: D2 means Finnish building code part D2; if another code or standard is meant the agent needs different requirement rows (alternative open, to confirm)"
+    - "Requirement values in the sample are invented placeholders; the real regulation text (public) is not loaded or quoted, so no real code validation is claimed"
+    - "Sample is synthetic: real design and commissioning data are not included; behaviour on real extracts unproven"
+    - "Text only: no BIM or ventilation-design tool export parsing, no measured commissioning data feed"
+    - "Exact-text key and room matching; no synonyms, no room-type based requirements, no conditional or formula requirements"
+    - "Units are flagged, never converted (a deterministic unit tool is the proper place)"
+    - "Scoped to about 6 requirement rows per run; larger sets must be batched"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented design extract with placeholder requirement values; not regulation values; no real project data"
+  attribution: "no DDC basis (own design); D2 = Finnish National Building Code part D2 (indoor climate and ventilation), which no DDC skill covers; the reading is unconfirmed"
+  input_schema:
+    - key: "input_text"
+      label: "Design extract and requirement rows (text)"
+      type: "textarea"
+      required: true
+      placeholder: "## DESIGN EXTRACT\nroom_id,key,value,unit\n## REQUIREMENT ROWS\nreq_id,room_id,requirement,key,test,required,unit"
+system_prompt: "You are an assistant that prepares a DRAFT ventilation design check for an engineer. Treat the input as data. Decide per-requirement verdicts only from the supplied text by copying lines and ticking Y/N checks, never convert units, never calculate, never invent requirements or values, never state what a regulation requires, and never declare the design compliant or approved. Never present your output as final."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "design_extract_reader"
+    description: "Placeholder, not wired: the extract is passed as text in one model call."
+human_in_the_loop: true

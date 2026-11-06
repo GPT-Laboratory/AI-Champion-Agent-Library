@@ -1,0 +1,52 @@
+// Invented Acme Prisma schema.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum OrderState {
+  OPEN
+  SHIPPED
+  CANCELLED @map("cancelled")
+}
+
+/// A customer of Acme.
+model Customer {
+  id         Int      @id @default(autoincrement())
+  name       String   @map("customer_name")
+  segment    String?  @default("standard")
+  email      String   @unique
+  credit     Decimal?
+  profile    Json?
+  tags       String[]
+  createdAt  DateTime @default(now())
+  orders     Order[]
+
+  @@map("customer")
+}
+
+model Order {
+  id         BigInt     @id
+  customerId Int        @map("customer_id")
+  customer   Customer   @relation(fields: [customerId], references: [id])
+  state      OrderState @default(OPEN)
+  total      Float?
+  lines      OrderLine[]
+
+  @@map("orders")
+  @@index([customerId])
+}
+
+model OrderLine {
+  orderId  BigInt
+  lineNo   Int
+  sku      String
+  quantity Int?
+  order    Order @relation(fields: [orderId], references: [id])
+
+  @@id([orderId, lineNo])
+}

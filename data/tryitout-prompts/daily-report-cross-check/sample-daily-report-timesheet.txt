@@ -1,0 +1,18 @@
+# SYNTHETIC SAMPLE - invented data. Trades, counts and hours are invented; no real project, company or person.
+## DAILY REPORT LINES
+line_id,date,trade,reported_workers,reported_hours,delay_hours,delay_reason
+D-01,2026-03-02,formwork,8,64,0,
+D-02,2026-03-02,electrical,4,32,0,
+D-03,2026-03-02,plumbing,5,40,0,
+D-04,2026-03-02,concrete,6,48,0,
+D-05,2026-03-02,hvac,3,24,4,
+D-06,2026-03-02,scaffolding,2,16,0,
+## TIMESHEET EXTRACT
+date,trade,workers,hours
+2026-03-02,formwork,8,64
+2026-03-02,electrical,4,32
+2026-03-02,plumbing,6,40
+2026-03-02,concrete,6,44
+2026-03-02,hvac,3,24
+2026-03-03,scaffolding,2,16
+2026-03-02,crane,1,8

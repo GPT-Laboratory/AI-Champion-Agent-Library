@@ -1,0 +1,58 @@
+component_type: Agent
+id: "aic-etim-classification-repair-001"
+name: "ETIM & Classification Repair"
+description: "Reads a text extract of IFC element properties plus a small ETIM-style class excerpt and drafts one classification repair proposal per element (missing, wrong, unknown or ambiguous class), flagging every uncertain element for engineer review. Own design, inspired by 1_DDC_Toolkit/BIM-Analysis/bim-classification-ai (own design for ETIM-style mapping). Output is a draft."
+metadata:
+  category: "compliance"
+  maturity: "experimental"
+  github_url: "https://github.com/datadrivenconstruction/DDC_Skills_for_AI_Agents_in_Construction/tree/main/1_DDC_Toolkit/BIM-Analysis/bim-classification-ai"
+  tags:
+    - "etim"
+    - "classification"
+    - "ifc"
+    - "bim"
+    - "data-quality"
+  stage: "design"
+  agent_no: 1
+  purpose: "Reads IFC property extracts and a class excerpt and drafts classification repairs for the BIM coordinator"
+  inputs:
+    - "IFC element property extract as CSV text"
+    - "ETIM-style class and feature excerpt (supplied in the same file)"
+  outputs:
+    - "Draft repair table: element, issue, proposed class, confidence, evidence, review flag (draft for engineer review)"
+  data_sources:
+    - "Synthetic sample in data/tryitout-prompts/etim-classification-repair/"
+  assumptions:
+    - "The class excerpt in the input is the only source of valid codes"
+    - "Property names follow IFC conventions"
+    - "Units are metric"
+    - "Label: inspired by 1_DDC_Toolkit/BIM-Analysis/bim-classification-ai (own design for ETIM-style mapping); weak match, own design"
+  gaps:
+    - "No live ETIM release: ETIM is licensed and not redistributed, the sample uses a small synthetic SYN- class list (SYN- prefix on purpose so codes cannot be mistaken for real ETIM codes)"
+    - "No class-register lookup from the container (no network except the LLM proxy): the class excerpt is pasted into the input"
+    - "Input is text extracted from IFC; real IFC parsing is out of scope"
+    - "No feature-value validation against a real class definition"
+    - "One model call, no per-element tool use"
+  draft_for_review: true
+  sample_data:
+    kind: "synthetic"
+    label: "Invented element rows and invented SYN- class codes; no real project or ETIM data"
+  attribution: "inspired by 1_DDC_Toolkit/BIM-Analysis/bim-classification-ai (own design for ETIM-style mapping) (MIT, (c) 2026 DataDrivenConstruction); weak match: the skill assigns UniFormat/MasterFormat/OmniClass codes, this agent repairs a pasted class excerpt; own design, no DDC code or data copied"
+  input_schema:
+    - key: "input_text"
+      label: "IFC property extract and class excerpt"
+      type: "textarea"
+      required: true
+      placeholder: "## CLASS EXCERPT ... ## ELEMENTS (CSV rows)"
+system_prompt: "You are an assistant that prepares a DRAFT classification repair for engineer review. You receive a text extract with a class excerpt and IFC element rows. State what you read, use only class codes that appear in the excerpt, flag anything uncertain or unmatched instead of guessing, and never claim to have queried ETIM, a database or a tool. Never present your output as a final decision."
+# NOTE: llm_config is present for schema shape consistency only. Try It Out
+# ignores it and uses one fixed model (src/lib/server/tryItOutModel.ts).
+llm_config:
+  name: "gpt-4.1-mini"
+  default_generation_parameters:
+    max_tokens: 2048
+    temperature: 0.2
+tools:
+  - name: "classification_lookup"
+    description: "Placeholder, not wired: class search against ETIM data is done by the engineer (recorded as a gap)."
+human_in_the_loop: true

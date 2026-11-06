@@ -1,0 +1,68 @@
+@@ baseline line 198 @@
+-    "note_log": ["note_text", "created"],
+@@ baseline line 205 @@
+-    "note_log": ["note_text", "created"],
+@@ baseline line 238 @@
+-            "name": "note_log",
+-            "label": "note log",
+-            "query_tool": "query_note_log",
+-            "default_fields": ["note_text", "created"],
+-            "fields": [
+-                {
+-                    "name": "note_text",
+-                    "type": "string",
+-                },
+-                {
+-                    "name": "created",
+-                    "type": "string",
+-                },
+-            ],
+-        },
+-        {
+@@ baseline line 323 @@
+-    "note_log": {
+-        "table": "\"note_log\"",
+-        "columns": {
+-            "note_text": "\"note_text\"",
+-            "created": "\"created\"",
+-        },
+-        "order": "rowid",
+-    },
+@@ baseline line 396 @@
+-def query_note_log(field: Optional[str] = None, value: Optional[str] = None, match: str = "equals", fields: Optional[list[str]] = None, limit: int = 20, offset: int = 0) -> dict:
+-    """Query note logs by one field using equals, contains or startsWith matching. Returns at most 100 rows per call.
+-
+-    limit is clamped to the range 1 to 100; larger values are reduced, not rejected.
+-
+-    Give both field and value to filter; give neither to list rows. Call the describe tool to see the fields.
+-
+-    Args:
+-        field: Field to filter on.
+-        value: Value to match (text or number).
+-        match: equals, contains or startsWith (case-insensitive for ASCII letters only).
+-        fields: Optional list of field names to return (at most 12; unknown names are ignored).
+-        limit: Rows to return (1 to 100).
+-        offset: Rows to skip, for paging.
+-    """
+-    try:
+-        problem = _query_problem(_ALLOWED["note_log"], "describe_acme_schema", field, value, match)
+-        if problem is not None:
+-            return problem
+-        sel = _select_fields(fields, _ALLOWED["note_log"], _DEFAULT["note_log"])
+-        limit = _clamp(limit, 1, 100)
+-        offset = _clamp(offset, 0, 1000000000)
+-        rows = _sql_query("note_log", sel, field, match, value, min(limit, MAX_RESPONSE_ITEMS), offset)
+-        if not rows:
+-            return _no_results("note_log", "Try a broader value or another match mode.")
+-        results = rows
+-        return {"ok": True, "results": results, "count": len(results), "offset": offset, "limit": limit}
+-    except _Fail as exc:
+-        return _fail(exc)
+-    except Exception:
+-        return _err("internal", _INTERNAL_MESSAGE)
+-
+-
+@@ baseline line 591 @@
+-    "query_note_log": _OUT_LIST,
+@@ baseline line 601 @@
+-    query_note_log,
