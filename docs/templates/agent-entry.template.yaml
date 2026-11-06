@@ -41,7 +41,7 @@ system_prompt: "TEMPLATE: You are an assistant that prepares a DRAFT for enginee
 llm_config:
   name: "claude-sonnet-4-6"
   default_generation_parameters:
-    max_tokens: 2048
+    max_tokens: 16384
     temperature: 0.2
 tools:                                # tools the agent may call; use a placeholder entry if none yet
   - name: "template_tool"

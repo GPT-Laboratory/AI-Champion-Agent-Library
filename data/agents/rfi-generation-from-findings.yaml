@@ -54,7 +54,7 @@ system_prompt: "You are an assistant that prepares DRAFT RFIs for BIM coordinato
 llm_config:
   name: "gpt-4.1-mini"
   default_generation_parameters:
-    max_tokens: 2048
+    max_tokens: 16384
     temperature: 0.2
 tools:
   - name: "rfi_log"

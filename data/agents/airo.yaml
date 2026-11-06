@@ -4,7 +4,7 @@ name: "AIRO"
 description: "AI Regulatory Observer: identifies the EU and Finnish regulations that apply to an AI-enabled system or built-environment use case, explains the resulting obligations and risks, cross-references requirements across regulatory areas, and gives practical actions with source references. Grounded in a curated legal corpus (26 legal instruments in 9 regulatory areas plus about 200 legal Q&As). English, Finnish and Swedish."
 metadata:
   category: "compliance"
-  github_url: "https://github.com/mikauran/AI-Champion-Agent-Library"
+  github_url: "https://chatgpt.com/g/g-69c51a866c0081918a86d4c0b81c810a-airo"
   link_label: "Open AIRO in ChatGPT"
   maturity: "beta"
   customizable: []

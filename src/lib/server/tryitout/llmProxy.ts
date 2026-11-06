@@ -16,7 +16,7 @@ export interface JobUsage {
 }
 
 export const MAX_PROXY_BODY_BYTES = 1_048_576
-export const MAX_COMPLETION_TOKENS = 4096
+export const MAX_COMPLETION_TOKENS = 16384
 
 const FINISHED_LIMIT = 200
 

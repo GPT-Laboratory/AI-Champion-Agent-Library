@@ -102,7 +102,7 @@ system_prompt: "You are a ..."
 llm_config:
   name: "claude-sonnet-4-6"
   default_generation_parameters:
-    max_tokens: 2048
+    max_tokens: 16384
     temperature: 0.2
 tools:
   - name: "tool_name"
