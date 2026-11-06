@@ -1,0 +1,14 @@
+[Unit]
+Description=Notify about a failed AIC deployment
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+EnvironmentFile=-/etc/autodeploy/notify.env
+ExecStart=/usr/local/bin/autodeploy-notify
+TimeoutStartSec=20s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

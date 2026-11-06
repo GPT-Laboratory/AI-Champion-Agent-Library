@@ -1,0 +1,2 @@
+# Replace this commented example with the deployer's real public signing key.
+# alice@example.com namespaces="git" ssh-ed25519 AAAA_REPLACE_WITH_PUBLIC_KEY

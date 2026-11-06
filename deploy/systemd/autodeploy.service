@@ -1,0 +1,19 @@
+[Unit]
+Description=Deploy signed AIC Agent Library releases
+Wants=network-online.target
+After=network-online.target
+OnFailure=autodeploy-notify.service
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+Environment=HOME=/home/deploy
+Environment=AUTODEPLOY_REPO=/home/deploy/app
+Environment=APP_ENV_FILE=/etc/aic-agent-library/app.env
+Environment=COMPOSE_PROJECT_NAME=aic-agent-library
+EnvironmentFile=/etc/autodeploy/autodeploy.env
+ExecStart=/usr/local/bin/autodeploy
+TimeoutStartSec=30min
+TimeoutStopSec=2min
+KillMode=control-group

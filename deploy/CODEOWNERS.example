@@ -1,0 +1,3 @@
+# Copy to .github/CODEOWNERS after creating this team and granting it write access.
+# Replace the team if reviews should belong to a different owner group.
+* @GPT-Laboratory/deployers

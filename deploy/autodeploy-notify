@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Called by OnFailure. Never send application logs, credentials or email lists.
+set -euo pipefail
+if [[ -z "${NTFY_URL:-}" ]]; then
+  echo 'Autodeploy failed; ntfy is not configured. See journalctl -u autodeploy.service.' >&2
+  exit 0
+fi
+[[ "$NTFY_URL" == https://* ]] || { echo 'NTFY_URL must use HTTPS' >&2; exit 1; }
+args=(--fail --silent --show-error --connect-timeout 5 --max-time 15
+      --header 'Title: AIC autodeploy failed' --header 'Priority: high')
+if [[ -n "${NTFY_TOKEN:-}" ]]; then
+  args+=(--header "Authorization: Bearer $NTFY_TOKEN")
+fi
+printf 'AIC autodeploy failed on %s. Check: journalctl -u autodeploy.service\n' "$(hostname)" |
+  curl "${args[@]}" --data-binary @- -- "$NTFY_URL" >/dev/null

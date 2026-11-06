@@ -1,16 +1,16 @@
-# Usage: podman-compose up -d --build
+# Production deployment: ./deploy.sh
 # Requires the deployment user's active rootless Podman socket; see docs/deploy-runbook.md.
 services:
   aic-agent-library:
     build:
       context: .
       dockerfile: Containerfile
-    image: aic-agent-library:latest
+    image: "${APP_IMAGE:-aic-agent-library:latest}"
     container_name: aic-agent-library
     ports:
       - "3000:3000"
     env_file:
-      - .env
+      - "${APP_ENV_FILE:-.env}"
     environment:
       PORT: "3000"
       ORIGIN: "${ORIGIN:-http://localhost:3000}"
