@@ -1,0 +1,33 @@
+# SYNTHETIC SAMPLE - invented data for an invented building, not from any real project
+# Element facts as the compiler's IFC conversion, geometry engine and location step would write them; SYN designations are invented
+## BLOCKS
+block_id,discipline,tab,title
+K1,IV,2nd floor,Staircase B apartments
+K2,IV,Basement,Storage rooms
+K3,LVV,2nd floor,Staircase B apartments
+## CATALOGUE
+name,unit,ifc_class,geom_family,size_mm,discipline
+SYN Round duct 100,m,IfcDuctSegment,straight,100,IV
+SYN Round duct 250,m,IfcDuctSegment,straight,250,IV
+SYN Bend 100,kpl,IfcDuctFitting,bend,100,IV
+SYN Tee 250,kpl,IfcDuctFitting,tee,250,IV
+SYN Tee 250 reducing,kpl,IfcDuctFitting,tee,250,IV
+SYN Exhaust valve 125,kpl,IfcAirTerminal,solid,125,IV
+SYN Copper pipe 15,m,IfcPipeSegment,straight,15,LVV
+## RULES
+rules:1: system = SYN-SPRINKLER -> exclude (sprinkler pipes are delivered by the sprinkler contractor)
+rules:2: type_name = Temporary duct -> exclude (temporary site ventilation is not in the contract)
+rules:3: Insulation of cold-water pipes is billed by the insulation contractor
+## ELEMENTS
+token,ifc_class,type_name,system,size_mm,geom_family,stated_length_m,geom_centreline_m,geom_check,loc_block
+E-01,IfcDuctSegment,Round duct,EXHAUST-2,250,straight,3.00,3.004,agree,K1
+E-02,IfcDuctSegment,Round duct,EXHAUST-2,100,straight,,2.275,agree,K2
+E-03,IfcDuctFitting,Bend,EXHAUST-2,100,bend,,0.198,agree,K1
+E-04,IfcDuctFitting,Tee,EXHAUST-2,250,tee,,0.640,agree,K1
+E-05,IfcDuctSegment,Temporary duct,EXHAUST-2,250,straight,4.00,4.000,agree,K2
+E-06,IfcPipeSegment,Copper pipe,SYN-SPRINKLER,15,straight,1.80,1.801,agree,K3
+E-07,IfcPipeSegment,Copper pipe,COLD-WATER-1,15,straight,,0,agree,K3
+E-08,IfcPipeSegment,Copper pipe,COLD-WATER-1,15,straight,,2.950,none,K3
+E-09,IfcDuctSegment,Round duct,EXHAUST-2,315,straight,2.10,2.102,agree,K1
+E-10,IfcAirTerminal,Exhaust valve,EXHAUST-2,125,solid,,0.110,agree,K4
+E-11,IfcPipeSegment,Copper pipe,COLD-WATER-1,15,straight,-0.40,0.400,agree,K3

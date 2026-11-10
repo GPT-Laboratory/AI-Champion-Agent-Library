@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-SLUGS="etim-classification-repair qto-normalization clash-prioritization rfi-generation-from-findings product-sourcing-mbom quote-comparison carbon-epd-enrichment cut-sheet-qa spooling-and-cutting d2-code-validation om-completeness bms-digital-twin daily-report-cross-check punch-list-closure-check change-order-consistency-check safety-observation-classification procurement-lead-time-check material-delivery-check qc-inspection-record-check warranty-register-check"
+SLUGS="etim-classification-repair qto-normalization clash-prioritization rfi-generation-from-findings product-sourcing-mbom quote-comparison carbon-epd-enrichment cut-sheet-qa spooling-and-cutting d2-code-validation om-completeness bms-digital-twin daily-report-cross-check punch-list-closure-check change-order-consistency-check safety-observation-classification procurement-lead-time-check material-delivery-check qc-inspection-record-check warranty-register-check ifc-ebom-compiler"
 # Word boundaries keep "resolving" (contains "lvi") from matching.
 # The catalog source name is split so the repository-wide token guard test does not match this file.
 PATTERN='\bMCP|\bLVI|\bST''K|Prysmian|Rakennustieto|\bst''k-|\blvi-'

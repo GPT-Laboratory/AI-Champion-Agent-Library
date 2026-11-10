@@ -132,6 +132,9 @@ Agents 13-16 are chosen from the DDC skills (see docs/ddc-agent-candidates.md); 
 | G-128 | 20 Warranty register check | Claim workflow, claimed and void statuses, exclusions, expiration report, summary counts and spreadsheet export of the source skill are not adopted; coverage text is only tested for presence; no claim or contact advice | tool | open | Phase 35 | open |
 | G-129 | 20 Warranty register check | Warranty periods are copied from the contract, not assumed; whole years only (as in the DDC skill), months must be written as years; calendar days, no working-day calendar | tool | open | Phase 35 | open |
 | G-130 | 20 Warranty register check | Sample is synthetic (invented warranties, contacts and file names); real warranty registers were not used; behaviour on real data unproven; scoped to about 7 rows per run | data | open | Phase 35 | open |
+| G-131 | 2 IFC EBOM Compiler | Class step only, as a text slice: element facts arrive already read (no IFC parsing), exact-match catalogue and scope rules, no derived lines, no block choice; about 10 elements per run | tool | open | ifc-ebom-compiler | open |
+| G-132 | 2 IFC EBOM Compiler | Sample is synthetic; no counted live Try It Out run yet; behaviour on real data unproven | data | open | ifc-ebom-compiler | open |
+
 
 ## Changelog
 
