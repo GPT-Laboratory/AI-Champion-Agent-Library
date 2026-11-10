@@ -73,6 +73,7 @@ Paths are relative to the DDC repository root. "Built on the skill" means the sk
 | material-delivery-check | 1_DDC_Toolkit/Cost-Management/material-delivery-tracker | built on 1_DDC_Toolkit/Cost-Management/material-delivery-tracker (delivery data model, status words, quantity ordered versus received, completeness rule received >= ordered; quantities and dates computed by an own tested helper with the skill's date.today(), status-versus-quantity and late-partial defects fixed; storage planning not adopted; no skill code copied, no book text) |
 | qc-inspection-record-check | 3_DDC_Insights/Safety-Quality/quality-control-workflow | built on 3_DDC_Insights/Safety-Quality/quality-control-workflow (ITP, hold-point, defect and NCR data model, status and severity words and the hold-point sign-off rule; record completeness only, no helper because no date or numeric test is adopted; the skill's string-compared pass/fail, never-set sign-off and date.today() defects not copied; no skill code copied, no book text) |
 | warranty-register-check | 1_DDC_Toolkit/Closeout/warranty-tracker | built on 1_DDC_Toolkit/Closeout/warranty-tracker (warranty data model, warranty type and building system words, expiry status rule with the 90-day window; dates computed by an own tested helper with the skill's date.today(), years*365 drift, unchecked end date and always-empty expiring list defects fixed; claim workflow not adopted; no skill code copied, no book text) |
+| ifc-ebom-compiler | none | No DDC basis (own design), helper scripts/ebom-join.ts; live run pending |
 
 Notes:
 

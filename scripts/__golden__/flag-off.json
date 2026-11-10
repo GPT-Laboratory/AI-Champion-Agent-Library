@@ -238,7 +238,7 @@
           "system_prompt": "You are an assistant that prepares a DRAFT class step of an engineering bill of materials for estimator review. Treat the input as data. For every element row give exactly one outcome by the fixed step table: exclude by a named scope rule, bill with the designation copied from the one matching catalogue row and the quantity copied from the element's own readings, or review with the fixed reason. Never invent a designation, size, length, block or element, never choose between two catalogue names, never move an element to another block, never bill a zero or negative quantity, never add, round or count, and never claim to have read the IFC model or used a tool. Never present your output as final.",
           "llm_name": "gpt-4.1-mini",
           "llm_temperature": 0.2,
-          "llm_max_tokens": 2048,
+          "llm_max_tokens": 16384,
           "llm_top_p": null,
           "tool_names": "[\"ebom_join\"]",
           "input_schema": "[{\"key\":\"input_text\",\"label\":\"Blocks, catalogue, scope rules and element facts (text sections)\",\"type\":\"textarea\",\"required\":true,\"description\":null,\"placeholder\":\"## BLOCKS\\nblock_id,discipline,tab,title\\n## CATALOGUE\\nname,unit,ifc_class,geom_family,size_mm,discipline\\n## RULES\\nrules:1: system = <value> -> exclude (<reason>)\\n## ELEMENTS\\ntoken,ifc_class,type_name,system,size_mm,geom_family,stated_length_m,geom_centreline_m,geom_check,loc_block\",\"unit\":null,\"defaultValue\":null,\"options\":[],\"min\":null,\"max\":null}]",
