@@ -14,10 +14,10 @@ export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -oBatchMode=yes}"
 export DEPLOY_STATE_DIR="${DEPLOY_STATE_DIR:-$HOME/.local/state/aic-deploy}"
 mkdir -p "$DEPLOY_STATE_DIR"
 exec 8>"$DEPLOY_STATE_DIR/autodeploy.lock"
-flock -n 8 || exit 0
+flock -n 8 || { echo 'Autodeploy skipped: autodeploy.lock busy (another poller is running)' >&2; exit 0; }
 # Hold the same lock through fetch, checkout, deployment and state recording.
 exec 9>"$DEPLOY_STATE_DIR/deploy.lock"
-flock -n 9 || exit 0
+flock -n 9 || { echo 'Autodeploy skipped: deploy.lock busy (another deployment is running)' >&2; exit 0; }
 export AIC_DEPLOY_LOCK_FD=9
 stage=fetch
 trap 'echo "Autodeploy failed during $stage; see journalctl -u autodeploy.service" >&2' ERR
@@ -56,7 +56,8 @@ fi
 stage=checkout
 git -c advice.detachedHead=false checkout --detach "$commit"
 stage=deployment
-bash ./deploy.sh
+# Only the shared deployment lock is needed by deploy.sh. Keep fd 8 here.
+bash ./deploy.sh 8>&-
 stage=recording
 printf '%s %s %s\n' "$tag" "$object" "$commit" > "$DEPLOY_STATE_DIR/release.tmp"
 mv "$DEPLOY_STATE_DIR/release.tmp" "$DEPLOY_STATE_DIR/release"

@@ -5,6 +5,7 @@ import fcntl
 from pathlib import Path
 import subprocess
 import tempfile
+import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,18 +131,70 @@ class SignedReleaseTests(unittest.TestCase):
         state.mkdir()
         with (state / 'deploy.lock').open('w') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            self.assertEqual(self.poll().returncode, 0)
+            result = self.poll()
+            self.assertEqual(result.returncode, 0)
+            self.assertIn('Autodeploy skipped: deploy.lock busy', result.stderr)
+            # Failing to take fd 9 must also release the already acquired fd 8.
+            with (state / 'autodeploy.lock').open('a') as poller_lock:
+                fcntl.flock(poller_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         self.assertFalse((self.root / 'deployments').exists())
         self.assertEqual(self.git('branch', '--show-current').stdout.strip(), 'main')
 
     def test_lock_is_held_through_deploy(self):
-        (self.repo / 'deploy.sh').write_text('#!/bin/bash\nif flock -n "$DEPLOY_STATE_DIR/deploy.lock" -c true; then exit 1; fi\nflock -n 9 || exit 1\n')
+        (self.repo / 'deploy.sh').write_text(
+            '#!/bin/bash\nset -eu\n'
+            '[[ "$AIC_DEPLOY_LOCK_FD" == 9 ]]\n'
+            '[[ ! -e /proc/$$/fd/8 ]]\n'
+            'if flock -n "$DEPLOY_STATE_DIR/deploy.lock" -c true; then exit 1; fi\n'
+            'if flock -n "$DEPLOY_STATE_DIR/autodeploy.lock" -c true; then exit 1; fi\n'
+            'flock -n 9 || exit 1\n')
         self.git('add', '.')
         self.git('commit', '-qm', 'Check inherited lock')
         self.git('push', '-q', 'origin', 'main')
         self.tag('v1.0.0')
         result = self.poll()
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_concurrent_poller_is_skipped_and_locks_release_on_exit(self):
+        (self.repo / 'deploy.sh').write_text(
+            '#!/bin/bash\ntouch "$HOME/ready"\n'
+            'while [[ ! -e "$HOME/continue" ]]; do sleep 0.01; done\n'
+            '[[ ! -e "$HOME/fail" ]]\n')
+        self.git('add', '.')
+        self.git('commit', '-qm', 'Deployment barrier')
+        self.git('push', '-q', 'origin', 'main')
+        self.tag('v1.0.0')
+        for failure in [True, False]:
+            with self.subTest(failure=failure):
+                if failure:
+                    (self.root / 'fail').touch()
+                else:
+                    (self.root / 'fail').unlink()
+                    (self.root / 'ready').unlink()
+                    (self.root / 'continue').unlink()
+                with subprocess.Popen(['bash', str(self.script)], env=self.env,
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as active:
+                    try:
+                        deadline = time.monotonic() + 10
+                        while not (self.root / 'ready').exists():
+                            if active.poll() is not None or time.monotonic() > deadline:
+                                self.fail('Autodeploy did not reach deployment barrier')
+                            time.sleep(0.01)
+                        result = self.poll()
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        self.assertIn('Autodeploy skipped: autodeploy.lock busy', result.stderr)
+                        for name in ['autodeploy.lock', 'deploy.lock']:
+                            with (self.root / 'state' / name).open('a') as lock:
+                                with self.assertRaises(BlockingIOError):
+                                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    finally:
+                        (self.root / 'continue').touch()
+                    _, stderr = active.communicate(timeout=15)
+                    self.assertEqual(active.returncode == 0, not failure, stderr)
+                self.assertEqual((self.root / 'state/release').exists(), not failure)
+                for name in ['autodeploy.lock', 'deploy.lock']:
+                    with (self.root / 'state' / name).open('a') as lock:
+                        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
 
 if __name__ == '__main__':
     unittest.main()

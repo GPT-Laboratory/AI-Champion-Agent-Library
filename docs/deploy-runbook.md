@@ -75,7 +75,7 @@ Defaults are read from the code. "unset" means the feature is off or the value c
 | `PI_LLM_PROXY_URL` | `http://aic-agent-library:3000/api/llm/v1` | How Pi containers reach the app (compose pins its own) |
 | `PI_RUNNER_ENABLED` | enabled | Only `false` disables the container runner |
 | `PI_FALLBACK_ENABLED` | enabled | Only `false` stops falling back to the direct call when the engine is unreachable |
-| `PI_RUNNER_IMAGE` | `localhost/pi-runner:latest` | Built from `Containerfile.pi-runner` |
+| `PI_RUNNER_IMAGE` | `localhost/pi-runner:latest` for local development | Production `deploy.sh` builds and exports a unique release tag from `Containerfile.pi-runner` |
 | `PI_RUNNER_SOCKET` | `$XDG_RUNTIME_DIR/podman/podman.sock`, else `/run/podman/podman.sock` | |
 | `PI_RUNNER_NETWORK` | `aic-pi-internal` | Must be an internal network |
 | `PI_RUNNER_ALLOW_OPEN_EGRESS` | `false` | Only the literal `true` allows a non-internal network. Dev only. |
@@ -127,8 +127,7 @@ test -S "$XDG_RUNTIME_DIR/podman/podman.sock" || {
     echo "Missing Podman socket: $XDG_RUNTIME_DIR/podman/podman.sock" >&2
     exit 1
 }
-podman build -t localhost/pi-runner:latest -f Containerfile.pi-runner .
-./deploy.sh                   # preflight, build, replacement, health check, rollback
+bash ./deploy.sh              # builds both release images, validates, replaces, checks, rolls back
 ```
 
 Run the commands above as the same dedicated, non-root user that owns the
@@ -166,18 +165,95 @@ Notes from the files:
 - The app image bakes `db/catalog.db` at build time (`drizzle-kit push --force`, `npm run ingest`, `npm run tryout:configure`, `vite build`, then a `SELECT` sanity check). To pick up new or changed agent YAML, rebuild the image. With no network at build time the image runs BM25-only. The model cache is copied with `db/` (`HF_CACHE_DIR=/app/db/models`).
 - The runtime image runs as user `node`, ships production dependencies only (`npm prune --omit=dev`), and has a `HEALTHCHECK` against `/health`.
 - Compose volumes: `auth-data` (`/app/runtime/auth`, login state), `tryout-sessions` (`/app/runtime/tryitout-work`). The host Podman socket is mounted at `/run/podman/podman.sock`; `userns_mode: keep-id:uid=1000,gid=1000` and `security_opt: label=disable` make it usable. Mounting the socket gives the app control over that host user's containers: use a dedicated user.
-- Compose pins `PI_RUNNER_NETWORK=aic-pi-internal` (an `internal: true` network where the app has the alias `aic-agent-library`), `PI_LLM_PROXY_URL=http://aic-agent-library:3000/api/llm/v1` and `PI_RUNNER_ALLOW_OPEN_EGRESS=false`; `PI_RUNNER_IMAGE`, `PI_RUNNER_FS_MODE` (`tmpfs`) and `PI_FALLBACK_ENABLED` (`true`) are overridable from `.env`.
+- Compose pins `PI_RUNNER_NETWORK=aic-pi-internal` (an `internal: true` network where the app has the alias `aic-agent-library`), `PI_LLM_PROXY_URL=http://aic-agent-library:3000/api/llm/v1` and `PI_RUNNER_ALLOW_OPEN_EGRESS=false`. `deploy.sh` always exports its newly built `PI_RUNNER_IMAGE`, overriding inherited shell values and env-file interpolation values. `PI_RUNNER_FS_MODE` (`tmpfs`) and `PI_FALLBACK_ENABLED` (`true`) remain configurable.
 - Run a single app replica per engine user: the orphan sweep at start-up assumes it. Set `APP_INSTANCE_NAME` (for example `aic-prod`) in `.env` or the compose environment so containers carry a stable owner label; otherwise the hostname changes whenever the container is recreated and leftovers are not swept.
 - Resource limits need cgroup v2 delegation for rootless Podman.
 
 ## 5. Try It Out runtime requirements
 
-- Image `localhost/pi-runner:latest` built on the host; Podman socket enabled for the app's user.
+- A release-specific Pi runner image built by `deploy.sh` in the deployment user's image storage; Podman socket enabled for that same user. No production dependency on `latest`.
 - `OPENAI_API_KEY` set in `.env` (stays in the app; containers get a per-lease token and call the proxy).
 - `npx tsx scripts/smoke-pi-runner.ts` (add `--proxy-host aic-agent-library` once the app is up) shows which `PI_RUNNER_FS_MODE` the host supports. It starts containers: run it only on the intended host.
 - Only agents with `try_it_out_mode = 'runnable'` show the panel; `tryout:configure` sets that for `demo-rfi-triage`. If the engine is unreachable the job falls back to the direct model call (`PI_FALLBACK_ENABLED`).
 - Job metadata is in memory; job links do not survive a restart.
 - With `AGENT_KINDS` on, the job routes (403) and the prompt loaders refuse non-agent kinds.
+
+### Runner image validation and missing-image diagnosis
+
+`deploy.sh` always builds the Pi image before the app image and before stopping
+the existing app. It inspects the runner locally, then runs
+`deploy/validate-runner.cjs` in the new app image with the same socket mount,
+user mapping and SELinux option used by Compose. The validator inspects the exact
+release tag through dockerode and compares its image ID with the CLI's result.
+This catches a missing image, an inaccessible socket, or different image stores.
+After Compose starts the app, the validator runs again inside it, checking its
+actual `PI_RUNNER_IMAGE` and `PI_RUNNER_SOCKET`. A failure triggers rollback and
+does not record a successful deployment. No images are built by normal app runtime.
+These checks establish configuration and API visibility; a real Try It Out smoke
+test is still needed to establish container execution and upstream LLM access.
+
+The service `env_file` supplies container defaults; the Compose `environment`
+mapping overrides those values. For interpolation, `deploy.sh` exports the release
+image in its process environment and passes the selected `APP_ENV_FILE` explicitly
+with `--env-file`. It never sources the file as shell code. Direct Compose runs
+without these exports can select the local `latest` fallback, or a stale value
+from an env file. Such runs are not the production release path.
+
+Run these read-only diagnostics in a direct SSH session as the existing rootless
+Podman owner (example paths below assume `deploy`; adapt to the installed unit).
+Do not dump the complete container environment or rendered Compose config into
+shared logs because they contain secrets.
+
+```bash
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+id
+podman info --format '{{.Store.GraphRoot}}'
+systemctl --user status podman.socket --no-pager
+cat /home/deploy/.local/state/aic-deploy/release
+cat /home/deploy/.local/state/aic-deploy/current
+git -C /home/deploy/app rev-parse HEAD
+podman inspect --format '{{.ImageName}} {{.Image}}' aic-agent-library
+runner_image=$(podman exec aic-agent-library node -p 'process.env.PI_RUNNER_IMAGE || ""')
+printf 'Running app runner image: %s\n' "$runner_image"
+test -n "$runner_image" && podman image inspect --format '{{.Id}}' "$runner_image"
+podman images --filter reference='localhost/pi-runner:*'
+podman exec aic-agent-library node -e '
+  const Docker = require("dockerode");
+  const image = process.env.PI_RUNNER_IMAGE || "localhost/pi-runner:latest";
+  const socketPath = process.env.PI_RUNNER_SOCKET || "/run/podman/podman.sock";
+  console.log({ image, socketPath });
+  new Docker({ socketPath, timeout: 10000 }).getImage(image).inspect()
+    .then(info => console.log({ id: info.Id }))
+    .catch(error => { console.error(error.message); process.exitCode = 1; });'
+```
+
+An administrator can also read the deployment log and installed service settings:
+
+```bash
+sudo journalctl -u autodeploy.service -n 150 --no-pager
+systemctl show autodeploy.service -p User -p Group -p EnvironmentFiles -p ExecStart
+sudo cmp /usr/local/bin/autodeploy /home/deploy/app/deploy/autodeploy
+```
+
+Compare the commit in `release` and `current` with the checkout and the app's
+image tag (a checkout may be ahead after a failed deployment). The image suffix
+is `<commit>-<timestamp>-<pid>`, not the Git version tag; app and runner should
+share that suffix. `latest` in app logs does not match the current deploy script's
+release export. An older signed release, direct Compose/manual startup, or an
+older installed poller is a hypothesis until the above evidence confirms it.
+An image built under root or another rootless user is not available to this user.
+CLI success combined with API failure suggests a different engine/storage or
+socket permissions; the socket-based check is decisive for the application.
+
+Remediation follows the signed-tag process in [autodeploy.md](autodeploy.md):
+merge the fix to `main`, publish a new higher SSH-signed annotated tag, and let
+the existing timer verify and deploy it. Do not move old tags, edit deployment
+state to force a retry, or build a `latest` alias. The poller skips a tag already
+recorded as successful; restarting the poller alone will not redeploy that tag.
+If the required release-specific image is present and only the server launch
+configuration is wrong, correct that configuration during an approved maintenance
+window, then deploy through the same verified release path. This repository
+change does not require reinstalling the root-owned poller or systemd units.
 
 ## 6. Backups
 
@@ -196,7 +272,7 @@ Notes from the files:
 1. Features: unset `AGENT_KINDS`, `MCP_GENERATOR`, `MCP_TESTER`, `MCP_TESTER_RUNTIME` (or set `0`) and restart. Flag-off behaviour is pinned byte-identical by `scripts/flag-off.golden.test.ts`. The `agent_kinds` table is a sidecar and can stay.
 2. Try It Out: `PI_RUNNER_ENABLED=false` (direct call only).
 3. Search: `SEARCH_EMBEDDINGS=off` and restart for keyword-only search.
-4. Code: `git revert <commit>` on the deploy branch, rebuild the image, `podman-compose up -d --build`. Schema changes are additive (`agent_embeddings`, `agent_kinds`, `try_it_out_*` columns); if in doubt delete `db/catalog.db` and re-ingest (it is rebuildable).
+4. Code in signed-tag production: `git revert <commit>` on `main` through review, then publish a new higher signed tag as described in `docs/autodeploy.md`. Deployment builds both images and preserves the prior container for rollback on failure. Keep database changes backward compatible; container rollback does not undo shared volume changes.
 5. Dependencies: see `docs/dependency-health.md` and D-253 in `.planning/AUTONOMOUS-DECISIONS.md` (revert the dependency commit, then `npm ci`).
 6. Leftover containers: with the same `APP_INSTANCE_NAME` the next start sweeps them; otherwise list with `podman ps --filter label=aic.owner` and remove by hand (only on the intended host).
 

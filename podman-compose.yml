@@ -26,6 +26,8 @@ services:
       # the app through the internal network alias.
       PI_LLM_PROXY_URL: "http://aic-agent-library:3000/api/llm/v1"
       PI_RUNNER_ALLOW_OPEN_EGRESS: "false"
+      # deploy.sh exports a release tag and verifies the running app uses it.
+      # The latest fallback is for direct local development Compose runs only.
       PI_RUNNER_IMAGE: "${PI_RUNNER_IMAGE:-localhost/pi-runner:latest}"
       PI_RUNNER_FS_MODE: "${PI_RUNNER_FS_MODE:-tmpfs}"
       PI_FALLBACK_ENABLED: "${PI_FALLBACK_ENABLED:-true}"

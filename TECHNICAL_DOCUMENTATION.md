@@ -451,6 +451,27 @@ Modes `none | external | runnable` per agent. Runnable agents use the job API in
 
 Container files, compose stack, backups, health check and rollback: `docs/deploy-runbook.md`.
 
+`deploy/autodeploy` holds `autodeploy.lock` on fd 8 and `deploy.lock` on fd 9
+from before Git fetch through signed-tag verification, checkout, deployment and
+atomic release recording. It passes only fd 9 to `deploy.sh`, identified by
+`AIC_DEPLOY_LOCK_FD=9`; manual deployments acquire the same `deploy.lock`.
+`deploy.sh` validates the inherited descriptor path and takes the exclusive lock
+before running engine commands. Its `podman` and `podman-compose` wrappers use
+`8>&- 9>&-` on every external engine invocation, including rollback, so persistent
+engine descendants cannot retain either lock. The coordinating shells keep their
+descriptors open throughout the operation; shell exit releases them on success
+or failure. Lock files remain in place. Poller contention logs the busy lock name
+to the journal and skips that run; manual contention fails with an explanation.
+
+Linux regression suites: `python3 scripts/test-autodeploy.py` uses real Git and
+SSH signatures to check release policy, lock handoff, concurrent pollers and
+retry after failure. `python3 scripts/test-deploy.py` uses engine stubs to inspect
+inherited descriptors and verify exclusive locking at every engine call,
+including rollback. Persistent child processes deliberately outlive successful
+and failed deployments while tests verify both locks can be reacquired and a
+subsequent deployment succeeds. Live rootless Podman remains a server acceptance
+check.
+
 ---
 
 ## Configuration Files

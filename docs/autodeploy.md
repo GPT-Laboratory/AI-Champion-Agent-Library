@@ -307,11 +307,39 @@ Aja unit-muutosten jälkeen `sudo systemctl daemon-reload`.
 
 ## Testit ja erot liitteen minimiversioon
 
+### Deployment lock descriptor lifetime
+
+The poller keeps fd 8 (`autodeploy.lock`) and fd 9 (`deploy.lock`) through fetch,
+signature verification, checkout, deployment and release recording. It closes
+fd 8 only in the child launching `deploy.sh`, and hands off fd 9 using
+`AIC_DEPLOY_LOCK_FD=9`. Manual deployments acquire the same deployment lock.
+Every Podman and Compose invocation, including rollback, explicitly closes
+fds 8 and 9 in the engine child. The deployment shells retain the locks until
+they exit, including on failure; persistent engine helpers cannot retain them.
+Lock contention names the busy lock in the journal. Never delete a lock file to
+clear contention: another process may still hold its inode.
+
+Install the updated root-owned poller using the existing installation command;
+updating the checkout alone does not update `/usr/local/bin/autodeploy`. This fix
+prevents new descriptor leaks. For locks already inherited by running processes,
+stop the timer, wait for any active deployment to finish, and arrange a maintenance
+window to restart the affected application and Podman helper processes as their
+owning user. Confirm both locks can be acquired before restarting the timer.
+See `TECHNICAL_DOCUMENTATION.md` for implementation and regression-test details.
+
+Pi runner -imagen puuttumisen ja tagiristiriidan diagnostiikka:
+[deploy-runbook.md](deploy-runbook.md#runner-image-validation-and-missing-image-diagnosis).
+Deploy tarkistaa runnerin julkaisutagin ja image-ID:n sovelluksen Podman-socketin
+kautta ennen kontin vaihtoa ja uudelleen uuden kontin sisällä. Virhe estää
+onnistumismerkinnän ja vaihdon jälkeinen virhe käynnistää palautuksen.
+
 ```sh
 bash -n deploy.sh deploy/autodeploy deploy/autodeploy-notify
 python3 scripts/test-deploy.py
 python3 scripts/test-autodeploy.py
 python3 scripts/test-autodeploy-notify.py
+node scripts/test-validate-runner.cjs
+python3 scripts/test-compose-runner-env.py
 ```
 
 Git-testit käyttävät oikeita paikallisia repoja ja SSH-allekirjoituksia.

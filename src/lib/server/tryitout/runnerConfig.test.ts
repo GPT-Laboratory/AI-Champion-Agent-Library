@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { parseRunnerConfig } from './runnerConfig'
 
 describe('parseRunnerConfig', () => {
+  it('uses the deployment release image from the runtime environment', () => {
+    expect(parseRunnerConfig({ PI_RUNNER_IMAGE: 'localhost/pi-runner:release-123' }).image)
+      .toBe('localhost/pi-runner:release-123')
+  })
   it('returns documented defaults for an empty env', () => {
     expect(parseRunnerConfig({})).toEqual({
       enabled: true,
