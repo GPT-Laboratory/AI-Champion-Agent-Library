@@ -34,15 +34,17 @@ if name in ['podman', 'podman-compose']:
             continue
         if target.endswith(('/deploy.lock', '/autodeploy.lock')):
             inherited.append(str(fd))
-    lock = pathlib.Path(os.environ['HOME']) / '.local/state/aic-deploy/deploy.lock'
-    with lock.open('a') as handle:
-        try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            held = False
-        except BlockingIOError:
-            held = True
+    held = {}
+    for lock_name in ['deploy.lock', 'autodeploy.lock']:
+        lock = pathlib.Path(os.environ['HOME']) / '.local/state/aic-deploy' / lock_name
+        with lock.open('a') as handle:
+            try:
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                held[lock_name] = False
+            except BlockingIOError:
+                held[lock_name] = True
     s.setdefault('lock_checks', []).append([name, inherited, held])
-    if os.environ.get('CHECK_LOCK_LIFETIME') and 'persistent_pid' not in s:
+    if os.environ.get('CHECK_LOCK_LIFETIME') == name and 'persistent_pid' not in s:
         # Deliberately preserve all inherited descriptors, like a daemonizing
         # engine helper. Redirect stdio so capture_output can finish normally.
         child = subprocess.Popen(['/bin/sleep', '60'], close_fds=False,
@@ -89,7 +91,7 @@ sys.exit(code)
 '''
 
 class DeployTests(unittest.TestCase):
-    def run_deploy(self, mode='', existing=True, inherited_lock=False, check_lifetime=False):
+    def run_deploy(self, mode='', existing=True, inherited_lock=False, check_lifetime=''):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             shutil.copytree(ROOT / 'deploy', root / 'deploy')
@@ -123,7 +125,7 @@ class DeployTests(unittest.TestCase):
                                'flock -n 9 || exit 1; export AIC_DEPLOY_LOCK_FD=9; exec bash "$1"',
                                'test', str(root / 'deploy.sh')]
                 if check_lifetime:
-                    env['CHECK_LOCK_LIFETIME'] = '1'
+                    env['CHECK_LOCK_LIFETIME'] = check_lifetime
                     with subprocess.Popen(command, env=env, stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE, text=True) as active:
                         try:
@@ -132,6 +134,14 @@ class DeployTests(unittest.TestCase):
                                 if active.poll() is not None or time.monotonic() > deadline:
                                     self.fail('Deployment did not reach the engine barrier')
                                 time.sleep(0.01)
+                            # Check both parent locks while an engine child is
+                            # paused, before allowing deployment to finish.
+                            for name in ['deploy.lock', 'autodeploy.lock']:
+                                if name == 'autodeploy.lock' and not inherited_lock:
+                                    continue
+                                with (root / '.local/state/aic-deploy' / name).open('a') as lock:
+                                    with self.assertRaises(BlockingIOError, msg=f'{name} released during deployment'):
+                                        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                             contender = subprocess.run(['bash', str(root / 'deploy.sh')],
                                                        env=env, capture_output=True, text=True, timeout=10)
                             self.assertNotEqual(contender.returncode, 0)
@@ -164,16 +174,19 @@ class DeployTests(unittest.TestCase):
                 data['recorded'] = first_recorded if check_lifetime else (root / '.local/state/aic-deploy/current').exists()
                 for engine, inherited, held in data['lock_checks']:
                     self.assertEqual(inherited, [], f'{engine} inherited deployment locks')
-                    self.assertTrue(held, f'{engine} ran without the deployment lock')
+                    self.assertTrue(held['deploy.lock'], f'{engine} ran without the deployment lock')
+                    self.assertEqual(held['autodeploy.lock'], inherited_lock,
+                                     f'{engine}: unexpected parent poller lock state')
                 return result, data
 
     def test_persistent_children_do_not_hold_locks_after_success_or_failure(self):
-        for inherited in [False, True]:
-            for mode in ['', 'build-fail', 'up-fail']:
-                with self.subTest(inherited=inherited, mode=mode):
-                    result, _ = self.run_deploy(mode, existing=False,
-                                               inherited_lock=inherited, check_lifetime=True)
-                    self.assertEqual(result.returncode == 0, mode == '', result.stderr)
+        for engine in ['podman', 'podman-compose']:
+            for inherited in [False, True]:
+                for mode in ['', 'build-fail', 'up-fail']:
+                    with self.subTest(engine=engine, inherited=inherited, mode=mode):
+                        result, _ = self.run_deploy(mode, existing=False,
+                                                   inherited_lock=inherited, check_lifetime=engine)
+                        self.assertEqual(result.returncode == 0, mode == '', result.stderr)
 
     def test_inherited_poller_lock_allows_deployment(self):
         result, data = self.run_deploy(inherited_lock=True)
