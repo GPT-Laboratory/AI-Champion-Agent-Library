@@ -2,6 +2,8 @@
   import '../app.css'
   import ThemeToggle from '$lib/components/ThemeToggle.svelte'
   let { children, data } = $props()
+  // The release tag (vite.config.ts / deploy.sh); empty in tests and builds without tags.
+  const appVersion = import.meta.env.VITE_APP_VERSION
 </script>
 
 <div class="min-h-screen bg-white">
@@ -13,7 +15,12 @@
   </a>
   <header class="bg-gray-100 border-b border-gray-200">
     <nav aria-label="Primary" class="max-w-6xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-      <a href="/catalog" class="text-lg font-semibold text-gray-900">AIC Agent Library</a>
+      <div class="flex items-baseline gap-2">
+        <a href="/catalog" class="text-lg font-semibold text-gray-900">AIC Agent Library</a>
+        {#if appVersion}
+          <span class="text-xs text-gray-600" data-testid="app-version">{appVersion}</span>
+        {/if}
+      </div>
       {#if data.compareEnabled}
         <a href="/compare" class="text-sm font-medium text-gray-900 underline">Compare agents</a>
       {/if}

@@ -1,0 +1,4 @@
+# Try It Out example for product-sourcing-mbom: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (26-01); the file is the agent's synthetic sample.
+task: Match each E-BOM line to the catalog excerpt and draft the M-BOM
+file: sample-ebom-catalog.txt

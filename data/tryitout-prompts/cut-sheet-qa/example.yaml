@@ -1,0 +1,4 @@
+# Try It Out example for cut-sheet-qa: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (27-01); the file is the agent's synthetic sample.
+task: Check the cut sheet against each specification requirement and draft the verdicts
+file: sample-cutsheet-spec.txt

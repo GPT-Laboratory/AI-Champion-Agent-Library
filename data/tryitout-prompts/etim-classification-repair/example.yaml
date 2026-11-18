@@ -1,0 +1,4 @@
+# Try It Out example for etim-classification-repair: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (25-02); the file is the agent's synthetic sample.
+task: Draft classification repairs for the elements in the attached file
+file: sample-ifc-properties.txt

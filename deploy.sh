@@ -33,7 +33,9 @@ export PI_RUNNER_IMAGE="localhost/pi-runner:$release"
 podman build -t "$PI_RUNNER_IMAGE" -f Containerfile.pi-runner .
 runner_id=$(podman image inspect --format '{{.Id}}' "$PI_RUNNER_IMAGE")
 [[ -n "$runner_id" ]] || fail 'Runner image inspection returned no image ID'
-podman build -t "$APP_IMAGE" -f Containerfile .
+# The version in the top bar: the release tag (autodeploy checks out the signed tag), empty without tags.
+app_version=$(git describe --tags 2>/dev/null || true)
+podman build -t "$APP_IMAGE" --build-arg APP_VERSION="$app_version" -f Containerfile .
 # Parse the file using Podman itself; never source production secrets as shell code.
 validator=$(cat deploy/validate-env.cjs)
 podman run --rm --network none --env-file "$APP_ENV_FILE" --entrypoint node "$APP_IMAGE" -e "$validator"
