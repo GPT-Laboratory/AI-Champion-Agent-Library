@@ -124,7 +124,7 @@
 
           {#if tryItOutOpen}
             <div id="try-it-out-panel" class="mt-4">
-              <TryItOutPanel agentId={agent.slug} />
+              <TryItOutPanel agentId={agent.slug} example={data.tryItOutExample ?? null} />
             </div>
           {/if}
         </div>

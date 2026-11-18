@@ -38,7 +38,7 @@ export const AgentIdSchema = z
   .max(64)
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
 
-const PROMPTS_DIR = process.env.TRYITOUT_PROMPTS_DIR ?? join(process.cwd(), 'data', 'tryitout-prompts')
+export const PROMPTS_DIR = process.env.TRYITOUT_PROMPTS_DIR ?? join(process.cwd(), 'data', 'tryitout-prompts')
 
 // Threat T3-6: defensively cap the untrusted input text embedded in the
 // composed prompt so a store populated by any other path still cannot

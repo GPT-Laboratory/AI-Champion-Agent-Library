@@ -1,0 +1,10 @@
+# Try It Out example for ifc-ebom-compiler: the only place the default task, file and saved result are named.
+# Loaded by src/lib/server/tryItOutExample.ts. The result is shown without a model call.
+task: >-
+  Compile the attached upload (sections ## BLOCKS, ## CATALOGUE, ## RULES and ## ELEMENTS) into
+  E-BOM class rows, review items and rules not tied to data, following the skill.
+file: sample-ifc-elements.txt
+result: example-result.md
+# example-result.md is also the answer key of scripts/ddc-alignment.ifc-ebom-compiler.test.ts. After the first
+# counted live run, its output may replace it only if that test still passes; then change this label to say so.
+result_label: Expected result for the example input, from the ebom-join helper's answer key. Not a model run.
