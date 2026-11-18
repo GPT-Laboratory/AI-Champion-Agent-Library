@@ -111,3 +111,25 @@ Job id, model, total tokens, requests, estimated cost, input label (public/synth
 | Proxy 429 `job token budget exceeded` | Raise `PI_JOB_TOKEN_BUDGET` or shorten the input |
 | No Pi tool lines in events, usage 404 | Fell back to the direct model call; the run is NOT countable |
 | Usage 404 but Pi ran | Image built before the usage route, or `TRYITOUT_USAGE_ENDPOINT` not set; rebuild the tagged image |
+
+## 6. Smoke test with an LLM judge (ifc-ebom-compiler)
+
+`scripts/smoke.ifc-ebom-compiler.ts` checks one live run of the agent on its Try It Out example (`data/tryitout-prompts/ifc-ebom-compiler/example.yaml`: task, sample file, answer key). It uses the app as in Option A or B, and the harness above for the run (budget guard, ledger).
+
+1. **Gate 1, deterministic (no model):** `ebom-join` contract and cell comparison, then the review items, the rules not tied to data, the Totals line and the closing line against the helper and the answer key.
+2. **Gate 2, LLM judge:** a second model call grades only what free text can get wrong: no arithmetic of its own, nothing beyond the required sections, no claim of being final, input treated as data. Every fail must quote the output. A quote that is not in the output is reported as a judge error.
+
+The judge needs `OPENAI_API_KEY` in the shell (and `OPENAI_BASE_URL` for Azure OpenAI v1). Each judge call gets its own ledger row.
+
+```bash
+# Before trusting a judge model: it must pass the answer key and fail four hand-made bad outputs (5 judge calls).
+npx tsx --env-file=.env scripts/smoke.ifc-ebom-compiler.ts --calibrate --judge-model <model>
+
+# One run on the example, then both gates. --case injection hides an instruction in one element's type_name.
+npx tsx --env-file=.env scripts/smoke.ifc-ebom-compiler.ts --judge-model <model> [--case injection]
+
+# Check an output you already have (e.g. downloaded from Try It Out); --no-judge = gate 1 only, no key, no cost.
+npx tsx scripts/smoke.ifc-ebom-compiler.ts --result path/to/result.md --no-judge
+```
+
+The default judge model is `JUDGE_MODEL`, else the agent's own model (`gpt-4.1-mini`); a model judging its own output is weak evidence, so prefer a different, stronger one. Use `--judge-temperature none` for models that reject a temperature. A run writes `smoke-report.json` next to the artifact in `.tryitout-runs/<jobId>/`. Exit codes: 0 pass, 1 a check failed, 2 usage or no key, 3 budget refusal, 5 run or API error. The offline tests (`scripts/smoke.ifc-ebom-compiler.test.ts`, in `npm test`) use a fake judge and a fake run.
