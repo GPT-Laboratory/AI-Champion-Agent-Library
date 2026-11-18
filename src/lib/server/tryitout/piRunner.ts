@@ -18,6 +18,7 @@ import { createCompletionTracker, createJsonlParser, createPiEventMapper } from 
 import { writeArtifactZip } from './artifact'
 import { logDetail, publicErrorMessage } from './redact'
 import { localMcpAgent, type LocalMcpAgent } from '../localMcp/agents'
+import { applyPostRunCheck } from './postRunCheck'
 
 /** Names only the input files that were actually staged, so Pi never tries to read a missing upload. */
 export function piInstruction(hasUpload: boolean): string {
@@ -111,6 +112,7 @@ export async function runJobInContainer(jobId: string): Promise<void> {
   let timer: ReturnType<typeof setTimeout> | undefined
   let proxyJobBegun = false
   const jobDir = `${WORK_ROOT_IN_CONTAINER}/${jobId}`
+  let upload: Uint8Array | null = null
 
   try {
     const containerId = lease.containerId
@@ -127,7 +129,8 @@ export async function runJobInContainer(jobId: string): Promise<void> {
       { path: `${jobId}/input/task.txt`, content: job.task },
     ]
     if (job.fileName !== null) {
-      staged.push({ path: `${jobId}/input/upload.txt`, content: new Uint8Array(await readFile(inputFilePath(jobId))) })
+      upload = new Uint8Array(await readFile(inputFilePath(jobId)))
+      staged.push({ path: `${jobId}/input/upload.txt`, content: upload })
     }
     await bounded(runtime.putFiles(containerId, WORK_ROOT_IN_CONTAINER, staged), ENGINE_CALL_TIMEOUT_MS)
 
@@ -219,6 +222,13 @@ export async function runJobInContainer(jobId: string): Promise<void> {
       setStatus(jobId, 'failed', 'agent finished without producing output')
       return
     }
+    // Optional per-agent deterministic check (docs/tryitout-post-run-check.md); adds one report file at most.
+    const check = applyPostRunCheck(jobId, slug, {
+      task: job.task,
+      upload: upload === null ? null : new TextDecoder('utf-8').decode(upload),
+      files,
+    })
+    if (check) files = { ...files, [check.name]: check.bytes }
     await writeArtifactZip(jobId, files)
     pushEvent(jobId, 'agent settled (clean exit)')
     setStatus(jobId, 'succeeded')
