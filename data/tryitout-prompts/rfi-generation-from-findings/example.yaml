@@ -1,0 +1,4 @@
+# Try It Out example for rfi-generation-from-findings: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (32-02); the file is the agent's synthetic sample.
+task: Draft one RFI per finding in the attached table
+file: sample-findings.txt

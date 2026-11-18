@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest'
-import { mkdtempSync, mkdirSync, readdirSync, existsSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readdirSync, readFileSync, existsSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { EXAMPLE_FILE, MAX_EXAMPLE_BYTES, loadTryItOutExample } from './tryItOutExample'
@@ -73,12 +73,38 @@ describe('shipped examples', () => {
   const shipped = join(process.cwd(), 'data', 'tryitout-prompts')
   const slugs = readdirSync(shipped).filter((s) => existsSync(join(shipped, s, EXAMPLE_FILE)))
 
-  it('at least ifc-ebom-compiler ships one', () => {
-    expect(slugs).toContain('ifc-ebom-compiler')
+  // Batch 1: agents 1-8 of the runnable list (scripts/set-try-it-out-mode.ts) plus ifc-ebom-compiler.
+  const BATCH_1 = [
+    'etim-classification-repair', 'qto-normalization', 'clash-prioritization', 'rfi-generation-from-findings',
+    'product-sourcing-mbom', 'quote-comparison', 'carbon-epd-enrichment', 'cut-sheet-qa', 'ifc-ebom-compiler',
+  ]
+
+  it('every agent of batch 1 ships one', () => {
+    for (const slug of BATCH_1) expect(slugs).toContain(slug)
   })
 
   it.each(slugs)('%s/example.yaml loads, and its files are in the folder', async (slug) => {
     const ex = await loadTryItOutExample(slug, shipped)
     expect(ex).not.toBeNull()
+  })
+
+  it.each(slugs)('%s: the default file is the folder\'s synthetic sample', async (slug) => {
+    const ex = (await loadTryItOutExample(slug, shipped))!
+    if (ex.file) {
+      expect(ex.file.name).toMatch(/^sample-[a-z0-9-]+\.txt$/)
+      expect(ex.file.text.split('\n')[0]).toMatch(/synthetic/i)
+    }
+  })
+
+  it('every file an example names reaches the app image (.containerignore drops *.md unless re-included)', async () => {
+    const ignore = readFileSync(join(process.cwd(), '.containerignore'), 'utf8').split('\n').map((l) => l.trim())
+    for (const slug of slugs) {
+      const ex = (await loadTryItOutExample(slug, shipped))!
+      const yaml = readFileSync(join(shipped, slug, EXAMPLE_FILE), 'utf8')
+      const named = [ex.file?.name, /^result:\s*(\S+)/m.exec(yaml)?.[1]].filter((n): n is string => !!n)
+      for (const n of named.filter((x) => x.endsWith('.md'))) {
+        expect(ignore, `${slug}/${n} would be left out of the image`).toContain('!data/tryitout-prompts/**/*.md')
+      }
+    }
   })
 })

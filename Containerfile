@@ -30,6 +30,10 @@ COPY . .
 # into the runtime image. If the builder has no network, ingest warns and the
 # image runs BM25-only search (by design).
 ENV HF_CACHE_DIR=/app/db/models
+# Version shown in the top bar (deploy.sh passes `git describe --tags`; this context has no .git). Baked in by
+# vite build as import.meta.env.VITE_APP_VERSION; empty = no version shown.
+ARG APP_VERSION=
+ENV VITE_APP_VERSION=$APP_VERSION
 # The database directory is excluded from the build context. Create it before
 # running Drizzle; drizzle-kit currently reports a missing directory without a
 # failing exit code, so the final query also guards against an empty database.
