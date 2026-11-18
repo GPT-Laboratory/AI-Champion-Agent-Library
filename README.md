@@ -218,7 +218,7 @@ Prerequisite: `src/routes/api/tryitout/jobs/jobs.test.ts` reads a pre-built `./d
 | `src/lib/flags.ts` | Feature flag readers |
 | `scripts/` | CLIs (`ingest`, `set-try-it-out-mode`, `validate-submission`, `generate-mcp`, `mcp-test`), scale-fixture generator, `smoke-pi-runner.ts` and `probe-openai-model.ts` (manual, not in any script) |
 | `drizzle/schema.ts` | Tables `agents`, `agent_embeddings`, `agent_kinds` |
-| `data/` | `agents/` (YAML source), `tryitout-prompts/`, `try-out/` |
+| `data/` | `agents/` (YAML source), `tryitout-prompts/` (per agent: `SKILL.md`, sample, optional `example.yaml`, see `docs/tryitout-example.md`), `try-out/` |
 | `fixtures/submissions/` | Sample submissions for `validate-submission` |
 | `docs/` | Design docs, research, `deploy-runbook.md`, `dependency-health.md` |
 | `.planning/` | GSD planning state, per-phase plans, verification and human-UAT checklists, autonomous-run decisions |

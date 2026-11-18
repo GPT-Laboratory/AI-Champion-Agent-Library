@@ -5,6 +5,8 @@ import { parseJsonArray, parseJsonStringArray } from '$lib/safeJson.js'
 import { isMissingTableError } from '$lib/dbErrors.js'
 import type { PageServerLoad } from './$types'
 import { warmForSession } from '$lib/server/tryitout/service'
+import { loadTryItOutExample } from '$lib/server/tryItOutExample'
+import type { TryItOutExample } from '$lib/tryItOutExample'
 import { related } from '$lib/server/search/index.js'
 import { sessionKey } from '$lib/server/tryitout/session'
 import { agentKindsEnabled } from '$lib/flags.js'
@@ -49,6 +51,16 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies, getCl
     void warmForSession(sessionKey({ locals, cookies, url }), row.slug, clientKey).catch(() => {})
   }
 
+  // Optional example (data/tryitout-prompts/<slug>/example.yaml). Best effort: a broken example must never break the page.
+  let tryItOutExample: TryItOutExample | null = null
+  if (effectiveMode === 'runnable') {
+    try {
+      tryItOutExample = await loadTryItOutExample(row.slug)
+    } catch (err) {
+      console.warn('Try It Out example not loaded:', (err as Error).message)
+    }
+  }
+
   // DISC-01: up to 4 related agents. Best effort; a failure must never break the detail page.
   let relatedAgents: { slug: string; title: string; summary: string; category: string | null }[] = []
   try {
@@ -81,6 +93,8 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies, getCl
     },
     related: relatedAgents,
     openTryOut: url?.searchParams.get('tryout') === '1',
+    // Only agents that ship an example get the key; every other page's data is unchanged.
+    ...(tryItOutExample ? { tryItOutExample } : {}),
     ...mcpGeneratorData(),
     ...mcpTesterData(),
   }

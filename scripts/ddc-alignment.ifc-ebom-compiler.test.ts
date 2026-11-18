@@ -22,38 +22,10 @@ const REVIEW_HEADER = '| where | members | kind | what |\n|---|---|---|---|'
 const TOTALS_LINE = 'Metres and pieces per block and designation, and stick rounding: to compute (tool).'
 const CLOSING_LINE = 'Draft for estimator review. Synthetic input; element facts were read from the model by the pipeline, designations come only from the supplied catalogue, and totals are computed by a tool, not by this agent.'
 
-// Answer key for the sample: the output SKILL.md asks for, written out by hand.
-const KEY_RESULT = `## E-BOM class rows
-${ROWS_HEADER}
-| E-01 | IfcDuctSegment | bill | K1 | SYN Round duct 250 | m | 3.00 | stated |
-| E-02 | IfcDuctSegment | bill | K2 | SYN Round duct 100 | m | 2.275 | measured:geom |
-| E-03 | IfcDuctFitting | bill | K1 | SYN Bend 100 | kpl | 1 | count |
-| E-04 | IfcDuctFitting | review | K1 | - | - | - | multi-catalogue |
-| E-05 | IfcDuctSegment | exclude | K2 | - | - | - | rules:2 |
-| E-06 | IfcPipeSegment | exclude | K3 | - | - | - | rules:1 |
-| E-07 | IfcPipeSegment | review | K3 | - | - | - | zero-qty |
-| E-08 | IfcPipeSegment | review | K3 | - | - | - | length-unsettled |
-| E-09 | IfcDuctSegment | review | K1 | - | - | - | no-catalogue |
-| E-10 | IfcAirTerminal | review | K4 | - | - | - | loc-review |
-| E-11 | IfcPipeSegment | review | K3 | - | - | - | zero-qty |
-
-## Review items
-${REVIEW_HEADER}
-| K1 | 1 | unsettled | E-04: two or more catalogue names fit |
-| K3 | 1 | bad_data | E-07: zero or negative length |
-| K3 | 1 | estimate | E-08: no stated length and the geometry readings do not agree |
-| K1 | 1 | unsettled | E-09: no catalogue name for this class, family and size |
-| class | 1 | unsettled | E-10: block not settled by the location step |
-| K3 | 1 | bad_data | E-11: zero or negative length |
-
-## Rules not tied to data
-rules:3: Insulation of cold-water pipes is billed by the insulation contractor
-
-## Totals
-${TOTALS_LINE}
-
-${CLOSING_LINE}
-`
+// Answer key for the sample: the output SKILL.md asks for, written out by hand. It lives in the agent folder because
+// Try It Out also shows it as the saved example result (example.yaml); this test is what keeps it correct.
+const example = parseYaml(readFileSync(`${dir}/example.yaml`, 'utf8'))
+const KEY_RESULT = readFileSync(`${dir}/example-result.md`, 'utf8')
 
 const KEY_STEPS = [7, 9, 5, 4, 1, 1, 8, 10, 3, 2, 6] // E-01 .. E-11
 
@@ -90,6 +62,14 @@ describe('ifc-ebom-compiler alignment', () => {
     expect(`${render(rows, u.untiedRules)}\n\n${CLOSING_LINE}\n`).toBe(KEY_RESULT)
     expect(rows.map((r) => r.step)).toEqual(KEY_STEPS)
     expect([...new Set(KEY_STEPS)].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  })
+
+  it('the Try It Out example uses the sample and the answer key, and its label says the result is not a model run', () => {
+    expect(example.file).toBe('sample-ifc-elements.txt')
+    expect(example.result).toBe('example-result.md')
+    for (const s of ['## BLOCKS', '## CATALOGUE', '## RULES', '## ELEMENTS']) expect(example.task).toContain(s)
+    expect(example.result_label).toMatch(/helper/i)
+    expect(example.result_label).toMatch(/not a model run/i)
   })
 
   it('the key passes the CLI check; a wrong cell or an invented name is reported', () => {

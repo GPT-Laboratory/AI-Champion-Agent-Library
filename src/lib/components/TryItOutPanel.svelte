@@ -3,14 +3,36 @@
   import { submitJob, subscribeProgress, downloadArtifact } from '$lib/tryItOut'
   import type { JobEvent, JobStatus } from '$lib/tryItOut'
   import { readJobIdFromUrl, writeJobIdToUrl, clearJobIdFromUrl } from '$lib/tryItOutSession'
+  import type { TryItOutExample } from '$lib/tryItOutExample'
 
   interface Props {
     agentId?: string
+    /** The agent's example (data/tryitout-prompts/<slug>/example.yaml), if it ships one. */
+    example?: TryItOutExample | null
   }
-  let { agentId = 'demo-agent' }: Props = $props()
+  let { agentId = 'demo-agent', example = null }: Props = $props()
 
-  let task = $state('')
-  let file = $state<File | null>(null)
+  // With an example, the task starts prefilled and the example file starts attached; the visitor can edit,
+  // remove or replace both. Read once at mount (untrack): the example is fixed for the page.
+  function exampleFile(): File | null {
+    const f = untrack(() => example?.file)
+    return f ? new File([f.text], f.name, { type: 'text/plain' }) : null
+  }
+  let task = $state(untrack(() => example?.task ?? ''))
+  let file = $state<File | null>(exampleFile())
+  let usingExampleFile = $state(untrack(() => example?.file != null))
+  let fileInputEl: HTMLInputElement | null = $state(null)
+
+  function useExampleFile() {
+    file = exampleFile()
+    usingExampleFile = file !== null
+    if (fileInputEl) fileInputEl.value = '' // the native input must not keep showing another file
+  }
+
+  function removeExampleFile() {
+    file = null
+    usingExampleFile = false
+  }
   let status = $state<JobStatus | 'idle'>('idle')
   let events = $state<JobEvent[]>([])
   let error = $state<string | null>(null)
@@ -125,9 +147,31 @@
   <input
     id="tryitout-file"
     type="file"
+    bind:this={fileInputEl}
     class="block w-full rounded border border-gray-500 bg-white px-3 py-2 text-sm text-gray-600 focus-visible:ring-2 focus-visible:ring-indigo-600"
-    onchange={(e) => (file = e.currentTarget.files?.[0] ?? null)}
+    onchange={(e) => {
+      file = e.currentTarget.files?.[0] ?? null
+      usingExampleFile = false
+    }}
   />
+
+  {#if example?.file}
+    <p class="mt-2 text-sm text-gray-700">
+      {#if usingExampleFile}
+        Attached: <span class="font-mono">{example.file.name}</span> (example input)
+        <button type="button" onclick={removeExampleFile} class="ml-2 rounded text-indigo-600 hover:underline focus-visible:ring-2 focus-visible:ring-indigo-600">Remove</button>
+      {:else}
+        <button type="button" onclick={useExampleFile} class="rounded text-indigo-600 hover:underline focus-visible:ring-2 focus-visible:ring-indigo-600">Use example file</button>
+      {/if}
+    </p>
+    <details class="mt-3">
+      <summary class="cursor-pointer text-sm font-medium text-indigo-600">View example input ({example.file.name})</summary>
+      <pre
+        tabindex="0"
+        aria-label="Example input"
+        class="mt-2 max-h-64 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 font-mono text-xs text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{example.file.text}</pre>
+    </details>
+  {/if}
 
   <button
     type="button"
@@ -137,6 +181,17 @@
   >
     {inFlight ? 'Running…' : 'Run'}
   </button>
+
+  {#if example?.result}
+    <details class="mt-4">
+      <summary class="cursor-pointer text-sm font-medium text-indigo-600">Show example result (no model call)</summary>
+      <p class="mt-2 text-xs text-gray-600">{example.result.label}</p>
+      <pre
+        tabindex="0"
+        aria-label="Example result"
+        class="mt-2 max-h-96 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 font-mono text-xs text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{example.result.text}</pre>
+    </details>
+  {/if}
 
   <!-- Persistent live region: always in the DOM so status changes are announced. -->
   <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{statusText[status] ?? ''}</p>
