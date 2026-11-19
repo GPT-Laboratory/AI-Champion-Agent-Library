@@ -13,27 +13,8 @@ const spec = readFileSync('docs/ddc-alignment/warranty-register-check.md', 'utf8
 
 const KEY_IDS = ['W-01', 'W-02', 'W-03', 'W-04', 'W-05', 'W-06', 'W-07']
 const KEY_VERDICTS = ['register-ok', 'expiring-soon', 'expired', 'documents-missing', 'contact-missing', 'dates-inconsistent', 'data-incomplete']
-const KEY_RESULT = `## Warranty register check
-as_of: 2026-03-02
-
-| warranty_id | status_class | days_remaining | dates_consistent | document_present | contact_present | coverage_present | verdict |
-|---|---|---|---|---|---|---|---|
-| W-01 | active | 1552 | Y | Y | Y | Y | register-ok |
-| W-02 | expiring-soon | 12 | Y | Y | Y | Y | expiring-soon |
-| W-03 | expired | -20 | Y | Y | Y | Y | expired |
-| W-04 | active | 548 | Y | N | Y | Y | documents-missing |
-| W-05 | active | 1724 | Y | Y | N | Y | contact-missing |
-| W-06 | active | 761 | N | Y | Y | Y | dates-inconsistent |
-| W-07 | - | - | - | Y | Y | Y | data-incomplete |
-
-## Warranties needing attention
-W-02: expiring-soon
-W-03: expired
-W-04: documents-missing
-W-05: contact-missing
-W-06: dates-inconsistent
-W-07: data-incomplete
-`
+// The answer key is the agent's saved Try It Out result (example.yaml), also used by scripts/smoke-agent.ts.
+const KEY_RESULT = readFileSync(`${dir}/example-result.md`, 'utf8')
 
 describe('warranty-register-check alignment', () => {
   it('sample ids equal the answer key ids in the spec', () => {

@@ -13,17 +13,8 @@ const spec = readFileSync('docs/ddc-alignment/bms-digital-twin.md', 'utf8')
 
 const KEY_IDS = ['P-01', 'P-02', 'P-03', 'P-04', 'P-05', 'P-06']
 const S = 'to compute (tool)'
-const KEY_RESULT = `## Point mapping
-
-| point_id | asset_id | tag | unit | reading | low | high | binding | status | review | note |
-|---|---|---|---|---|---|---|---|---|---|---|
-| P-01 | AHU-01 | SYN-Supply_Air_Temperature_Sensor | C | 18.5 | 12 | 24 | bound | ${S} | NO | - |
-| P-02 | RM-201 | SYN-CO2_Sensor | ppm | 1350 | 400 | 1000 | bound | ${S} | NO | - |
-| P-03 | UNMAPPED | SYN-Supply_Air_Temperature_Sensor | C | 17.0 | 12 | 24 | unbound | ${S} | YES | asset AHU-09 not in asset list |
-| P-04 | AHU-01 | UNTAGGED | C | 21.0 | - | - | untagged | ${S} | YES | no tag hint matches description |
-| P-05 | FAN-03 | SYN-Fan_Speed_Command | rpm | 1200 | 0 | 100 | unit-mismatch | ${S} | YES | unit differs rpm vs %, not converted |
-| P-06 | AMBIGUOUS | SYN-Discharge_Pressure_Sensor | kPa | 250 | 100 | 400 | ambiguous | ${S} | YES | asset PMP-05 listed twice |
-`
+// The answer key is the agent's saved Try It Out result (example.yaml), also used by scripts/smoke-agent.ts.
+const KEY_RESULT = readFileSync(`${dir}/example-result.md`, 'utf8')
 
 describe('bms-digital-twin alignment', () => {
   it('sample point ids equal the answer key ids in the spec', () => {

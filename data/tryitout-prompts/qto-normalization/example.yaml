@@ -1,4 +1,7 @@
-# Try It Out example for qto-normalization: the only place its default task and file are named (docs/tryitout-example.md).
-# The task is the one of the agent's latest live-run plan (33-01); the file is the agent's synthetic sample.
+# Try It Out example for qto-normalization: the only place its default task, file and saved result are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (33-01); the file is the agent's synthetic sample;
+# the result is the answer key, also used by the smoke test (scripts/smoke-agent.ts).
 task: Normalise the attached quantity take-off table
 file: sample-qto-table.txt
+result: example-result.md
+result_label: Expected result for the example input, written from the skill's output format and checked by the qto-group-totals helper. Not a model run.

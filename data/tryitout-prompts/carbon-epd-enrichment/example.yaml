@@ -1,4 +1,7 @@
-# Try It Out example for carbon-epd-enrichment: the only place its default task and file are named (docs/tryitout-example.md).
-# The task is the one of the agent's latest live-run plan (33-02); the file is the agent's synthetic sample.
+# Try It Out example for carbon-epd-enrichment: the only place its default task, file and saved result are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (33-02); the file is the agent's synthetic sample;
+# the result is the answer key, also used by the smoke test (scripts/smoke-agent.ts).
 task: Map the attached products to the EPD excerpt
 file: sample-products-epd.txt
+result: example-result.md
+result_label: Expected result for the example input, written from the skill's output format and checked by the carbon-lifecycle helper. Not a model run.

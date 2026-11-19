@@ -35,6 +35,14 @@ File names are bare names in the same folder. Each file is capped at 200 KB, the
 
 Agents without `example.yaml` get the panel as before.
 
+## The result of a run
+
+After a run succeeds, the panel shows its result on the page under "Result", next to "Download results" (which stays). This holds for every runnable agent, with or without an example.
+
+- The panel reads the same artifact as the download (`GET /api/tryitout/jobs/<id>/artifact`) and unzips it in the browser (`src/lib/tryItOutResult.ts`). The job API and `src/lib/tryItOut.ts` are unchanged.
+- Only text files are shown (`.md`, `.txt`, `.csv`, `.json`): `result.*` first and open, then the others by name (for example `ebom-join-check.md`). Each is shown as plain text, never rendered as HTML.
+- Size caps are checked before anything is decompressed: a zip over 1 MB, or text files over 200 KB in total, are left to the download. Then the panel says "The result cannot be shown here; use Download results."
+
 ## Rules
 
 - The saved result must be honest about its source. Say in `result_label` whether it is a helper's answer key, a counted live run (give the job id) or something else.

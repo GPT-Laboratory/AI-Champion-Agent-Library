@@ -13,27 +13,8 @@ const spec = readFileSync('docs/ddc-alignment/material-delivery-check.md', 'utf8
 
 const KEY_IDS = ['D-01', 'D-02', 'D-03', 'D-04', 'D-05', 'D-06', 'D-07']
 const KEY_VERDICTS = ['received-complete', 'partial', 'late', 'late-no-reason', 'not-yet-due', 'data-incomplete', 'data-incomplete']
-const KEY_RESULT = `## Delivery check
-as_of: 2026-03-02
-
-| line_id | status | balance | balance_flag | days_late | late_flag | conflict | reason_present | verdict |
-|---|---|---|---|---|---|---|---|---|
-| D-01 | delivered | 0 m | complete | 0 | N | N | N | received-complete |
-| D-02 | partial | 120 m | short | 0 | N | N | N | partial |
-| D-03 | delayed | 2 kpl | short | 10 | Y | N | Y | late |
-| D-04 | in_transit | 200 m | short | 3 | Y | N | N | late-no-reason |
-| D-05 | scheduled | 1 kpl | short | 0 | N | N | N | not-yet-due |
-| D-06 | delivered | 2 kpl | short | 4 | Y | Y | N | data-incomplete |
-| D-07 | in_transit | 80 m | short | - | - | N | N | data-incomplete |
-
-## Lines needing attention
-D-02: partial
-D-03: late
-D-04: late-no-reason
-D-05: not-yet-due
-D-06: data-incomplete
-D-07: data-incomplete
-`
+// The answer key is the agent's saved Try It Out result (example.yaml), also used by scripts/smoke-agent.ts.
+const KEY_RESULT = readFileSync(`${dir}/example-result.md`, 'utf8')
 
 describe('material-delivery-check alignment', () => {
   it('sample line ids equal the answer key ids in the spec', () => {
