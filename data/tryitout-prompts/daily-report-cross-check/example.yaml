@@ -1,0 +1,4 @@
+# Try It Out example for daily-report-cross-check: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (29-01); the file is the agent's synthetic sample.
+task: Cross-check each daily report line against the timesheet and draft the verdicts
+file: sample-daily-report-timesheet.txt

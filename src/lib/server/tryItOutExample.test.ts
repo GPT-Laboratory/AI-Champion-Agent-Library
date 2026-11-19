@@ -73,14 +73,11 @@ describe('shipped examples', () => {
   const shipped = join(process.cwd(), 'data', 'tryitout-prompts')
   const slugs = readdirSync(shipped).filter((s) => existsSync(join(shipped, s, EXAMPLE_FILE)))
 
-  // Batch 1: agents 1-8 of the runnable list (scripts/set-try-it-out-mode.ts) plus ifc-ebom-compiler.
-  const BATCH_1 = [
-    'etim-classification-repair', 'qto-normalization', 'clash-prioritization', 'rfi-generation-from-findings',
-    'product-sourcing-mbom', 'quote-comparison', 'carbon-epd-enrichment', 'cut-sheet-qa', 'ifc-ebom-compiler',
-  ]
-
-  it('every agent of batch 1 ships one', () => {
-    for (const slug of BATCH_1) expect(slugs).toContain(slug)
+  // Every agent with a Try It Out prompt folder ships an example (AIRO has no folder: it links out instead).
+  it('every prompt folder ships one', () => {
+    const folders = readdirSync(shipped, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)
+    expect(folders.length).toBeGreaterThanOrEqual(21)
+    expect(folders.filter((s) => !slugs.includes(s))).toEqual([])
   })
 
   it.each(slugs)('%s/example.yaml loads, and its files are in the folder', async (slug) => {

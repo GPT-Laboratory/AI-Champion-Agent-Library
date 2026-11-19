@@ -1,0 +1,4 @@
+# Try It Out example for bms-digital-twin: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (33-04); the file is the agent's synthetic sample.
+task: Map the attached BMS points to assets and tags
+file: sample-bms-points.txt

@@ -1,0 +1,4 @@
+# Try It Out example for procurement-lead-time-check: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (35-02); the file is the agent's synthetic sample.
+task: Check the attached procurement list against the as-of date
+file: sample-procurement-items.txt
