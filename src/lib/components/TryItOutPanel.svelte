@@ -4,6 +4,7 @@
   import type { JobEvent, JobStatus } from '$lib/tryItOut'
   import { readJobIdFromUrl, writeJobIdToUrl, clearJobIdFromUrl } from '$lib/tryItOutSession'
   import type { TryItOutExample } from '$lib/tryItOutExample'
+  import { fetchResultFiles, type ResultFile } from '$lib/tryItOutResult'
 
   interface Props {
     agentId?: string
@@ -37,6 +38,10 @@
   let events = $state<JobEvent[]>([])
   let error = $state<string | null>(null)
   let jobId = $state<string | null>(null)
+
+  // The result shown on the page (text files of the artifact, docs/tryitout-example.md); the download stays.
+  let resultFiles = $state<ResultFile[] | 'loading' | 'unavailable' | null>(null)
+  let resultFor: string | null = null
 
   let feedEl: HTMLDivElement | null = $state(null)
   let unsubscribe: (() => void) | null = null
@@ -88,6 +93,8 @@
     events = []
     error = null
     jobId = null
+    resultFiles = null
+    resultFor = null
     status = 'queued'
     clearJobIdFromUrl() // a stale id must never be live while a new job is in flight
 
@@ -115,6 +122,17 @@
       status = 'running' // render the Progress feed immediately, not a flash of idle
       attach(restoredId, true)
     }
+  })
+
+  // Once per succeeded job (fresh or restored): load its text files for the inline result.
+  $effect(() => {
+    if (status !== 'succeeded' || !jobId || resultFor === jobId) return
+    const id = jobId
+    resultFor = id
+    resultFiles = 'loading'
+    void fetchResultFiles(id).then((files) => {
+      if (resultFor === id) resultFiles = files ?? 'unavailable'
+    })
   })
 
   // Auto-scroll: keep the newest line visible (D-10). Reading events.length is what tracks it.
@@ -221,6 +239,23 @@
     >
       Download results
     </button>
+
+    {#if resultFiles === 'loading'}
+      <p class="mt-4 text-sm text-gray-600">Loading the result…</p>
+    {:else if resultFiles === 'unavailable'}
+      <p class="mt-4 text-sm text-gray-600">The result cannot be shown here; use Download results.</p>
+    {:else if resultFiles}
+      <p class="mt-6 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Result</p>
+      {#each resultFiles as f, i (f.name)}
+        <details class="mt-2" open={i === 0}>
+          <summary class="cursor-pointer text-sm font-medium text-indigo-600">{f.name}</summary>
+          <pre
+            tabindex="0"
+            aria-label={`Result file ${f.name}`}
+            class="mt-2 max-h-96 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 font-mono text-xs text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{f.text}</pre>
+        </details>
+      {/each}
+    {/if}
   {/if}
 
   {#if status === 'failed'}
