@@ -11,21 +11,8 @@ const entry = readFileSync('data/agents/carbon-epd-enrichment.yaml', 'utf8')
 const spec = readFileSync('docs/ddc-alignment/carbon-epd-enrichment.md', 'utf8')
 
 const KEY_IDS = ['X-01', 'X-02', 'X-03', 'X-04', 'X-05', 'X-06']
-const D = '- | - | - | - | - | -'
-const KEY_RESULT = `## Per-product rows
-
-| product_id | option | qty | unit | epd | declared_unit | A1-A3 | A4 | A5 | B | C | D | unit_ok | expired | status |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| X-01 | - | 85 | m3 | EPD-01,EPD-06 | - | ${D} | - | - | ambiguous |
-| X-02 | - | 40 | m3 | NONE | - | ${D} | - | - | no-epd |
-| X-03 | - | 3850 | kg | EPD-02 | t | ${D} | N | N | unit-mismatch |
-| X-04 | - | 120 | m | EPD-03 | m | ${D} | Y | Y | expired |
-| X-05 | A | 60 | m2 | EPD-04 | m2 | 4.2 | 0.3 | 0.1 | ND | 0.2 | ND | Y | N | matched |
-| X-06 | B | 60 | m2 | EPD-05 | m2 | 3.5 | ND | ND | ND | ND | ND | Y | N | matched |
-
-## Totals and comparison
-to compute (tool)
-`
+// The answer key is the agent's saved Try It Out result (example.yaml), also used by scripts/smoke-agent.ts.
+const KEY_RESULT = readFileSync(`${dir}/example-result.md`, 'utf8')
 
 describe('carbon-epd-enrichment alignment', () => {
   it('sample product ids equal the answer key ids in the spec', () => {

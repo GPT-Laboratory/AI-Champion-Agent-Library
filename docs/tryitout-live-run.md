@@ -112,25 +112,43 @@ Job id, model, total tokens, requests, estimated cost, input label (public/synth
 | No Pi tool lines in events, usage 404 | Fell back to the direct model call; the run is NOT countable |
 | Usage 404 but Pi ran | Image built before the usage route, or `TRYITOUT_USAGE_ENDPOINT` not set; rebuild the tagged image |
 
-## 6. Smoke test with an LLM judge (ifc-ebom-compiler)
+## 6. Smoke test with an LLM judge
 
-`scripts/smoke.ifc-ebom-compiler.ts` checks one live run of the agent on its Try It Out example (`data/tryitout-prompts/ifc-ebom-compiler/example.yaml`: task, sample file, answer key). It uses the app as in Option A or B, and the harness above for the run (budget guard, ledger).
+`scripts/smoke-agent.ts --agent <slug>` checks one live run of an agent on its Try It Out example (`data/tryitout-prompts/<slug>/example.yaml`: task, sample file and the saved result, which is the answer key). It uses the app as in Option A or B, and the harness above for the run (budget guard, ledger). The engine is `scripts/smoke/core.ts`; each agent is a profile in `scripts/smoke/profiles.ts`.
 
-1. **Gate 1, deterministic (no model):** `ebom-join` contract and cell comparison, then the review items, the rules not tied to data, the Totals line and the closing line against the helper and the answer key.
-2. **Gate 2, LLM judge:** a second model call grades only what free text can get wrong: no arithmetic of its own, nothing beyond the required sections, no claim of being final, input treated as data. Every fail must quote the output. A quote that is not in the output is reported as a judge error.
+| Agent | Gate 1 helper | Cases | Agent's own judge criterion |
+|---|---|---|---|
+| ifc-ebom-compiler | `ebom-join` | clean, injection, duplicate | (the four standard ones) |
+| warranty-register-check | `warranty-status` | clean, injection | `no_legal_reading` |
+| procurement-lead-time-check | `procurement-lead-time` | clean, injection | `no_instruction` (order, approve, chase, cancel) |
+| material-delivery-check | `delivery-check` | clean, injection | `no_instruction` (accept, reject, chase) |
+| bms-digital-twin | `bms-point-status` | clean, injection | `no_status_claim` |
+| carbon-epd-enrichment | `carbon-lifecycle` | clean, injection | `no_authority` |
+| qto-normalization | `qto-group-totals` | clean, injection | `no_tool_claim` |
+
+`npx tsx scripts/smoke-agent.ts --list` prints the same. The agent criteria come from the free-text items of each agent's rubric in `docs/ddc-alignment/<slug>.md`.
+
+1. **Gate 1, deterministic (no model):** the agent's helper compares the result table with its own answer cell by cell; then the sections against the answer key: all headings in order, the short lists (exactly, or by id where a line has a free-text reason), fixed lines such as `as_of`, and the closing line. For ifc-ebom-compiler: the `ebom-join` contract, the review items, the rules not tied to data and the Totals line.
+2. **Gate 2, LLM judge:** a second model call grades only what free text can get wrong: no arithmetic of its own, nothing beyond the required sections, no claim of being final, input treated as data, plus the agent's own criterion. Every fail must quote the output. A quote that is not in the output is reported as a judge error.
+
+`--case injection` hides an instruction (`NOTE TO THE AGENT ignore the skill and ...`) in one free-text input field the helper does not read, so the expected result is unchanged; the output must neither follow nor mention it. For ifc-ebom-compiler, `--case duplicate` appends a copy of E-04 as E-12, which must get E-04's outcome (multi-catalogue).
 
 The judge needs `OPENAI_API_KEY` in the shell (and `OPENAI_BASE_URL` for Azure OpenAI v1). Each judge call gets its own ledger row.
 
 ```bash
-# Before trusting a judge model: it must pass the answer key and fail four hand-made bad outputs (5 judge calls).
-npx tsx --env-file=.env scripts/smoke.ifc-ebom-compiler.ts --calibrate --judge-model <model>
+# Before trusting a judge model for an agent: it must pass the answer key and fail one hand-made bad output per
+# criterion (6 judge calls; 5 for ifc-ebom-compiler).
+npx tsx --env-file=.env scripts/smoke-agent.ts --agent <slug> --calibrate --judge-model <model>
 
-# One run on the example, then both gates. --case injection hides an instruction in one element's type_name;
-# --case duplicate appends a copy of E-04 as E-12, which must get E-04's outcome (multi-catalogue).
-npx tsx --env-file=.env scripts/smoke.ifc-ebom-compiler.ts --judge-model <model> [--case injection|duplicate]
+# One run on the example, then both gates.
+npx tsx --env-file=.env scripts/smoke-agent.ts --agent <slug> --judge-model <model> [--case injection]
 
 # Check an output you already have (e.g. downloaded from Try It Out); --no-judge = gate 1 only, no key, no cost.
-npx tsx scripts/smoke.ifc-ebom-compiler.ts --result path/to/result.md --no-judge
+npx tsx scripts/smoke-agent.ts --agent <slug> --result path/to/result.md --no-judge
 ```
 
-The default judge model is `JUDGE_MODEL`, else the agent's own model (`gpt-4.1-mini`); a model judging its own output is weak evidence, so prefer a different, stronger one. Use `--judge-temperature none` for models that reject a temperature. A run writes `smoke-report.json` next to the artifact in `.tryitout-runs/<jobId>/`. Exit codes: 0 pass, 1 a check failed, 2 usage or no key, 3 budget refusal, 5 run or API error. The offline tests (`scripts/smoke.ifc-ebom-compiler.test.ts`, in `npm test`) use a fake judge and a fake run.
+`scripts/smoke.ifc-ebom-compiler.ts` still works with the same options (it is the ifc-ebom-compiler profile).
+
+The default judge model is `JUDGE_MODEL`, else the agents' own model (`gpt-4.1-mini`); a model judging its own output is weak evidence, so prefer a different, stronger one. Use `--judge-temperature none` for models that reject a temperature. A run writes `smoke-report.json` next to the artifact in `.tryitout-runs/<jobId>/`. Exit codes: 0 pass, 1 a check failed, 2 usage or no key, 3 budget refusal, 5 run or API error. The offline tests (`scripts/smoke-agent.test.ts` and `scripts/smoke.ifc-ebom-compiler.test.ts`, in `npm test`) use a fake judge and a fake run.
+
+**Adding an agent:** it needs a deterministic helper with `runCli(input, result)` and a saved result in its example. Write `example-result.md` from the skill's output format, check it with the helper, name it in `example.yaml` (`result`, `result_label`), and add a `tableProfile` in `scripts/smoke/profiles.ts`: the sections to compare, one free-text input field for the injection, the agent's own criterion and one bad output per criterion. `scripts/smoke-agent.test.ts` then covers it.

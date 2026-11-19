@@ -12,20 +12,8 @@ const entry = readFileSync('data/agents/qto-normalization.yaml', 'utf8')
 const spec = readFileSync('docs/ddc-alignment/qto-normalization.md', 'utf8')
 
 const KEY_IDS = ['Q-01', 'Q-02', 'Q-03', 'Q-04', 'Q-05', 'Q-06']
-const KEY_RESULT = `## Normalised rows
-
-| row_id | group | level | qty | unit | factor | dup_of | issue |
-|---|---|---|---|---|---|---|---|
-| Q-01 | Putkisto | Level 1 | 48.5 | m | 1 | - | OK |
-| Q-02 | Ilmanvaihto | Level 1 | 36.4 | m | 1 | - | NUMFMT |
-| Q-03 | Putkisto | Level 2 | 2400 | m | 0.001 | - | UNIT-CONV |
-| Q-04 | Sähkö | Level 1 | 3 | UNRESOLVED | - | - | UNRESOLVED-UNIT |
-| Q-05 | Putkisto | Level 1 | 48.5 | m | 1 | Q-01 | DUPLICATE |
-| Q-06 | Ilmanvaihto | Level 2 | - | pcs | 1 | - | MISSING-QTY |
-
-## Grouped totals
-to compute (tool)
-`
+// The answer key is the agent's saved Try It Out result (example.yaml), also used by scripts/smoke-agent.ts.
+const KEY_RESULT = readFileSync(`${dir}/example-result.md`, 'utf8')
 
 describe('qto-normalization alignment', () => {
   it('sample row ids equal the answer key ids in the spec', () => {
