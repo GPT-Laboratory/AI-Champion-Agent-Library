@@ -244,7 +244,7 @@
           "input_schema": "[{\"key\":\"input_text\",\"label\":\"Blocks, catalogue, scope rules and element facts (text sections)\",\"type\":\"textarea\",\"required\":true,\"description\":null,\"placeholder\":\"## BLOCKS\\nblock_id,discipline,tab,title\\n## CATALOGUE\\nname,unit,ifc_class,geom_family,size_mm,discipline\\n## RULES\\nrules:1: system = <value> -> exclude (<reason>)\\n## ELEMENTS\\ntoken,ifc_class,type_name,system,size_mm,geom_family,stated_length_m,geom_centreline_m,geom_check,loc_block\",\"unit\":null,\"defaultValue\":null,\"options\":[],\"min\":null,\"max\":null}]",
           "requires_human_approval": 1,
           "category": "mechanical",
-          "github_url": "https://github.com/mikauran/AI-Champion-Agent-Library",
+          "github_url": "https://github.com/GPT-Laboratory/AI-Champion-Agent-Library",
           "customizable_fields": null,
           "fixed_fields": "[]",
           "fixed_note": null,
