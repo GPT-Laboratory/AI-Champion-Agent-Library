@@ -4,6 +4,8 @@ Template for consortium agents (Phases 25-29). The entry is one Oracle AgentSpec
 
 ## How to add an agent
 
+This covers the entry file. For every other file a new agent needs (Try It Out prompts, snapshots, lists, checks), see [adding-an-agent.md](adding-an-agent.md).
+
 1. Copy [templates/agent-entry.template.yaml](templates/agent-entry.template.yaml) to `data/agents/<slug>.yaml`.
 2. Replace every `TEMPLATE` value; keep the comments you find useful, delete the rest.
 3. Check the file against the AgentSpec schema: `npm run validate-submission -- data/agents/<slug>.yaml`
