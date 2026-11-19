@@ -9,7 +9,7 @@ description: "Reads an excerpt of MEP element facts already taken from an IFC mo
 metadata:
   category: "mechanical"
   maturity: "experimental"
-  github_url: "https://github.com/mikauran/AI-Champion-Agent-Library"
+  github_url: "https://github.com/GPT-Laboratory/AI-Champion-Agent-Library"
   tags:
     - "ifc"
     - "bim"

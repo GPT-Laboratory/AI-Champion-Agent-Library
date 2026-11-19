@@ -1,0 +1,4 @@
+# Try It Out example for d2-code-validation: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (28-01); the file is the agent's synthetic sample.
+task: Check the design extract against each requirement row and draft the verdicts
+file: sample-ventilation-requirements.txt

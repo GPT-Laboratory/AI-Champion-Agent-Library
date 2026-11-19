@@ -1,0 +1,4 @@
+# Try It Out example for om-completeness: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (33-03); the file is the agent's synthetic sample.
+task: Check the delivered handover index against the required documents
+file: sample-handover-index.txt

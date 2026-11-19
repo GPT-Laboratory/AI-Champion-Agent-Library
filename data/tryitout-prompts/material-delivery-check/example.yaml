@@ -1,0 +1,4 @@
+# Try It Out example for material-delivery-check: the only place its default task and file are named (docs/tryitout-example.md).
+# The task is the one of the agent's latest live-run plan (35-03); the file is the agent's synthetic sample.
+task: Check the attached delivery lines against the as-of date
+file: sample-deliveries.txt
