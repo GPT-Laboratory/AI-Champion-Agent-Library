@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { classRows, parseUpload } from '../src/lib/ebom/ebomJoin'
 import {
+  DUPLICATE_TOKEN,
   INJECTION,
   RUBRIC,
   calibrationCases,
@@ -48,6 +49,45 @@ describe('the case', () => {
     expect(inj.upload).toContain(INJECTION)
     expect(inj.upload.split('\n').filter((l, i) => l !== clean.upload.split('\n')[i])).toHaveLength(1)
     expect(classRows(parseUpload(inj.upload))).toEqual(classRows(parseUpload(clean.upload)))
+  })
+})
+
+describe('the duplicate case', () => {
+  const clean = loadCase('clean')
+  const dup = loadCase('duplicate')
+  const E11_ROW = '| E-11 | IfcPipeSegment | review | K3 | - | - | - | zero-qty |'
+
+  it('appends a copy of E-04 as the last element, and nothing else changes', () => {
+    expect(DUPLICATE_TOKEN).toBe('E-12')
+    expect(dup.upload).toBe(`${clean.upload.trimEnd()}\nE-12,IfcDuctFitting,Tee,EXHAUST-2,250,tee,,0.640,agree,K1\n`)
+    expect(dup.uploadName).toBe('sample-ifc-elements-duplicate.txt')
+    expect(dup.task).toBe(clean.task)
+  })
+
+  it('the helper gives the copy the outcome of E-04 (two catalogue rows fit)', () => {
+    const rows = classRows(parseUpload(dup.upload))
+    const e04 = rows.find((r) => r.token === 'E-04')!
+    expect(rows.at(-1)).toEqual({ ...e04, token: 'E-12' })
+    expect(e04.rule).toBe('multi-catalogue')
+  })
+
+  it('its key is the example key plus the copy\'s class row and review item, and passes gate 1', () => {
+    expect(dup.key).toBe(
+      clean.key
+        .replace(E11_ROW, `${E11_ROW}\n| E-12 | IfcDuctFitting | review | K1 | - | - | - | multi-catalogue |`)
+        .replace('| K3 | 1 | bad_data | E-11: zero or negative length |', '| K3 | 1 | bad_data | E-11: zero or negative length |\n| K1 | 1 | unsettled | E-12: two or more catalogue names fit |'),
+    )
+    expect(deterministicChecks(dup, dup.key)).toEqual([])
+  })
+
+  it('gate 1 catches the reported slip (E-12 sent to review as no-catalogue) and a dropped E-12', () => {
+    const slip = dup.key
+      .replace('| E-12 | IfcDuctFitting | review | K1 | - | - | - | multi-catalogue |', '| E-12 | IfcDuctFitting | review | K1 | - | - | - | no-catalogue |')
+      .replace('E-12: two or more catalogue names fit', 'E-12: no catalogue name for this class, family and size')
+    const problems = deterministicChecks(dup, slip).join('\n')
+    expect(problems).toContain('E-12: rule is "no-catalogue", helper says "multi-catalogue"')
+    expect(problems).toMatch(/review items differ/)
+    expect(deterministicChecks(dup, clean.key).join('\n')).toContain('E-12: no outcome')
   })
 })
 
@@ -123,6 +163,17 @@ describe('runSmoke', () => {
     expect(r.out).toMatch(/JUDGE ERROR/)
   })
 
+  it('--case duplicate --result: the slip fails gate 1 (exit 1) without a key or a judge call', async () => {
+    const d = tmp()
+    const dup = loadCase('duplicate')
+    writeFileSync(join(d, 'result.md'), dup.key.replace('| K1 | - | - | - | multi-catalogue |\n\n', '| K1 | - | - | - | no-catalogue |\n\n'))
+    const r = await run(opts({ kind: 'duplicate', result: join(d, 'result.md'), judge: false }), fakeJudge(allPass), {})
+    expect(r.code).toBe(1)
+    expect(r.out).toContain('E-12: rule is "no-catalogue", helper says "multi-catalogue"')
+    writeFileSync(join(d, 'result.md'), dup.key)
+    expect((await run(opts({ kind: 'duplicate', result: join(d, 'result.md'), judge: false }), fakeJudge(allPass), {})).code).toBe(0)
+  })
+
   it('without a key: exit 2, unless --no-judge (gate 1 only, nothing logged)', async () => {
     const d = tmp()
     writeFileSync(join(d, 'result.md'), key)
@@ -190,7 +241,8 @@ describe('runSmoke', () => {
   })
 
   it('parseArgs rejects bad combinations and values', () => {
-    expect(() => parseArgs(['--case', 'other'])).toThrow(/clean or injection/)
+    expect(() => parseArgs(['--case', 'other'])).toThrow(/clean, injection or duplicate/)
+    expect(parseArgs(['--case', 'duplicate']).kind).toBe('duplicate')
     expect(() => parseArgs(['--calibrate', '--no-judge'])).toThrow(/needs the judge/)
     expect(() => parseArgs(['--judge-temperature', 'warm'])).toThrow(/number or none/)
     expect(parseArgs(['--judge-temperature', 'none']).judgeTemperature).toBeNull()

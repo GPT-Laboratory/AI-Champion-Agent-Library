@@ -7,6 +7,7 @@
 // OpenAI call per job, staged events emitted as each real phase begins.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
 import OpenAI from 'openai'
 import { env } from '$env/dynamic/private'
 import {
@@ -20,6 +21,7 @@ import {
 import { loadPromptFor, composePrompt } from './tryItOutPrompts'
 import { MODEL, modelParams } from './tryItOutModel'
 import { zipOutputDir } from './tryitout/artifact'
+import { applyPostRunCheck } from './tryitout/postRunCheck'
 import { runJobInContainer } from './tryitout/piRunner'
 import { getTryItOutService } from './tryitout/service'
 import { isTryItOutRuntimeError } from './tryitout/runtime'
@@ -146,6 +148,14 @@ export async function runDirectLlmJob(jobId: string): Promise<void> {
     pushEvent(jobId, 'writing output…')
     await mkdir(outputDir(jobId), { recursive: true })
     await writeFile(outputFilePath(jobId), text, 'utf-8')
+
+    // Optional per-agent deterministic check (docs/tryitout-post-run-check.md), as on the container path.
+    const check = applyPostRunCheck(jobId, job.agentId, {
+      task: job.task,
+      upload: job.fileName !== null ? inputText : null,
+      files: { 'result.txt': new TextEncoder().encode(text) },
+    })
+    if (check) await writeFile(join(outputDir(jobId), check.name), check.bytes)
 
     await zipOutputDir(jobId)
 

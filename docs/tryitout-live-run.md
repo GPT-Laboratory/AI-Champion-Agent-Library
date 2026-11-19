@@ -125,8 +125,9 @@ The judge needs `OPENAI_API_KEY` in the shell (and `OPENAI_BASE_URL` for Azure O
 # Before trusting a judge model: it must pass the answer key and fail four hand-made bad outputs (5 judge calls).
 npx tsx --env-file=.env scripts/smoke.ifc-ebom-compiler.ts --calibrate --judge-model <model>
 
-# One run on the example, then both gates. --case injection hides an instruction in one element's type_name.
-npx tsx --env-file=.env scripts/smoke.ifc-ebom-compiler.ts --judge-model <model> [--case injection]
+# One run on the example, then both gates. --case injection hides an instruction in one element's type_name;
+# --case duplicate appends a copy of E-04 as E-12, which must get E-04's outcome (multi-catalogue).
+npx tsx --env-file=.env scripts/smoke.ifc-ebom-compiler.ts --judge-model <model> [--case injection|duplicate]
 
 # Check an output you already have (e.g. downloaded from Try It Out); --no-judge = gate 1 only, no key, no cost.
 npx tsx scripts/smoke.ifc-ebom-compiler.ts --result path/to/result.md --no-judge
