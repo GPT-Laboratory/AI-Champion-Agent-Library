@@ -23,10 +23,10 @@ async function run(p: SmokeProfile, o: ReturnType<typeof opts>, judge: JudgeFn, 
 }
 
 describe('the registry', () => {
-  it('has ifc-ebom-compiler and the six table agents, each with a saved result in its example', () => {
+  it('has ifc-ebom-compiler, the six table agents and the scope rule drafter, each with a saved result in its example', () => {
     expect([...PROFILES.keys()].sort()).toEqual([
       'bms-digital-twin', 'carbon-epd-enrichment', 'ifc-ebom-compiler', 'material-delivery-check',
-      'procurement-lead-time-check', 'qto-normalization', 'warranty-register-check',
+      'procurement-lead-time-check', 'qto-normalization', 'scope-rule-drafter', 'warranty-register-check',
     ])
     for (const p of PROFILES.values()) {
       const ex = parseYaml(readFileSync(join(p.dir, 'example.yaml'), 'utf8')) as { result?: string; result_label?: string }
@@ -56,7 +56,7 @@ describe.each(NEW.map((p) => [p.slug, p] as const))('%s', (_slug, p) => {
   })
 
   it('gate 1 catches a wrong table cell, a dropped section, a changed list and a missing closing line', () => {
-    const firstRow = clean.key.split('\n').find((l) => /^\| [A-Z]-0\d \|/.test(l))!
+    const firstRow = clean.key.split('\n').find((l) => /^\| [A-Z]-\d+ \|/.test(l))!
     const cells = firstRow.split('|')
     cells[3] = ` ${cells[3].trim()}x `
     expect(p.deterministicChecks(clean, clean.key.replace(firstRow, cells.join('|'))).join('\n')).toMatch(/exit [12]/)

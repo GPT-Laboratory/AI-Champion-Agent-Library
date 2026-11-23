@@ -131,7 +131,7 @@ function csvSection(name: string, lines: string[], cols: readonly string[]): Rec
   })
 }
 
-const RULE = /^(\S+?):\s*(\w+)\s*=\s*(.+?)\s*->\s*exclude\s*\((.+)\)\s*$/
+export const RULE = /^(\S+?):\s*(\w+)\s*=\s*(.+?)\s*->\s*exclude\s*\((.+)\)\s*$/
 
 /** Parses the four `## ` sections of the SKILL.md input; `#` lines (one hash, then a space or text) are labels. */
 export function parseUpload(text: string): Upload {

@@ -16,6 +16,7 @@ import { runCli as deliveryCli } from '$lib/delivery/resultCheck'
 import { runCli as bmsCli } from '$lib/bms/resultCheck'
 import { runCli as carbonCli } from '$lib/carbon/resultCheck'
 import { runCli as qtoCli } from '$lib/qto/resultCheck'
+import { checkRuleResult, dryRunSummary, runCli as ruleCli } from '$lib/rules/ruleCheck'
 import { parseDocument } from '$lib/resultMarkdown'
 import { cellValue, xlsxBytes, type Sheet } from '$lib/xlsx'
 import type { CheckStatus, JobCheck } from '$lib/tryItOutCheck'
@@ -197,6 +198,8 @@ export interface HelperCheckSpec {
   /** The result section the helper compares (e.g. "Warranty register check"). */
   section: string
   runCli: HelperCli
+  /** Summary when everything matches (default: "the <section> table matches the <helper> helper on every cell"). */
+  matchSummary?: (input: string, result: string) => string
 }
 
 const MISMATCH_HEAD = /^MISMATCHES \(\d+\)$/
@@ -218,7 +221,9 @@ export function helperCheck(spec: HelperCheckSpec): PostRunCheck {
         findings: [],
       }
     }
-    const r = spec.runCli(upload ?? task, text(files[resultFile]))
+    const input = upload ?? task
+    const resultText = text(files[resultFile])
+    const r = spec.runCli(input, resultText)
     const fenced = '```text\n' + r.out.replace(/```/g, "'''") + '\n```'
     if (r.code === 2) {
       return {
@@ -234,7 +239,7 @@ export function helperCheck(spec: HelperCheckSpec): PostRunCheck {
     const diffs = r.code === 1 && at >= 0 ? lines.slice(at + 1).filter((l) => l.trim() !== '') : []
     const summary =
       r.code === 0
-        ? `helper check: the ${spec.section} table matches the ${spec.helper} helper on every cell`
+        ? `helper check: ${spec.matchSummary ? spec.matchSummary(input, resultText) : `the ${spec.section} table matches the ${spec.helper} helper on every cell`}`
         : `helper check: ${plural(diffs.length, 'mismatch', 'mismatches')} with the ${spec.helper} helper (details in ${file})`
     const listed = diffs.length ? `## Mismatches\n${diffs.map((d) => `- ${d}`).join('\n')}\n\n` : ''
     return {
@@ -254,6 +259,15 @@ export const HELPER_CHECKS: ReadonlyArray<[string, HelperCheckSpec]> = [
   ['bms-digital-twin', { helper: 'bms-point-status', section: 'Point mapping', runCli: bmsCli }],
   ['carbon-epd-enrichment', { helper: 'carbon-lifecycle', section: 'Per-product rows', runCli: (i, r) => carbonCli(i, r) }],
   ['qto-normalization', { helper: 'qto-group-totals', section: 'Normalised rows', runCli: qtoCli }],
+  [
+    'scope-rule-drafter',
+    {
+      helper: 'rule-check',
+      section: 'Sentence mapping',
+      runCli: ruleCli,
+      matchSummary: (input, result) => dryRunSummary(checkRuleResult(input, result).dryRun),
+    },
+  ],
 ]
 
 // ------------------------------------------------------------------ registry and runner

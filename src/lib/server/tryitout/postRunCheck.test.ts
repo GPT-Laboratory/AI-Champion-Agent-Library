@@ -36,6 +36,7 @@ describe('registry', () => {
       'bms-digital-twin',
       'carbon-epd-enrichment',
       'qto-normalization',
+      'scope-rule-drafter',
     ])
     for (const slug of ['demo-rfi-triage', 'clash-prioritization', 'constructor', '__proto__']) {
       expect(runPostRunCheck(slug, { task: 't', upload: SAMPLE, files: { 'result.md': enc(SLIP) } })).toEqual({ files: [], events: [], check: null })
@@ -111,7 +112,7 @@ describe('ebomJoinCheck', () => {
   })
 })
 
-describe('the six helper checks', () => {
+describe('the helper checks', () => {
   const sampleOf = (slug: string) => {
     const dir = join(process.cwd(), 'data/tryitout-prompts', slug)
     const yaml = readFileSync(join(dir, 'example.yaml'), 'utf8')
@@ -119,12 +120,14 @@ describe('the six helper checks', () => {
     return { input: readFileSync(join(dir, file), 'utf8'), key: readFileSync(join(dir, 'example-result.md'), 'utf8') }
   }
 
-  it.each(HELPER_CHECKS.map(([slug, spec]) => [slug, spec.helper, spec.section]))(
+  it.each(HELPER_CHECKS.map(([slug, spec]) => [slug, spec.helper, spec.section] as const))(
     '%s: the saved key matches %s; one changed cell is a mismatch; no table is not checked',
     (slug, helper, section) => {
       const { input, key } = sampleOf(slug)
       const ok = runPostRunCheck(slug, { task: 't', upload: input, files: { 'result.md': enc(key) } })
-      expect(ok.check).toEqual({ status: 'match', summary: `the ${section} table matches the ${helper} helper on every cell`, file: `${helper}-check.md` })
+      const spec = HELPER_CHECKS.find(([s]) => s === slug)![1]
+      const summary = spec.matchSummary ? spec.matchSummary(input, key) : `the ${section} table matches the ${helper} helper on every cell`
+      expect(ok.check).toEqual({ status: 'match', summary, file: `${helper}-check.md` })
       expect(ok.files.map((f) => f.name)).toEqual([`${helper}-check.md`])
       expect(dec(ok.files[0].bytes)).toContain(`# ${helper} check`)
 
@@ -193,5 +196,17 @@ describe('runPostRunCheck', () => {
       events: ['helper check failed to run; the result is unchecked'],
       check: { status: 'not-checked', summary: 'the check failed to run; the result is unchecked', file: null },
     })
+  })
+})
+
+describe('scope-rule-drafter check', () => {
+  it('the badge summary carries the dry run', () => {
+    const dir = join(process.cwd(), 'data/tryitout-prompts/scope-rule-drafter')
+    const r = runPostRunCheck('scope-rule-drafter', {
+      task: 't',
+      upload: readFileSync(join(dir, 'sample-scope-rules.txt'), 'utf8'),
+      files: { 'result.md': enc(readFileSync(join(dir, 'example-result.md'), 'utf8')) },
+    })
+    expect(r.check).toEqual({ status: 'match', summary: '2 rules, all valid: text:1 excludes E-06; text:2 excludes E-05', file: 'rule-check-check.md' })
   })
 })

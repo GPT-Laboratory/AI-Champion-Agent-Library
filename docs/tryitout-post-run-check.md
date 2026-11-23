@@ -39,6 +39,7 @@ is at its file or size cap; the badge then still shows the status, without a fil
 | bms-digital-twin | `## Point mapping` | `bms-point-status-check.md` | `src/lib/bms/resultCheck.ts` (CLI `scripts/bms-point-status.ts`) |
 | carbon-epd-enrichment | `## Per-product rows` | `carbon-lifecycle-check.md` | `src/lib/carbon/resultCheck.ts` (CLI `scripts/carbon-lifecycle.ts`) |
 | qto-normalization | `## Normalised rows` | `qto-group-totals-check.md` | `src/lib/qto/resultCheck.ts` (CLI `scripts/qto-group-totals.ts`) |
+| scope-rule-drafter | `## Sentence mapping` and `## RULES`: every rule in the compiler's grammar, its field a column and its value in the data, one mapping row per sentence, the unturned sentences copied. The badge shows the dry run, e.g. "2 rules, all valid: text:1 excludes E-06; text:2 excludes E-05" | `rule-check-check.md` | `src/lib/rules/ruleCheck.ts` (CLI `scripts/rule-check.ts`) |
 
 Each check reads `result.md` first, else any `.md`/`.txt` of the output with that section, and takes the upload as
 input (with no upload, the task text). The six table helpers are wired through `helperCheck` with the same

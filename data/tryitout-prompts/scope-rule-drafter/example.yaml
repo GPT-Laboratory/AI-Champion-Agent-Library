@@ -1,0 +1,10 @@
+# Try It Out example for scope-rule-drafter: the only place the default task, file and saved result are named.
+# Loaded by src/lib/server/tryItOutExample.ts. The result is shown without a model call.
+task: >-
+  Turn the sentences of ## RULE TEXT in the attached upload into scope rules for the ifc-ebom-compiler, by lookup
+  against ## ELEMENTS, following the skill: the rules block, the sentence mapping and the sentences not turned into a rule.
+file: sample-scope-rules.txt
+result: example-result.md
+# example-result.md is also the answer key of scripts/ddc-alignment.scope-rule-drafter.test.ts. After the first
+# counted live run, its output may replace it only if that test still passes; then change this label to say so.
+result_label: Expected result for the example input, written from the skill's step table and checked by the rule-check helper. Not a model run.
