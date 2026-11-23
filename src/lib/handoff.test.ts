@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { HANDOFFS, HANDOFF_KEY, HANDOFF_MAX_AGE_MS, storeHandoff, takeHandoff, type HandoffPayload } from './handoff'
 
 const DIR = join(process.cwd(), 'data/tryitout-prompts/scope-rule-drafter')
-const SAMPLE = readFileSync(join(DIR, 'sample-scope-rules.txt'), 'utf8')
+const SAMPLE = readFileSync(join(DIR, 'sample-ebom-input.txt'), 'utf8')
 const KEY = readFileSync(join(DIR, 'example-result.md'), 'utf8')
 
 function memStore() {
@@ -23,6 +23,8 @@ describe('HANDOFFS', () => {
     expect(built.text).not.toContain('## RULE TEXT')
     expect(built.text).toContain('text:2: type_name = Temporary duct')
     expect(h.build(SAMPLE, '## RULES\nnone\n')).toBeNull()
+    // A run with no file: the "upload" is the typed rules, not E-BOM data; nothing to hand over.
+    expect(h.build('Exclude all sprinkler elements.', KEY)).toBeNull()
     expect(HANDOFFS.get('ifc-ebom-compiler')).toBeUndefined()
   })
 })

@@ -22,7 +22,15 @@ task: >-                # required; prefilled in the Task field
 file: sample-ifc-elements.txt     # optional; attached by default, viewable as "View example input"
 result: example-result.md         # optional; shown as "Show example result (no model call)"
 result_label: Expected result ... # required with result: says where the result came from
+task_label: Scope rules in your own words, one per line   # optional; label of the task field (default "Task")
+file_label: E-BOM input file the rules apply to         # optional; label of the file field
+hint: The rules are matched against ...                 # optional; one line under the task field
+task_placeholder: "One rule per line, ..."              # optional; shown when the task field is empty
 ```
+
+The four optional wording keys are for agents whose task field is not a free instruction. The Scope Rule Drafter
+uses them: its task field holds the scope rules typed in plain language, one per line, and the file is the E-BOM
+input they apply to. A multi-line example task opens the field with room for its lines.
 
 File names are bare names in the same folder. Each file is capped at 200 KB, the same as an upload. Unknown keys are rejected.
 
@@ -55,8 +63,9 @@ Some results are the input of another agent (`src/lib/handoff.ts`). Today: the S
 IFC EBOM Compiler.
 
 - Under "Show example result" and under a run's result, the panel shows "Use these rules in the IFC EBOM Compiler" when the
-  result has at least one rule. It builds the compiler's upload from the same input (the example file, or the file
-  the run used): the `## RULE TEXT` sentences are removed and the rules are added to `## RULES`
+  result has at least one rule and the input had E-BOM data (a file with `## ELEMENTS`). It builds the compiler's
+  upload from that data (the example file, or the file the run used): the rules are added to `## RULES` (a
+  `## RULE TEXT` section, if the file had one, is removed)
   (`src/lib/rules/splice.ts`; rules from an earlier hand-over, `text:...`, are replaced; the upload's own rules stay).
   From the example result this works without a model call.
 - The upload is kept in the browser's session storage (never sent to the server, never in the URL) and the

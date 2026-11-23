@@ -63,7 +63,7 @@ Agents built from the AIC IFC to E-BOM compiler use case (own design, no DDC bas
 | Agent | Stage | Status | Evidence | Notes |
 | --- | --- | --- | --- | --- |
 | IFC EBOM Compiler | Design | partial | data/agents/ifc-ebom-compiler.yaml | Class step of the compiler as a text slice; totals and stick rounding by the tested helper src/lib/ebom/ebomJoin.ts, which also checks every Try It Out run and writes ebom.xlsx. |
-| Scope Rule Drafter | Design | partial | data/agents/scope-rule-drafter.yaml | Plain-language scope sentences to the compiler's field = value scope rules by lookup in the element facts, with a fixed reason for every sentence that cannot become a rule; the rules can be handed to the IFC EBOM Compiler on its page. Each run is checked by src/lib/rules/ruleCheck.ts (grammar, field and value in the data, a dry run of which elements each rule excludes). Synthetic sample only; no counted live run yet. |
+| Scope Rule Drafter | Design | partial | data/agents/scope-rule-drafter.yaml | Scope rules typed in plain language in the task box, one per line, turned into the compiler's field = value scope rules for the attached E-BOM input file by lookup in the element facts, with a fixed reason for every sentence that cannot become a rule; the rules can be handed to the IFC EBOM Compiler on its page. Each run is checked by src/lib/rules/ruleCheck.ts (grammar, field and value in the data, a dry run of which elements each rule excludes). Synthetic sample only; no counted live run yet. |
 
 ## MCP servers
 

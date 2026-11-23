@@ -1,5 +1,7 @@
 // The check of a scope-rule-drafter result (own design, deterministic, no I/O). Shared by the CLI
 // (scripts/rule-check.ts) and the app's post-run check (src/lib/server/tryitout/postRunCheck.ts).
+// The rules are the lines the user typed in the task box (ruleLines numbers them S-1, S-2, ...); an upload with a
+// `## RULE TEXT` section supplies them instead.
 // - Without a result: the sentences and, per ELEMENTS column, the distinct values a rule may name.
 // - With a result: the `## RULES` lines against the grammar ifc-ebom-compiler reads (RULE in src/lib/ebom/ebomJoin.ts)
 //   and the data (field is a column, value occurs in it), the `## Sentence mapping` table against the sentences, the
@@ -15,6 +17,25 @@ export const MAPPING_COLS = ['sentence', 'outcome', 'rule', 'field', 'value', 'r
 export const OUTCOMES = ['rule', 'not-a-rule'] as const
 export const REASONS = ['no-field-value', 'more-than-one-condition', 'not-about-elements', 'not-an-exclusion'] as const
 export const SENTENCE = /^(S-\d+):\s*(.+)$/
+
+/**
+ * The rules of a block of typed text, in order: one per non-empty line, with a leading bullet (`-`, `*`, `•`, `1.`,
+ * `1)`) or `S-<n>:` removed. `#` lines and a lead-in line ending with ":" ("Rules for this job:") are not rules.
+ * The skill numbers them the same way, so the ids S-1, S-2, ... agree.
+ */
+export function ruleLines(text: string): Sentence[] {
+  const out: string[] = []
+  for (const raw of text.split(/\r?\n/)) {
+    const t = raw
+      .trim()
+      .replace(/^(?:[-*•]|\d{1,3}[.)])\s+/, '')
+      .replace(/^S-\d+:\s*/, '')
+      .trim()
+    if (t === '' || t.startsWith('#') || t.endsWith(':')) continue
+    out.push(t)
+  }
+  return out.map((text, i) => ({ id: `S-${i + 1}`, text }))
+}
 export const NOT_TURNED_HEADING = 'Sentences not turned into a rule'
 
 export interface Sentence {
@@ -75,12 +96,16 @@ function sections(text: string, keepCase = false): Map<string, string[]> {
   return out
 }
 
-export function parseRuleInput(text: string): RuleInput {
+/**
+ * The rules and the element data. `text` is the upload (or, with no upload, the task text); `task` is the task text.
+ * The rules come from a `## RULE TEXT` section of `text` if it has one, else from the task's lines, which needs an
+ * upload (a task that is itself the data cannot also be the rules).
+ */
+export function parseRuleInput(text: string, task?: string): RuleInput {
   const s = sections(text)
   const ruleText = s.get('RULE TEXT')
   const el = s.get('ELEMENTS')
-  if (!ruleText) throw new ParseError('no "## RULE TEXT" section')
-  if (!el || el.length === 0) throw new ParseError('no "## ELEMENTS" section with a header')
+  if (!el || el.length === 0) throw new ParseError('no "## ELEMENTS" section with a header in the attached data')
   const columns = el[0].split(',').map((c) => c.trim())
   const absent = ELEMENT_COLS.filter((c) => !columns.includes(c))
   if (absent.length) throw new ParseError(`ELEMENTS lacks columns: ${absent.join(', ')}`)
@@ -89,14 +114,11 @@ export function parseRuleInput(text: string): RuleInput {
     if (cells.length !== columns.length) throw new ParseError(`ELEMENTS row ${n + 1} has ${cells.length} cells, expected ${columns.length}`)
     return Object.fromEntries(columns.map((c, i) => [c, cells[i].trim()]))
   })
-  const sentences: Sentence[] = []
-  for (const l of ruleText) {
-    const m = SENTENCE.exec(l)
-    if (!m) throw new ParseError(`RULE TEXT line is not "S-<n>: <sentence>": "${l.slice(0, 60)}"`)
-    if (sentences.some((x) => x.id === m[1])) throw new ParseError(`RULE TEXT: ${m[1]} appears twice`)
-    sentences.push({ id: m[1], text: m[2].trim() })
-  }
-  if (sentences.length === 0) throw new ParseError('RULE TEXT has no sentence')
+  let sentences: Sentence[]
+  if (ruleText) sentences = ruleLines(ruleText.join('\n'))
+  else if (task !== undefined && task !== text) sentences = ruleLines(task)
+  else throw new ParseError('no rules: type them in the task box, one per line, and attach the E-BOM data as the file')
+  if (sentences.length === 0) throw new ParseError('no rules: the task box has no rule line')
   const existingIds = (s.get('RULES') ?? []).map((l) => RULE.exec(l)?.[1] ?? l.split(':').slice(0, 2).join(':'))
   return { sentences, columns, elements, existingIds }
 }
@@ -146,10 +168,10 @@ export function distinctValues(input: RuleInput): Record<string, string[]> {
   return out
 }
 
-export function checkRuleResult(inputText: string, resultText?: string): RuleCheck {
+export function checkRuleResult(inputText: string, resultText?: string, task?: string): RuleCheck {
   let input: RuleInput
   try {
-    input = parseRuleInput(inputText)
+    input = parseRuleInput(inputText, task)
   } catch (e) {
     if (e instanceof ParseError) return { code: 2, out: `error: ${e.message}`, problems: [], dryRun: [] }
     throw e
@@ -252,7 +274,7 @@ export function dryRunSummary(rows: DryRunRow[]): string {
 }
 
 /** CLI shape shared with the other helpers (exit 0 valid, 1 problems listed after MISMATCHES (n), 2 unreadable). */
-export function runCli(inputText: string, resultText?: string): { code: number; out: string } {
-  const r = checkRuleResult(inputText, resultText)
+export function runCli(inputText: string, resultText?: string, task?: string): { code: number; out: string } {
+  const r = checkRuleResult(inputText, resultText, task)
   return { code: r.code, out: r.out }
 }

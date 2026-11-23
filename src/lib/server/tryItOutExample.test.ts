@@ -35,6 +35,20 @@ describe('loadTryItOutExample', () => {
     })
   })
 
+  it('optional wording: task and file labels, a hint and a placeholder; only the ones given', async () => {
+    agent('a', { [EXAMPLE_FILE]: 'task: |-\n  Rule one.\n  Rule two.\ntask_label: Rules, one per line\nfile_label: Data the rules apply to\nhint: Matched against the file.\ntask_placeholder: One per line\n' })
+    expect(await loadTryItOutExample('a', root)).toEqual({
+      task: 'Rule one.\nRule two.',
+      file: null,
+      result: null,
+      labels: { task: 'Rules, one per line', file: 'Data the rules apply to', hint: 'Matched against the file.', placeholder: 'One per line' },
+    })
+    agent('b', { [EXAMPLE_FILE]: 'task: t\nhint: Just a hint\n' })
+    expect((await loadTryItOutExample('b', root))?.labels).toEqual({ hint: 'Just a hint' })
+    agent('c', { [EXAMPLE_FILE]: `task: t\ntask_label: ${'x'.repeat(101)}\n` })
+    await expect(loadTryItOutExample('c', root)).rejects.toThrow(/task_label/)
+  })
+
   it('a task alone is a valid example', async () => {
     agent('a', { [EXAMPLE_FILE]: 'task: Just a task\n' })
     expect(await loadTryItOutExample('a', root)).toEqual({ task: 'Just a task', file: null, result: null })

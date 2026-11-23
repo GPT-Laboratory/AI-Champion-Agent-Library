@@ -2,6 +2,7 @@
 // rules of the answer key, spliced into the ifc-ebom-compiler sample, give exactly that agent's answer key.
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { parse as parseYaml } from 'yaml'
 import { REASONS, checkRuleResult, runCli } from './rule-check'
 import { RESULT_COLS, classRows, parseUpload } from '../src/lib/ebom/ebomJoin'
 import { parseResultTable } from '../src/lib/ebom/ebomCheck'
@@ -9,7 +10,9 @@ import { rulesBlockOf, spliceRules } from '../src/lib/rules/splice'
 
 const dir = 'data/tryitout-prompts/scope-rule-drafter'
 const skill = readFileSync(`${dir}/SKILL.md`, 'utf8')
-const sample = readFileSync(`${dir}/sample-scope-rules.txt`, 'utf8')
+const sample = readFileSync(`${dir}/sample-ebom-input.txt`, 'utf8')
+const example = parseYaml(readFileSync(`${dir}/example.yaml`, 'utf8')) as { task: string; file: string; task_label: string; file_label: string; hint: string }
+const task = example.task
 const key = readFileSync(`${dir}/example-result.md`, 'utf8')
 const entry = readFileSync('data/agents/scope-rule-drafter.yaml', 'utf8')
 const ifcDir = 'data/tryitout-prompts/ifc-ebom-compiler'
@@ -26,7 +29,7 @@ const fenced = (after: string) => new RegExp(`${after}\\s*\`\`\`\\n([\\s\\S]*?)\
 
 describe('scope-rule-drafter alignment', () => {
   it('the answer key passes the helper; its dry run excludes E-06 and E-05', () => {
-    const r = checkRuleResult(sample, key)
+    const r = checkRuleResult(sample, key, task)
     expect(r.problems).toEqual([])
     expect(r.dryRun.map((d) => [d.rule, d.excludes])).toEqual([
       ['text:1', ['E-06']],
@@ -40,7 +43,7 @@ describe('scope-rule-drafter alignment', () => {
   })
 
   it('the worked example of SKILL.md passes the helper; its one rule excludes X-2', () => {
-    const r = checkRuleResult(fenced('## Worked example[^\\n]*\\n\\nInput:'), fenced('Output:'))
+    const r = checkRuleResult(fenced('Upload \\(the E-BOM data[^\\n]*'), fenced('Output:'), fenced('Task \\(the rules, as typed\\):'))
     expect(r.problems).toEqual([])
     expect(r.dryRun).toEqual([{ rule: 'text:1', field: 'system', value: 'SYN-HOOD', excludes: ['X-2'] }])
   })
@@ -67,7 +70,16 @@ describe('scope-rule-drafter alignment', () => {
   it('the sample\'s ELEMENTS are the ifc-ebom-compiler sample\'s, and the sample is labelled synthetic', () => {
     expect(sectionLines(sample, 'ELEMENTS')).toEqual(sectionLines(ifcSample, 'ELEMENTS'))
     expect(sample.split('\n')[0]).toMatch(/^# SYNTHETIC SAMPLE/)
-    expect(runCli(sample).code).toBe(0)
+    expect(runCli(sample, undefined, task).code).toBe(0)
+  })
+
+  it('the example puts plain rules in the task box (no ids, no headings) and the E-BOM data, without rules, in the file', () => {
+    expect(example.file).toBe('sample-ebom-input.txt')
+    for (const l of task.split('\n')) expect(l).toMatch(/^[A-Z][^:#]*\.$/)
+    expect(sample).not.toMatch(/^## (RULE TEXT|RULES)\s*$/m)
+    expect(example.task_label).toMatch(/one per line/)
+    expect(example.file_label).toMatch(/E-BOM input file the rules apply to/)
+    expect(example.hint).toMatch(/attached E-BOM file/)
   })
 
   it('entry names the helper, the hand-over, the stage and the draft flag; no agent number', () => {

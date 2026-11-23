@@ -1,10 +1,23 @@
 # Try It Out example for scope-rule-drafter: the only place the default task, file and saved result are named.
 # Loaded by src/lib/server/tryItOutExample.ts. The result is shown without a model call.
-task: >-
-  Turn the sentences of ## RULE TEXT in the attached upload into scope rules for the ifc-ebom-compiler, by lookup
-  against ## ELEMENTS, following the skill: the rules block, the sentence mapping and the sentences not turned into a rule.
-file: sample-scope-rules.txt
+# The task box holds the scope rules as a person would type them, one per line; the file is the E-BOM data they
+# apply to (blocks, catalogue, elements; no rules yet).
+task: |-
+  Sprinkler piping is delivered by the sprinkler contractor.
+  Temporary ducts for site ventilation are not part of this contract.
+  Insulation of cold-water pipes is billed by the insulation contractor.
+  Exhaust valves in the basement storage rooms are supplied by the owner.
+  All round ducts must be spiral-seamed.
+  Kitchen hood ducts are delivered by the kitchen supplier.
+task_label: Scope rules in your own words, one per line
+task_placeholder: "One rule per line, for example: Exclude all sprinkler elements."
+file: sample-ebom-input.txt
+file_label: E-BOM input file the rules apply to (blocks, catalogue and elements)
+hint: >-
+  The rules are matched against the elements of the attached E-BOM file. Edit or replace the example rules, keep the
+  example E-BOM data or attach your own in the same format, and run. The result is a rules block for the IFC EBOM
+  Compiler, which you can hand over with one click.
 result: example-result.md
 # example-result.md is also the answer key of scripts/ddc-alignment.scope-rule-drafter.test.ts. After the first
 # counted live run, its output may replace it only if that test still passes; then change this label to say so.
-result_label: Expected result for the example input, written from the skill's step table and checked by the rule-check helper. Not a model run.
+result_label: Expected result for the example rules and data, written from the skill's step table and checked by the rule-check helper. Not a model run.

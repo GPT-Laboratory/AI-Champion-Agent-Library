@@ -190,7 +190,8 @@ export const ebomJoinCheck: PostRunCheck = ({ task, upload, files }) => {
 
 // ------------------------------------------------------------------ the six agents with a table helper
 
-type HelperCli = (input: string, result?: string) => { code: number; out: string }
+/** A helper's runCli: input = the upload (or, without one, the task text); task = the task text. */
+type HelperCli = (input: string, result?: string, task?: string) => { code: number; out: string }
 
 export interface HelperCheckSpec {
   /** Helper name, as the CLI in scripts/ (e.g. warranty-status); the report is `<helper>-check.md`. */
@@ -199,7 +200,7 @@ export interface HelperCheckSpec {
   section: string
   runCli: HelperCli
   /** Summary when everything matches (default: "the <section> table matches the <helper> helper on every cell"). */
-  matchSummary?: (input: string, result: string) => string
+  matchSummary?: (input: string, result: string, task: string) => string
 }
 
 const MISMATCH_HEAD = /^MISMATCHES \(\d+\)$/
@@ -223,7 +224,7 @@ export function helperCheck(spec: HelperCheckSpec): PostRunCheck {
     }
     const input = upload ?? task
     const resultText = text(files[resultFile])
-    const r = spec.runCli(input, resultText)
+    const r = spec.runCli(input, resultText, task)
     const fenced = '```text\n' + r.out.replace(/```/g, "'''") + '\n```'
     if (r.code === 2) {
       return {
@@ -239,7 +240,7 @@ export function helperCheck(spec: HelperCheckSpec): PostRunCheck {
     const diffs = r.code === 1 && at >= 0 ? lines.slice(at + 1).filter((l) => l.trim() !== '') : []
     const summary =
       r.code === 0
-        ? `helper check: ${spec.matchSummary ? spec.matchSummary(input, resultText) : `the ${spec.section} table matches the ${spec.helper} helper on every cell`}`
+        ? `helper check: ${spec.matchSummary ? spec.matchSummary(input, resultText, task) : `the ${spec.section} table matches the ${spec.helper} helper on every cell`}`
         : `helper check: ${plural(diffs.length, 'mismatch', 'mismatches')} with the ${spec.helper} helper (details in ${file})`
     const listed = diffs.length ? `## Mismatches\n${diffs.map((d) => `- ${d}`).join('\n')}\n\n` : ''
     return {
@@ -265,7 +266,7 @@ export const HELPER_CHECKS: ReadonlyArray<[string, HelperCheckSpec]> = [
       helper: 'rule-check',
       section: 'Sentence mapping',
       runCli: ruleCli,
-      matchSummary: (input, result) => dryRunSummary(checkRuleResult(input, result).dryRun),
+      matchSummary: (input, result, task) => dryRunSummary(checkRuleResult(input, result, task).dryRun),
     },
   ],
 ]

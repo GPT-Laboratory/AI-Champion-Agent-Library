@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { unzipSync } from 'fflate'
+import { parse as parseYaml } from 'yaml'
 import {
   EBOM_CHECK_FILE,
   EBOM_XLSX_FILE,
@@ -25,6 +26,13 @@ const SLIP = KEY.replace(E11_ROW, `${E11_ROW}\n| E-12 | IfcDuctFitting | review 
 const enc = (s: string) => new TextEncoder().encode(s)
 const dec = (b: Uint8Array) => new TextDecoder().decode(b)
 const SLUG = 'ifc-ebom-compiler'
+
+const sampleOf = (slug: string) => {
+  const dir = join(process.cwd(), 'data/tryitout-prompts', slug)
+  const ex = parseYaml(readFileSync(join(dir, 'example.yaml'), 'utf8')) as { task: string; file: string }
+  // The example task too: the scope rule drafter's rules are typed in the task box.
+  return { task: ex.task, input: readFileSync(join(dir, ex.file), 'utf8'), key: readFileSync(join(dir, 'example-result.md'), 'utf8') }
+}
 
 describe('registry', () => {
   it('ifc-ebom-compiler and the six helper agents have a check; other slugs and prototype names get nothing', () => {
@@ -113,20 +121,14 @@ describe('ebomJoinCheck', () => {
 })
 
 describe('the helper checks', () => {
-  const sampleOf = (slug: string) => {
-    const dir = join(process.cwd(), 'data/tryitout-prompts', slug)
-    const yaml = readFileSync(join(dir, 'example.yaml'), 'utf8')
-    const file = /^file:\s*(\S+)/m.exec(yaml)![1]
-    return { input: readFileSync(join(dir, file), 'utf8'), key: readFileSync(join(dir, 'example-result.md'), 'utf8') }
-  }
 
   it.each(HELPER_CHECKS.map(([slug, spec]) => [slug, spec.helper, spec.section] as const))(
     '%s: the saved key matches %s; one changed cell is a mismatch; no table is not checked',
     (slug, helper, section) => {
-      const { input, key } = sampleOf(slug)
-      const ok = runPostRunCheck(slug, { task: 't', upload: input, files: { 'result.md': enc(key) } })
+      const { task, input, key } = sampleOf(slug)
+      const ok = runPostRunCheck(slug, { task, upload: input, files: { 'result.md': enc(key) } })
       const spec = HELPER_CHECKS.find(([s]) => s === slug)![1]
-      const summary = spec.matchSummary ? spec.matchSummary(input, key) : `the ${section} table matches the ${helper} helper on every cell`
+      const summary = spec.matchSummary ? spec.matchSummary(input, key, task) : `the ${section} table matches the ${helper} helper on every cell`
       expect(ok.check).toEqual({ status: 'match', summary, file: `${helper}-check.md` })
       expect(ok.files.map((f) => f.name)).toEqual([`${helper}-check.md`])
       expect(dec(ok.files[0].bytes)).toContain(`# ${helper} check`)
@@ -139,12 +141,12 @@ describe('the helper checks', () => {
       const cells = lines[row].split('|')
       cells[2] = ` ${cells[2].trim() === 'X' ? 'Y' : 'X'}ZZ `
       lines[row] = cells.join('|')
-      const bad = runPostRunCheck(slug, { task: 't', upload: input, files: { 'result.md': enc(lines.join('\n')) } })
+      const bad = runPostRunCheck(slug, { task, upload: input, files: { 'result.md': enc(lines.join('\n')) } })
       expect(bad.check?.status).toBe('differences')
       expect(bad.check?.summary).toMatch(new RegExp(`^\\d+ mismatch(es)? with the ${helper} helper`))
       expect(bad.events.length).toBeGreaterThan(1)
 
-      const none = runPostRunCheck(slug, { task: 't', upload: input, files: { 'result.md': enc('no table') } })
+      const none = runPostRunCheck(slug, { task, upload: input, files: { 'result.md': enc('no table') } })
       expect(none.check?.status).toBe('not-checked')
     },
   )
@@ -201,12 +203,15 @@ describe('runPostRunCheck', () => {
 
 describe('scope-rule-drafter check', () => {
   it('the badge summary carries the dry run', () => {
-    const dir = join(process.cwd(), 'data/tryitout-prompts/scope-rule-drafter')
-    const r = runPostRunCheck('scope-rule-drafter', {
-      task: 't',
-      upload: readFileSync(join(dir, 'sample-scope-rules.txt'), 'utf8'),
-      files: { 'result.md': enc(readFileSync(join(dir, 'example-result.md'), 'utf8')) },
-    })
+    const { task, input, key } = sampleOf('scope-rule-drafter')
+    const r = runPostRunCheck('scope-rule-drafter', { task, upload: input, files: { 'result.md': enc(key) } })
     expect(r.check).toEqual({ status: 'match', summary: '2 rules, all valid: text:1 excludes E-06; text:2 excludes E-05', file: 'rule-check-check.md' })
+  })
+
+  it('rules typed in the task with no file attached cannot be checked, and the badge says why', () => {
+    const { task, key } = sampleOf('scope-rule-drafter')
+    const r = runPostRunCheck('scope-rule-drafter', { task, upload: null, files: { 'result.md': enc(key) } })
+    expect(r.check?.status).toBe('not-checked')
+    expect(r.check?.summary).toMatch(/could not read the input or result \(no "## ELEMENTS" section with a header in the attached data\)/)
   })
 })

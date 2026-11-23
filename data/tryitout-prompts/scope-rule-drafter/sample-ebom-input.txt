@@ -1,13 +1,5 @@
 # SYNTHETIC SAMPLE - invented data for an invented building, not from any real project
-# Plain-language scope sentences plus the element facts of the ifc-ebom-compiler sample (without its RULES); SYN designations are invented
-## RULE TEXT
-S-1: Sprinkler piping is delivered by the sprinkler contractor.
-S-2: Temporary ducts for site ventilation are not part of this contract.
-S-3: Insulation of cold-water pipes is billed by the insulation contractor.
-S-4: Everything in the shaft belongs to the shaft contractor.
-S-5: Exhaust valves in the basement storage rooms are supplied by the owner.
-S-6: All round ducts must be spiral-seamed.
-S-7: The SYN-HOOD system is delivered by the kitchen supplier.
+# E-BOM input without scope rules: the blocks, catalogue and element facts of the ifc-ebom-compiler sample; SYN designations are invented
 ## BLOCKS
 block_id,discipline,tab,title
 K1,IV,2nd floor,Staircase B apartments

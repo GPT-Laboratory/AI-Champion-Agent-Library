@@ -22,12 +22,13 @@ vi.mock('$app/navigation', () => ({
 }))
 
 const read = (slug: string, f: string) => readFileSync(join(process.cwd(), 'data/tryitout-prompts', slug, f), 'utf8')
-const RULES_SAMPLE = read('scope-rule-drafter', 'sample-scope-rules.txt')
+const RULES_SAMPLE = read('scope-rule-drafter', 'sample-ebom-input.txt')
 const RULES_KEY = read('scope-rule-drafter', 'example-result.md')
 const rulesExample = {
-  task: 'Turn the sentences into rules',
-  file: { name: 'sample-scope-rules.txt', text: RULES_SAMPLE },
+  task: 'Exclude all sprinkler elements.\nRound ducts are not part of this contract.',
+  file: { name: 'sample-ebom-input.txt', text: RULES_SAMPLE },
   result: { label: 'Not a model run.', text: RULES_KEY },
+  labels: { task: 'Scope rules in your own words, one per line', file: 'E-BOM input file the rules apply to', hint: 'The rules are matched against the elements of the attached E-BOM file.', placeholder: 'One rule per line' },
 }
 const ifcExample = {
   task: 'Compile the attached upload',
@@ -95,6 +96,26 @@ describe('sending: the scope rule drafter', () => {
     none.unmount()
     const other = render(TryItOutPanel, { props: { agentId: 'ifc-ebom-compiler', example: { ...ifcExample, result: { label: 'x', text: RULES_KEY } } } })
     expect(byText(other.container, LABEL)).toBeUndefined()
+  })
+})
+
+describe('the rule agent panel wording', () => {
+  it('names the task box and the file for the rules, with the hint tied to the task box', () => {
+    const { container } = render(TryItOutPanel, { props: { agentId: 'scope-rule-drafter', example: rulesExample } })
+    const labels = Array.from(container.querySelectorAll('label')).map((l) => l.textContent?.trim())
+    expect(labels).toEqual(['Scope rules in your own words, one per line', 'E-BOM input file the rules apply to'])
+    const box = container.querySelector('textarea')!
+    expect(box.value).toBe(rulesExample.task)
+    expect(box.getAttribute('placeholder')).toBe('One rule per line')
+    expect(box.getAttribute('aria-describedby')).toBe('tryitout-hint')
+    expect(container.querySelector('#tryitout-hint')?.textContent).toBe(rulesExample.labels.hint)
+    expect(Number(box.getAttribute('rows'))).toBe(3)
+  })
+
+  it('without labels the panel keeps its usual wording', () => {
+    const { container } = render(TryItOutPanel, { props: { agentId: 'ifc-ebom-compiler', example: ifcExample } })
+    expect(Array.from(container.querySelectorAll('label')).map((l) => l.textContent?.trim())).toEqual(['Task', 'Attach a file (optional)'])
+    expect(container.querySelector('#tryitout-hint')).toBeNull()
   })
 })
 

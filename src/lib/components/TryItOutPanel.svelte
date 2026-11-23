@@ -24,6 +24,8 @@
     return f ? new File([f.text], f.name, { type: 'text/plain' }) : null
   }
   let task = $state(untrack(() => example?.task ?? ''))
+  // A multi-line example task (e.g. one rule per line) starts with room for its lines.
+  const taskRows = untrack(() => Math.min(10, Math.max(3, (example?.task ?? '').split('\n').length + 1)))
   let file = $state<File | null>(exampleFile())
   let usingExampleFile = $state(untrack(() => example?.file != null))
   let fileInputEl: HTMLInputElement | null = $state(null)
@@ -209,17 +211,22 @@
 <aside class="rounded-xl border border-gray-200 bg-white p-6" aria-labelledby="tryitout-heading">
   <h2 id="tryitout-heading" class="font-semibold text-gray-900 mb-2">Try it out</h2>
 
-  <label for="tryitout-task" class="block text-xs font-semibold text-gray-700 mb-1">Task</label>
+  <label for="tryitout-task" class="block text-xs font-semibold text-gray-700 mb-1">{example?.labels?.task ?? 'Task'}</label>
   <textarea
     id="tryitout-task"
-    rows="3"
-    placeholder="Describe the task you want this agent to do…"
+    rows={taskRows}
+    aria-describedby={example?.labels?.hint ? 'tryitout-hint' : undefined}
+    placeholder={example?.labels?.placeholder ?? 'Describe the task you want this agent to do…'}
     class="w-full rounded border border-gray-500 bg-white px-3 py-2 text-sm text-gray-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
     value={task}
     oninput={(e) => (task = e.currentTarget.value)}
   ></textarea>
 
-  <label for="tryitout-file" class="mt-4 block text-xs font-semibold text-gray-700 mb-1">Attach a file (optional)</label>
+  {#if example?.labels?.hint}
+    <p id="tryitout-hint" class="mt-1 text-xs text-gray-600">{example.labels.hint}</p>
+  {/if}
+
+  <label for="tryitout-file" class="mt-4 block text-xs font-semibold text-gray-700 mb-1">{example?.labels?.file ?? 'Attach a file (optional)'}</label>
   <input
     id="tryitout-file"
     type="file"

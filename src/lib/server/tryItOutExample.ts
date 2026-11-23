@@ -26,6 +26,11 @@ const FileName = z
 const ExampleSchema = z
   .object({
     task: z.string().trim().min(1).max(MAX_EXAMPLE_BYTES),
+    // Optional panel wording, for agents whose task box is not a free task (e.g. the rules of scope-rule-drafter).
+    task_label: z.string().trim().min(1).max(100).optional(),
+    file_label: z.string().trim().min(1).max(100).optional(),
+    hint: z.string().trim().min(1).max(400).optional(),
+    task_placeholder: z.string().trim().min(1).max(200).optional(),
     file: FileName.optional(),
     result: FileName.optional(),
     // Required with a result: the panel must say where a saved result came from (helper, model run, ...).
@@ -67,9 +72,11 @@ export async function loadTryItOutExample(agentId: string, promptsDir: string = 
     throw new Error(`invalid ${where}: ${issues.join('; ')}`)
   }
   const e = parsed.data
+  const labels = { task: e.task_label, file: e.file_label, hint: e.hint, placeholder: e.task_placeholder }
   return {
     task: e.task,
     file: e.file ? { name: e.file, text: await readCapped(dir, e.file) } : null,
     result: e.result ? { label: e.result_label!, text: await readCapped(dir, e.result) } : null,
+    ...(e.task_label || e.file_label || e.hint || e.task_placeholder ? { labels: Object.fromEntries(Object.entries(labels).filter(([, v]) => v)) } : {}),
   }
 }

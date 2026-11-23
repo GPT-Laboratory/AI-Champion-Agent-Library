@@ -21,7 +21,8 @@ export const HANDOFFS: ReadonlyMap<string, Handoff> = new Map<string, Handoff>([
       label: 'Use these rules in the IFC EBOM Compiler',
       build: (upload, result) => {
         const lines = rulesBlockOf(result)
-        if (lines.length === 0) return null
+        // The rules go into E-BOM data; without its ELEMENTS section (e.g. a run with no file) there is nothing to hand.
+        if (lines.length === 0 || !/^##\s+ELEMENTS\s*$/im.test(upload)) return null
         return {
           fileName: 'ebom-upload-with-rules.txt',
           text: spliceRules(upload, lines, 'add'),

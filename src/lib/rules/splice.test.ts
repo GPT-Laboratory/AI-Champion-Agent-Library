@@ -5,7 +5,7 @@ import { parseUpload } from '$lib/ebom/ebomJoin'
 import { rulesBlockOf, spliceRules } from './splice'
 
 const DIR = join(process.cwd(), 'data/tryitout-prompts/scope-rule-drafter')
-const SAMPLE = readFileSync(join(DIR, 'sample-scope-rules.txt'), 'utf8')
+const SAMPLE = readFileSync(join(DIR, 'sample-ebom-input.txt'), 'utf8')
 const KEY = readFileSync(join(DIR, 'example-result.md'), 'utf8')
 const LINES = rulesBlockOf(KEY)
 const section = (t: string, name: string) => {
@@ -29,9 +29,8 @@ describe('rulesBlockOf', () => {
 })
 
 describe('spliceRules', () => {
-  it('no RULES in the upload: a RULES section before ELEMENTS; RULE TEXT removed; the compiler reads it', () => {
+  it('no RULES in the upload: a RULES section before ELEMENTS; the compiler reads it', () => {
     const out = spliceRules(SAMPLE, LINES)
-    expect(section(out, 'RULE TEXT')).toBeNull()
     expect(section(out, 'RULES')).toEqual(LINES)
     expect(out.indexOf('## RULES')).toBeLessThan(out.indexOf('## ELEMENTS'))
     expect(out.startsWith('# SYNTHETIC SAMPLE')).toBe(true)
@@ -47,6 +46,12 @@ describe('spliceRules', () => {
     const own = SAMPLE.replace('## ELEMENTS', '## RULES\nrules:1: system = EXHAUST-2 -> exclude (own)\ntext:1: system = OLD -> exclude (earlier hand-over)\n## ELEMENTS')
     expect(section(spliceRules(own, LINES, 'add'), 'RULES')).toEqual(['rules:1: system = EXHAUST-2 -> exclude (own)', ...LINES])
     expect(section(spliceRules(own, LINES, 'replace'), 'RULES')).toEqual(LINES)
+  })
+
+  it('a ## RULE TEXT section (rules given in the file) is removed', () => {
+    const out = spliceRules(`## RULE TEXT\nExclude all sprinkler elements.\n${SAMPLE}`, LINES)
+    expect(section(out, 'RULE TEXT')).toBeNull()
+    expect(out).not.toContain('Exclude all sprinkler elements.')
   })
 
   it('RULES as the last section, and an upload without ELEMENTS', () => {
