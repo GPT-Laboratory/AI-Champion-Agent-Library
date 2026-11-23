@@ -8,6 +8,7 @@
   import type { JobCheck } from '$lib/tryItOutCheck'
   import { XLSX_MIME } from '$lib/xlsx'
   import ResultView from './ResultView.svelte'
+  import { HANDOFFS, openAgentPage, storeHandoff, takeHandoff } from '$lib/handoff'
 
   interface Props {
     agentId?: string
@@ -27,13 +28,42 @@
   let usingExampleFile = $state(untrack(() => example?.file != null))
   let fileInputEl: HTMLInputElement | null = $state(null)
 
+  // Hand-over (src/lib/handoff.ts): this agent's result can go on to another agent; or this panel received one.
+  const handoff = untrack(() => HANDOFFS.get(agentId) ?? null)
+  let received = $state<{ note: string; fileName: string; text: string } | null>(null)
+  let handoffError = $state<string | null>(null)
+  // The upload the last run used (the file, or the task text without one), for handing its result on.
+  let lastRunUpload = $state<string | null>(null)
+
+  function handOver(upload: string, result: string) {
+    const built = handoff?.build(upload, result)
+    if (!handoff || !built) return
+    const ok = storeHandoff({ from: agentId, to: handoff.to, ...built, at: Date.now() })
+    if (!ok) {
+      handoffError = 'This browser keeps no session storage, so the hand-over is not possible here.'
+      return
+    }
+    openAgentPage(handoff.to)
+  }
+
+  // Once, in the browser: take a hand-over meant for this agent and attach it as the file.
+  $effect(() => {
+    const h = untrack(() => takeHandoff(agentId))
+    if (!h) return
+    received = { note: h.note, fileName: h.fileName, text: h.text }
+    file = new File([h.text], h.fileName, { type: 'text/plain' })
+    usingExampleFile = false
+  })
+
   function useExampleFile() {
+    received = null
     file = exampleFile()
     usingExampleFile = file !== null
     if (fileInputEl) fileInputEl.value = '' // the native input must not keep showing another file
   }
 
   function removeExampleFile() {
+    received = null
     file = null
     usingExampleFile = false
   }
@@ -122,6 +152,7 @@
     status = 'queued'
     clearJobIdFromUrl() // a stale id must never be live while a new job is in flight
 
+    lastRunUpload = file ? await file.text() : task
     const result = await submitJob(agentId, task, file)
     jobId = result.jobId
     writeJobIdToUrl(result.jobId)
@@ -197,10 +228,28 @@
     onchange={(e) => {
       file = e.currentTarget.files?.[0] ?? null
       usingExampleFile = false
+      received = null
     }}
   />
 
+  {#if received && file}
+    <div class="mt-2 rounded border border-indigo-200 bg-indigo-50 p-3 text-sm text-gray-900" role="status">
+      <p>{received.note}</p>
+      <p class="mt-1">
+        Attached: <span class="font-mono">{received.fileName}</span>
+        {#if example?.file}
+          <button type="button" onclick={useExampleFile} class="ml-2 rounded text-indigo-600 hover:underline focus-visible:ring-2 focus-visible:ring-indigo-600">Use the example file instead</button>
+        {/if}
+      </p>
+      <details class="mt-2">
+        <summary class="cursor-pointer text-sm font-medium text-indigo-600">View the handed-over input</summary>
+        <ResultView text={received.text} mode="input" label="Handed-over input" />
+      </details>
+    </div>
+  {/if}
+
   {#if example?.file}
+    {#if !(received && file)}
     <p class="mt-2 text-sm text-gray-700">
       {#if usingExampleFile}
         Attached: <span class="font-mono">{example.file.name}</span> (example input)
@@ -209,6 +258,7 @@
         <button type="button" onclick={useExampleFile} class="rounded text-indigo-600 hover:underline focus-visible:ring-2 focus-visible:ring-indigo-600">Use example file</button>
       {/if}
     </p>
+    {/if}
     <details class="mt-3">
       <summary class="cursor-pointer text-sm font-medium text-indigo-600">View example input ({example.file.name})</summary>
       <ResultView text={example.file.text} mode="input" label="Example input" />
@@ -229,6 +279,15 @@
       <summary class="cursor-pointer text-sm font-medium text-indigo-600">Show example result (no model call)</summary>
       <p class="mt-2 text-xs text-gray-600">{example.result.label}</p>
       <ResultView text={example.result.text} label="Example result" excelName={`${agentId}-example-result.xlsx`} />
+      {#if handoff && example.file && handoff.build(example.file.text, example.result.text)}
+        <button
+          type="button"
+          onclick={() => handOver(example!.file!.text, example!.result!.text)}
+          class="mt-3 inline-flex items-center gap-2 min-h-[44px] rounded border border-indigo-600 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+        >
+          {handoff.label} <span aria-hidden="true">→</span>
+        </button>
+      {/if}
     </details>
   {/if}
 
@@ -300,7 +359,21 @@
           />
         </details>
       {/each}
+      {@const mainResult = bundle.texts.find((t) => /^result\.(md|txt)$/i.test(t.name))}
+      {#if handoff && lastRunUpload !== null && mainResult && handoff.build(lastRunUpload, mainResult.text)}
+        <button
+          type="button"
+          onclick={() => handOver(lastRunUpload!, mainResult.text)}
+          class="mt-4 inline-flex items-center gap-2 min-h-[44px] rounded border border-indigo-600 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+        >
+          {handoff.label} <span aria-hidden="true">→</span>
+        </button>
+      {/if}
     {/if}
+  {/if}
+
+  {#if handoffError}
+    <p class="mt-2 text-sm text-red-700" role="alert">{handoffError}</p>
   {/if}
 
   {#if status === 'failed'}

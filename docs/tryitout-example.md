@@ -49,6 +49,21 @@ After a run succeeds, the panel shows its result on the page under "Result", nex
 - For an agent with a tool check, a badge above the result says "Checked by tool: matches", "differences found" or "Not checked by tool", with the check's summary. It comes from the server (`GET /api/tryitout/jobs/<id>/check`), never from a file in the artifact; see [tryitout-post-run-check.md](tryitout-post-run-check.md).
 - Size caps are checked before anything is decompressed: a zip over 1 MB, or text files over 200 KB in total, are left to the download. Then the panel says "The result cannot be shown here; use Download results."
 
+## Handing a result to the next agent
+
+Some results are the input of another agent (`src/lib/handoff.ts`). Today: the Scope Rule Drafter's rules go to the
+IFC EBOM Compiler.
+
+- Under "Show example result" and under a run's result, the panel shows "Use these rules in the IFC EBOM Compiler" when the
+  result has at least one rule. It builds the compiler's upload from the same input (the example file, or the file
+  the run used): the `## RULE TEXT` sentences are removed and the rules are added to `## RULES`
+  (`src/lib/rules/splice.ts`; rules from an earlier hand-over, `text:...`, are replaced; the upload's own rules stay).
+  From the example result this works without a model call.
+- The upload is kept in the browser's session storage (never sent to the server, never in the URL) and the
+  compiler's page opens with Try It Out open. Its panel takes the hand-over once, attaches it as the file and says
+  so ("From the Scope Rule Drafter: 2 rules added ..."), with "View the handed-over input" and "Use the example file
+  instead". A hand-over older than an hour, or meant for another agent, is ignored.
+
 ## Rules
 
 - The saved result must be honest about its source. Say in `result_label` whether it is a helper's answer key, a counted live run (give the job id) or something else.

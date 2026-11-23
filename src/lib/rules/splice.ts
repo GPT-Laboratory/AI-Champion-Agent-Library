@@ -1,5 +1,5 @@
 // Puts the scope rules a scope-rule-drafter result wrote into an ifc-ebom-compiler upload (client-safe, pure).
-// Used by the "Use these rules in IFC → E-BOM" hand-over (src/lib/handoff.ts) and, later, by the pipeline.
+// Used by the "Use these rules in the IFC EBOM Compiler" hand-over (src/lib/handoff.ts) and, later, by the pipeline.
 // The upload loses its `## RULE TEXT` section (the compiler does not read sentences) and gets the rule lines in its
 // `## RULES` section: added after the rules it has ('add'; an earlier hand-over's text: rules are replaced) or
 // instead of them ('replace'). With no `## RULES` section, one is put in front of `## ELEMENTS`.
