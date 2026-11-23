@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { cellTone, hasTable, parseDocument, parseInline, splitCsvLine, splitPipeRow, type Block } from './resultMarkdown'
+import { cellTone, hasTable, toneColumns, parseDocument, parseInline, splitCsvLine, splitPipeRow, type Block } from './resultMarkdown'
 
 const kinds = (b: Block[]) => b.map((x) => x.kind)
 const tables = (b: Block[]) => b.filter((x): x is Extract<Block, { kind: 'table' }> => x.kind === 'table')
@@ -92,5 +92,18 @@ describe('cellTone', () => {
     expect(['review', 'expiring-soon', 'ambiguous', 'pending'].map(cellTone)).toEqual(['warn', 'warn', 'warn', 'warn'])
     expect(cellTone('exclude')).toBe('muted')
     for (const v of ['E-01', '12.5', 'SYN Round duct 250', '-', 'K1', 'missing a document entirely here']) expect(cellTone(v)).toBeNull()
+  })
+})
+
+describe('toneColumns', () => {
+  it('colours a column only when at least half of its filled cells are status words', () => {
+    const rows = [
+      ['E-01', 'bill', 'stated'],
+      ['E-04', 'review', 'multi-catalogue'],
+      ['E-08', 'review', 'length-unsettled'],
+      ['E-05', 'exclude', 'rules:2'],
+      ['E-06', '-', 'count'],
+    ]
+    expect(toneColumns(rows, 4)).toEqual([false, true, false, false])
   })
 })

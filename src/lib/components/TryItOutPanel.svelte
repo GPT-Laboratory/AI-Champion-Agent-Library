@@ -4,7 +4,10 @@
   import type { JobEvent, JobStatus } from '$lib/tryItOut'
   import { readJobIdFromUrl, writeJobIdToUrl, clearJobIdFromUrl } from '$lib/tryItOutSession'
   import type { TryItOutExample } from '$lib/tryItOutExample'
-  import { fetchResultFiles, type ResultFile } from '$lib/tryItOutResult'
+  import { fetchJobCheck, fetchResultFiles, saveBytes, type ResultBundle } from '$lib/tryItOutResult'
+  import type { JobCheck } from '$lib/tryItOutCheck'
+  import { XLSX_MIME } from '$lib/xlsx'
+  import ResultView from './ResultView.svelte'
 
   interface Props {
     agentId?: string
@@ -40,8 +43,28 @@
   let jobId = $state<string | null>(null)
 
   // The result shown on the page (text files of the artifact, docs/tryitout-example.md); the download stays.
-  let resultFiles = $state<ResultFile[] | 'loading' | 'unavailable' | null>(null)
+  let resultFiles = $state<ResultBundle | 'loading' | 'unavailable' | null>(null)
   let resultFor: string | null = null
+  // The tool check of the run, from the server (never from a file of the artifact); null when none.
+  let jobCheck = $state<JobCheck | null>(null)
+
+  const CHECK_LABEL: Record<JobCheck['status'], string> = {
+    match: 'Checked by tool: matches',
+    differences: 'Checked by tool: differences found',
+    'not-checked': 'Not checked by tool',
+  }
+  const CHECK_STYLE: Record<JobCheck['status'], string> = {
+    match: 'border-green-200 bg-green-50 text-green-900',
+    differences: 'border-yellow-200 bg-yellow-50 text-yellow-900',
+    'not-checked': 'border-gray-200 bg-gray-50 text-gray-800',
+  }
+  const CHECK_ICON: Record<JobCheck['status'], string> = { match: '✓', differences: '!', 'not-checked': '–' }
+
+  /** Excel name for a text file's tables, or null when the artifact already has its own spreadsheet. */
+  function excelNameFor(name: string, bundle: ResultBundle): string | null {
+    if (bundle.sheets.length > 0 || !/\.(md|txt)$/i.test(name)) return null
+    return `${agentId}-${name.replace(/\.[a-z]+$/i, '')}.xlsx`
+  }
 
   let feedEl: HTMLDivElement | null = $state(null)
   let unsubscribe: (() => void) | null = null
@@ -95,6 +118,7 @@
     jobId = null
     resultFiles = null
     resultFor = null
+    jobCheck = null
     status = 'queued'
     clearJobIdFromUrl() // a stale id must never be live while a new job is in flight
 
@@ -131,7 +155,10 @@
     resultFor = id
     resultFiles = 'loading'
     void fetchResultFiles(id).then((files) => {
-      if (resultFor === id) resultFiles = files ?? 'unavailable'
+      if (resultFor === id) resultFiles = files && files.texts.length + files.sheets.length > 0 ? files : 'unavailable'
+    })
+    void fetchJobCheck(id).then((c) => {
+      if (resultFor === id) jobCheck = c
     })
   })
 
@@ -184,10 +211,7 @@
     </p>
     <details class="mt-3">
       <summary class="cursor-pointer text-sm font-medium text-indigo-600">View example input ({example.file.name})</summary>
-      <pre
-        tabindex="0"
-        aria-label="Example input"
-        class="mt-2 max-h-64 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 font-mono text-xs text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{example.file.text}</pre>
+      <ResultView text={example.file.text} mode="input" label="Example input" />
     </details>
   {/if}
 
@@ -204,10 +228,7 @@
     <details class="mt-4">
       <summary class="cursor-pointer text-sm font-medium text-indigo-600">Show example result (no model call)</summary>
       <p class="mt-2 text-xs text-gray-600">{example.result.label}</p>
-      <pre
-        tabindex="0"
-        aria-label="Example result"
-        class="mt-2 max-h-96 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 font-mono text-xs text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{example.result.text}</pre>
+      <ResultView text={example.result.text} label="Example result" excelName={`${agentId}-example-result.xlsx`} />
     </details>
   {/if}
 
@@ -240,19 +261,43 @@
       Download results
     </button>
 
+    {#if resultFiles && typeof resultFiles === 'object'}
+      {#each resultFiles.sheets as sh (sh.name)}
+        <button
+          type="button"
+          onclick={() => saveBytes(sh.name, sh.bytes, XLSX_MIME)}
+          class="ml-2 mt-4 inline-flex items-center gap-2 min-h-[44px] rounded border border-indigo-600 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+        >
+          Download {sh.name}
+        </button>
+      {/each}
+    {/if}
+
+    {#if jobCheck}
+      <div class={`mt-4 rounded border p-3 text-sm ${CHECK_STYLE[jobCheck.status]}`}>
+        <p class="font-semibold"><span aria-hidden="true">{CHECK_ICON[jobCheck.status]}</span> {CHECK_LABEL[jobCheck.status]}</p>
+        <p class="mt-1">{jobCheck.summary}</p>
+        <p class="mt-1 text-xs">A deterministic helper recomputed the result from the input; no model call.{jobCheck.file ? ` Details in ${jobCheck.file}.` : ''}</p>
+      </div>
+    {/if}
+
     {#if resultFiles === 'loading'}
       <p class="mt-4 text-sm text-gray-600">Loading the result…</p>
     {:else if resultFiles === 'unavailable'}
       <p class="mt-4 text-sm text-gray-600">The result cannot be shown here; use Download results.</p>
-    {:else if resultFiles}
+    {:else if resultFiles && resultFiles.texts.length > 0}
+      {@const bundle = resultFiles}
       <p class="mt-6 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">Result</p>
-      {#each resultFiles as f, i (f.name)}
+      {#each bundle.texts as f, i (f.name)}
         <details class="mt-2" open={i === 0}>
           <summary class="cursor-pointer text-sm font-medium text-indigo-600">{f.name}</summary>
-          <pre
-            tabindex="0"
-            aria-label={`Result file ${f.name}`}
-            class="mt-2 max-h-96 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 font-mono text-xs text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{f.text}</pre>
+          <ResultView
+            text={f.text}
+            mode={/\.csv$/i.test(f.name) ? 'input' : 'result'}
+            startRaw={/\.json$/i.test(f.name)}
+            label={`Result file ${f.name}`}
+            excelName={excelNameFor(f.name, bundle)}
+          />
         </details>
       {/each}
     {/if}

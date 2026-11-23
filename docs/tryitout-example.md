@@ -29,8 +29,11 @@ File names are bare names in the same folder. Each file is capped at 200 KB, the
 ## What the visitor sees
 
 - The task is prefilled and the example file is attached. Both can be edited, removed or replaced.
-- "View example input" shows the file, so the input format is visible.
-- "Show example result" shows the saved result with its label. It makes no request and no model call.
+- "View example input" shows the file, so the input format is visible: `# ` lines as notes, `key: value` lines as
+  fields, and each CSV or `|`-separated section as a table under its `## ` heading. "Show raw text" shows the file
+  exactly as it is.
+- "Show example result" shows the saved result with its label, its tables as tables, and "Download tables as Excel
+  (.xlsx)". It makes no request and no model call.
 - Run is unchanged: it always does a real run, with whatever task and file are in the form.
 
 Agents without `example.yaml` get the panel as before.
@@ -40,7 +43,10 @@ Agents without `example.yaml` get the panel as before.
 After a run succeeds, the panel shows its result on the page under "Result", next to "Download results" (which stays). This holds for every runnable agent, with or without an example.
 
 - The panel reads the same artifact as the download (`GET /api/tryitout/jobs/<id>/artifact`) and unzips it in the browser (`src/lib/tryItOutResult.ts`). The job API and `src/lib/tryItOut.ts` are unchanged.
-- Only text files are shown (`.md`, `.txt`, `.csv`, `.json`): `result.*` first and open, then the others by name (for example `ebom-join-check.md`). Each is shown as plain text, never rendered as HTML.
+- Text files are shown (`.md`, `.txt`, `.csv`, `.json`): `result.*` first and open, then the others by name (for example `ebom-join-check.md`).
+- Markdown tables are shown as tables (`src/lib/components/ResultView.svelte`, parser `src/lib/resultMarkdown.ts`); short status words such as `bill`, `review`, `expired` or `register-ok` get a coloured chip, and the word is always shown too. "Show raw text" shows the file exactly. JSON starts as raw text. The view is built from plain strings with Svelte elements: nothing from a result is ever rendered as HTML.
+- "Download tables as Excel (.xlsx)" writes the result's tables as a workbook in the browser (`src/lib/xlsx.ts`, one sheet per table, named after its heading; plain decimals as numbers, text never as a formula). When the artifact already has a spreadsheet (ifc-ebom-compiler's `ebom.xlsx`, written by the post-run check), the panel offers "Download ebom.xlsx" instead.
+- For an agent with a tool check, a badge above the result says "Checked by tool: matches", "differences found" or "Not checked by tool", with the check's summary. It comes from the server (`GET /api/tryitout/jobs/<id>/check`), never from a file in the artifact; see [tryitout-post-run-check.md](tryitout-post-run-check.md).
 - Size caps are checked before anything is decompressed: a zip over 1 MB, or text files over 200 KB in total, are left to the download. Then the panel says "The result cannot be shown here; use Download results."
 
 ## Rules

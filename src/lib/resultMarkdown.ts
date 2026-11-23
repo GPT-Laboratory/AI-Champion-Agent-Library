@@ -231,3 +231,14 @@ export function cellTone(value: string): Tone | null {
   if (WARN.test(v)) return 'warn'
   return null
 }
+
+/**
+ * Columns whose cells get colour chips: those where at least half of the filled cells (not "-") are status words.
+ * Keeps a column of mixed reasons (stated, count, loc-review ...) plain instead of colouring a few of them.
+ */
+export function toneColumns(rows: string[][], width: number): boolean[] {
+  return Array.from({ length: width }, (_, c) => {
+    const vals = rows.map((r) => (r[c] ?? '').trim()).filter((v) => v !== '' && v !== '-')
+    return vals.length > 0 && vals.filter((v) => cellTone(v) !== null).length * 2 >= vals.length
+  })
+}
