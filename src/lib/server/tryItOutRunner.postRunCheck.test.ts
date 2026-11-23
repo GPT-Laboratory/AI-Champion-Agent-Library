@@ -58,7 +58,7 @@ async function run(slug: string, upload: string, output: string) {
   await runDirectLlmJob(job.jobId)
   const j = jobsMod.getJob(job.jobId)!
   const entries = unzipSync(new Uint8Array(await readFile(jobsMod.artifactZipPath(job.jobId))))
-  return { status: j.status, events: j.events.map((e) => e.summary), entries }
+  return { status: j.status, events: j.events.map((e) => e.summary), entries, check: j.check }
 }
 
 describe('post-run check, direct-model fallback', () => {
@@ -68,14 +68,20 @@ describe('post-run check, direct-model fallback', () => {
     expect(r.events).toContain('helper check: 1 mismatch with the ebom-join helper (details in ebom-join-check.md)')
     expect(r.events).toContain('  E-12: rule is "no-catalogue", helper says "multi-catalogue"')
     expect(r.events.at(-1)).toBe('agent settled (clean exit)')
-    expect(Object.keys(r.entries).sort()).toEqual(['ebom-join-check.md', 'result.txt'])
+    expect(Object.keys(r.entries).sort()).toEqual(['ebom-join-check.md', 'ebom.xlsx', 'result.txt'])
     expect(strFromU8(r.entries['result.txt'])).toBe(SLIP)
     expect(strFromU8(r.entries['ebom-join-check.md'])).toContain('Result checked: result.txt.')
+    expect(r.check).toEqual({
+      status: 'differences',
+      summary: '1 mismatch with the ebom-join helper (details in ebom-join-check.md)',
+      file: 'ebom-join-check.md',
+    })
   })
 
   it('other agents: artifact and feed unchanged', async () => {
     const r = await run('demo-rfi-triage', 'RFI text', 'triage result')
     expect(Object.keys(r.entries)).toEqual(['result.txt'])
     expect(r.events.some((e) => e.startsWith('helper check'))).toBe(false)
+    expect(r.check).toBeUndefined()
   })
 })

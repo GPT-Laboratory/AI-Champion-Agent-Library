@@ -150,12 +150,12 @@ export async function runDirectLlmJob(jobId: string): Promise<void> {
     await writeFile(outputFilePath(jobId), text, 'utf-8')
 
     // Optional per-agent deterministic check (docs/tryitout-post-run-check.md), as on the container path.
-    const check = applyPostRunCheck(jobId, job.agentId, {
+    const extra = applyPostRunCheck(jobId, job.agentId, {
       task: job.task,
       upload: job.fileName !== null ? inputText : null,
       files: { 'result.txt': new TextEncoder().encode(text) },
     })
-    if (check) await writeFile(join(outputDir(jobId), check.name), check.bytes)
+    for (const f of extra) await writeFile(join(outputDir(jobId), f.name), f.bytes)
 
     await zipOutputDir(jobId)
 

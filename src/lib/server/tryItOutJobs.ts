@@ -14,6 +14,7 @@
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
 import type { JobStatus, JobEvent } from '$lib/tryItOut'
+import type { JobCheck } from '$lib/tryItOutCheck'
 
 // RESEARCH.md Pitfall 4: process.cwd() resolves against the launch
 // directory, not the location of this file — `node build` must be started
@@ -31,6 +32,9 @@ export interface JobRecord {
   createdAt: number
   // Per-visitor session key (e.g. 'anon:abc'); server-side only, never returned by GET status.
   sessionKey: string | null
+  // Result of the optional post-run tool check (src/lib/server/tryitout/postRunCheck.ts); served only by
+  // GET /api/tryitout/jobs/:id/check, never by GET status. Absent when the agent has no check.
+  check?: JobCheck
 }
 
 // Module-level singleton — every importer of this file gets this same Map
@@ -131,6 +135,13 @@ export function setStatus(jobId: string, status: JobStatus, error: string | null
   if (!job) return // silent no-op on unknown jobId
   job.status = status
   job.error = error
+}
+
+/** Records the tool check of a job (post-run check). Silent no-op on an unknown jobId. */
+export function setCheck(jobId: string, check: JobCheck): void {
+  const job = jobs.get(jobId)
+  if (!job) return
+  job.check = check
 }
 
 // Test-only helper — clears the singleton Map between test cases. Not for
