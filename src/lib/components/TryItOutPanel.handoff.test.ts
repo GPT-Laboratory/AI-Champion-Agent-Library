@@ -120,6 +120,8 @@ describe('the rule agent panel wording', () => {
 })
 
 describe('receiving: the IFC EBOM Compiler', () => {
+  // The hand-over button opens the page with ?handoff=1; the panel takes a hand-over only then.
+  beforeEach(() => window.history.replaceState({}, '', '/agents/ifc-ebom-compiler?tryout=1&handoff=1'))
   const handOver = (to = 'ifc-ebom-compiler') =>
     sessionStorage.setItem(
       HANDOFF_KEY,
@@ -140,6 +142,16 @@ describe('receiving: the IFC EBOM Compiler', () => {
     await fireEvent.click(byText(container, 'Use the example file instead')!)
     expect(container.textContent).not.toContain('From the Scope Rule Drafter')
     expect(container.textContent).toContain('Attached: sample-ifc-elements.txt (example input)')
+  })
+
+  it('opened without the hand-over flag: no note, and the hand-over is discarded', async () => {
+    window.history.replaceState({}, '', '/agents/ifc-ebom-compiler?tryout=1')
+    handOver()
+    const { container } = render(TryItOutPanel, { props: { agentId: 'ifc-ebom-compiler', example: ifcExample } })
+    await tick()
+    expect(container.textContent).not.toContain('From the Scope Rule Drafter')
+    expect(container.textContent).toContain('Attached: sample-ifc-elements.txt (example input)')
+    expect(sessionStorage.getItem(HANDOFF_KEY)).toBeNull()
   })
 
   it('a hand-over for another agent is left alone', async () => {

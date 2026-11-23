@@ -124,7 +124,11 @@
 
           {#if tryItOutOpen}
             <div id="try-it-out-panel" class="mt-4">
-              <TryItOutPanel agentId={agent.slug} example={data.tryItOutExample ?? null} />
+              <!-- Keyed: moving to another agent's page (e.g. a related agent) reuses this page, so the panel must be rebuilt
+                   or it keeps the previous agent's task, file and hand-over. -->
+              {#key agent.slug}
+                <TryItOutPanel agentId={agent.slug} example={data.tryItOutExample ?? null} />
+              {/key}
             </div>
           {/if}
         </div>

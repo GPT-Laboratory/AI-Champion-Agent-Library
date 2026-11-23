@@ -72,6 +72,9 @@ IFC EBOM Compiler.
   compiler's page opens with Try It Out open. Its panel takes the hand-over once, attaches it as the file and says
   so ("From the Scope Rule Drafter: 2 rules added ..."), with "View the handed-over input" and "Use the example file
   instead". A hand-over older than an hour, or meant for another agent, is ignored.
+- Only the page the button opens takes it: the button adds `?handoff=1` (a flag, no data) to the compiler's URL.
+  Opened any other way (a related-agent link, the catalog, a bookmark), the compiler shows no note and discards a
+  left-over hand-over. The panel is rebuilt for every agent page, so nothing carries over between agents.
 
 ## Rules
 

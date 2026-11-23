@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HANDOFFS, HANDOFF_KEY, HANDOFF_MAX_AGE_MS, storeHandoff, takeHandoff, type HandoffPayload } from './handoff'
+import { HANDOFFS, HANDOFF_KEY, HANDOFF_MAX_AGE_MS, openedByHandoff, storeHandoff, takeHandoff, type HandoffPayload } from './handoff'
 
 const DIR = join(process.cwd(), 'data/tryitout-prompts/scope-rule-drafter')
 const SAMPLE = readFileSync(join(DIR, 'sample-ebom-input.txt'), 'utf8')
@@ -37,6 +37,18 @@ describe('store and take', () => {
     expect(s.m.has(HANDOFF_KEY)).toBe(true)
     expect(takeHandoff('b', s, 1000)).toEqual(payload())
     expect(takeHandoff('b', s, 1000)).toBeNull()
+  })
+
+  it('only a page opened by the hand-over button takes it; otherwise this agent\'s hand-over is discarded', () => {
+    expect(openedByHandoff('?tryout=1&handoff=1')).toBe(true)
+    expect(openedByHandoff('?tryout=1')).toBe(false)
+    expect(openedByHandoff('?handoff=yes')).toBe(false)
+    const s = memStore()
+    storeHandoff(payload(), s)
+    expect(takeHandoff('other', s, 1000, false)).toBeNull()
+    expect(s.m.has(HANDOFF_KEY)).toBe(true) // another agent's hand-over stays
+    expect(takeHandoff('b', s, 1000, false)).toBeNull()
+    expect(s.m.has(HANDOFF_KEY)).toBe(false) // this agent's is dropped, never shown later
   })
 
   it('stale, broken or oversized hand-overs are dropped; no storage means no hand-over', () => {

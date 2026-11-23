@@ -8,7 +8,7 @@
   import type { JobCheck } from '$lib/tryItOutCheck'
   import { XLSX_MIME } from '$lib/xlsx'
   import ResultView from './ResultView.svelte'
-  import { HANDOFFS, openAgentPage, storeHandoff, takeHandoff } from '$lib/handoff'
+  import { HANDOFFS, openAgentPage, openedByHandoff, storeHandoff, takeHandoff } from '$lib/handoff'
 
   interface Props {
     agentId?: string
@@ -48,9 +48,10 @@
     openAgentPage(handoff.to)
   }
 
-  // Once, in the browser: take a hand-over meant for this agent and attach it as the file.
+  // Once, in the browser: take a hand-over meant for this agent and attach it as the file, but only on a page the
+  // hand-over button opened (its URL flag); opened any other way, a left-over hand-over is discarded.
   $effect(() => {
-    const h = untrack(() => takeHandoff(agentId))
+    const h = untrack(() => takeHandoff(agentId, undefined, undefined, openedByHandoff(window.location.search)))
     if (!h) return
     received = { note: h.note, fileName: h.fileName, text: h.text }
     file = new File([h.text], h.fileName, { type: 'text/plain' })

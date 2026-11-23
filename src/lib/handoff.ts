@@ -43,6 +43,8 @@ export interface HandoffPayload {
 }
 
 export const HANDOFF_KEY = 'aic-tryitout-handoff'
+/** URL flag set only by the hand-over button: the receiving panel takes a hand-over only when the page has it. */
+export const HANDOFF_PARAM = 'handoff'
 /** A hand-over older than this is ignored (e.g. a tab reopened the next day). */
 export const HANDOFF_MAX_AGE_MS = 60 * 60 * 1000
 const MAX_TEXT = 200 * 1024
@@ -67,8 +69,17 @@ export function storeHandoff(p: HandoffPayload, store: Store | null = session())
   }
 }
 
-/** The hand-over for this agent, removed once read; null when there is none, it is for another agent, stale or broken. */
-export function takeHandoff(agentId: string, store: Store | null = session(), now = Date.now()): HandoffPayload | null {
+/** True when the page was opened by the hand-over button (its URL carries the flag). */
+export function openedByHandoff(search: string): boolean {
+  return new URLSearchParams(search).get(HANDOFF_PARAM) === '1'
+}
+
+/**
+ * The hand-over for this agent, removed once read; null when there is none, it is for another agent, stale or broken.
+ * With viaButton false (the page was not opened by the hand-over button) a hand-over for this agent is discarded, so
+ * it never shows up when the agent is opened another way (a related-agent link, the catalog, a bookmark).
+ */
+export function takeHandoff(agentId: string, store: Store | null = session(), now = Date.now(), viaButton = true): HandoffPayload | null {
   if (!store) return null
   let p: Partial<HandoffPayload>
   try {
@@ -81,6 +92,7 @@ export function takeHandoff(agentId: string, store: Store | null = session(), no
   }
   if (p.to !== agentId) return null
   store.removeItem(HANDOFF_KEY)
+  if (!viaButton) return null
   const ok =
     typeof p.from === 'string' &&
     typeof p.fileName === 'string' &&
@@ -95,5 +107,5 @@ export function takeHandoff(agentId: string, store: Store | null = session(), no
 
 /** Opens the receiving agent's page with its Try It Out panel open. */
 export function openAgentPage(slug: string): void {
-  window.location.assign(`/agents/${encodeURIComponent(slug)}?tryout=1`)
+  window.location.assign(`/agents/${encodeURIComponent(slug)}?tryout=1&${HANDOFF_PARAM}=1`)
 }
