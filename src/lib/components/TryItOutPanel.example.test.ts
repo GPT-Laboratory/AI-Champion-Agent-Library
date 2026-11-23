@@ -58,9 +58,30 @@ describe('TryItOutPanel example', () => {
       'View example input (sample-x.txt)',
       'Show example result (no model call)',
     ])
-    expect(details[0].querySelector('pre')?.textContent).toBe(example.file.text)
+    // Shown as tables by default (the input's ## heading, the result's table), raw text one click away.
+    expect(details[0].querySelector('h3')?.textContent).toBe('ELEMENTS')
+    expect(details[0].querySelector('pre')).toBeNull()
     expect(details[1].textContent).toContain(example.result.label)
-    expect(details[1].querySelector('pre')?.textContent).toBe(example.result.text)
+    expect(details[1].querySelector('table th')?.textContent?.trim()).toBe('E-1')
+  })
+
+  it('the raw-text toggle shows the exact example text', async () => {
+    const { container } = render(TryItOutPanel, { props: { agentId: 'demo', example } })
+    const details = Array.from(container.querySelectorAll('details'))
+    for (const [i, text] of [[0, example.file.text], [1, example.result.text]] as const) {
+      const toggle = Array.from(details[i].querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Show raw text')!
+      await fireEvent.click(toggle)
+      expect(details[i].querySelector('pre')?.textContent).toBe(text)
+      expect(toggle.getAttribute('aria-pressed')).toBe('true')
+    }
+  })
+
+  it('the example result offers its table as Excel, the example input does not', () => {
+    const { container } = render(TryItOutPanel, { props: { agentId: 'demo', example } })
+    const details = Array.from(container.querySelectorAll('details'))
+    const excel = (d: Element) => Array.from(d.querySelectorAll('button')).some((b) => /as Excel/.test(b.textContent ?? ''))
+    expect(excel(details[0])).toBe(false)
+    expect(excel(details[1])).toBe(true)
   })
 
   it('showing the example result makes no request', async () => {

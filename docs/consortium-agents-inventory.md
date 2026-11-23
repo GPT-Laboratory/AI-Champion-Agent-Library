@@ -56,6 +56,15 @@ These agents were chosen from the DDC skills; they are not among the 12 consorti
 | 19 | QC Inspection Record Check | Site and handover | partial | data/agents/qc-inspection-record-check.yaml | Label: built on 3_DDC_Insights/Safety-Quality/quality-control-workflow (spec docs/ddc-alignment/qc-inspection-record-check.md). Phase 35: inspection, defect and NCR data model, status words and hold-point sign-off rule from the skill; record completeness only (text Y/N ticks and lookup), no helper, no date or numeric test; text only, about 7 records per run. Live run result: see 35-VERIFICATION.md. |
 | 20 | Warranty Register Check | Site and handover | partial | data/agents/warranty-register-check.yaml | Label: built on 1_DDC_Toolkit/Closeout/warranty-tracker (spec docs/ddc-alignment/warranty-register-check.md). Phase 35: warranty data model and expiry status rule (expired, expiring within 90 days, active) from the skill; dates computed by the tested helper src/lib/warranty/warrantyStatus.ts (the agent only copies and looks up); register-completeness verdicts only, no coverage or claim reading; text only, about 7 rows per run. Live run result: see 35-VERIFICATION.md. |
 
+## AIC IFC to E-BOM use case
+
+Agents built from the AIC IFC to E-BOM compiler use case (own design, no DDC basis).
+
+| Agent | Stage | Status | Evidence | Notes |
+| --- | --- | --- | --- | --- |
+| IFC EBOM Compiler | Design | partial | data/agents/ifc-ebom-compiler.yaml | Class step of the compiler as a text slice; totals and stick rounding by the tested helper src/lib/ebom/ebomJoin.ts, which also checks every Try It Out run and writes ebom.xlsx. |
+| Scope Rule Drafter | Design | partial | data/agents/scope-rule-drafter.yaml | Scope rules typed in plain language in the task box, one per line, turned into the compiler's field = value scope rules for the attached E-BOM input file by lookup in the element facts, with a fixed reason for every sentence that cannot become a rule; the rules can be handed to the IFC EBOM Compiler on its page. Each run is checked by src/lib/rules/ruleCheck.ts (grammar, field and value in the data, a dry run of which elements each rule excludes). Synthetic sample only; no counted live run yet. |
+
 ## MCP servers
 
 MCP servers are separate work and are not part of this inventory or of the DDC-based agents (decision D-634, phase 31). They are handled in phase 36 of the fix run: three `kind: mcp-server` entries stay behind the `AGENT_KINDS` flag, off by default, and exactly one agent using the LVI-INFO MCP server is planned there. Their former table was removed from this file.

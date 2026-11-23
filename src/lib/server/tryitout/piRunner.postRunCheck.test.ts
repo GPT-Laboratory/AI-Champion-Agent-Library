@@ -95,7 +95,7 @@ describe('post-run check, container path', () => {
     expect(i).toBeGreaterThan(-1)
     expect(r.events[i + 1]).toBe('  E-12: rule is "no-catalogue", helper says "multi-catalogue"')
     expect(r.events.at(-1)).toBe('agent settled (clean exit)')
-    expect(Object.keys(r.entries).sort()).toEqual(['ebom-join-check.md', 'result.md'])
+    expect(Object.keys(r.entries).sort()).toEqual(['ebom-join-check.md', 'ebom.xlsx', 'result.md'])
     expect(strFromU8(r.entries['result.md'])).toBe(SLIP)
     expect(strFromU8(r.entries['ebom-join-check.md'])).toContain('E-12: rule is "no-catalogue", helper says "multi-catalogue"')
   })
@@ -103,7 +103,7 @@ describe('post-run check, container path', () => {
   it('a correct result gets the match line', async () => {
     const r = await run('ifc-ebom-compiler', SAMPLE, KEY)
     expect(r.events).toContain('helper check: the class rows match the ebom-join helper on every cell')
-    expect(Object.keys(r.entries).sort()).toEqual(['ebom-join-check.md', 'result.md'])
+    expect(Object.keys(r.entries).sort()).toEqual(['ebom-join-check.md', 'ebom.xlsx', 'result.md'])
   })
 
   it('other agents: no check line and no extra file', async () => {

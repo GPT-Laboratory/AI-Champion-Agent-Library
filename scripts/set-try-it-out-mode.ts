@@ -30,6 +30,7 @@ const UPDATES: Array<{ slug: string; mode: string; url: string | null; taskTempl
   { slug: 'qc-inspection-record-check', mode: 'runnable', url: null, taskTemplate: null },
   { slug: 'warranty-register-check', mode: 'runnable', url: null, taskTemplate: null },
   { slug: 'ifc-ebom-compiler', mode: 'runnable', url: null, taskTemplate: null },
+  { slug: 'scope-rule-drafter', mode: 'runnable', url: null, taskTemplate: null },
 
 ]
 

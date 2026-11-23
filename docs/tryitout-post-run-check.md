@@ -14,26 +14,45 @@ check is own code, makes no model call and costs no tokens. It catches the slips
     E-12: rule is "no-catalogue", helper says "multi-catalogue"
   ```
 
-- In the download, next to the agent's own files: the report (for ifc-ebom-compiler `ebom-join-check.md`) with all
-  findings and the E-BOM lines joined from the agent's billed rows.
+- On the page, above the result: a badge "Checked by tool" with the same summary, green when every checked cell
+  agrees, amber when there are differences, grey when nothing could be checked. The badge reads the status from
+  `GET /api/tryitout/jobs/:id/check` (kept on the job by the server), never from a file of the download: the agent
+  can write any file name, so a file could not prove anything.
+- In the download, next to the agent's own files: the report (`<helper>-check.md`) with all findings. For
+  ifc-ebom-compiler also `ebom.xlsx`: the E-BOM lines joined by the tool from the agent's billed rows (metres
+  rounded up to whole 3 m sticks, block titles from the upload), the class rows with a per-row "tool check" column,
+  the review items and the check summary. It is written only when the class rows meet the contract.
 
 The agent's own files are never changed or removed. The job's status is the agent's: a mismatch does not fail the job,
-and a check that throws only gives the line `helper check failed to run; the result is unchecked`. The report is left
-out (with a feed line saying why) when the output already has a file of that name or the artifact is at its file or
-size cap.
+and a check that throws only gives the line `helper check failed to run; the result is unchecked`. A report or
+spreadsheet is left out (with a feed line saying why) when the output already has a file of that name or the artifact
+is at its file or size cap; the badge then still shows the status, without a file name.
 
 ## Which agents have one
 
-| Agent | Check | Report | Code |
+| Agent | Result section checked | Report | Code |
 |---|---|---|---|
-| ifc-ebom-compiler | The class rows of `result.md` (else any `.md`/`.txt` with `## E-BOM class rows`) against the contract and, cell by cell, against the helper's own rows for the upload (or, with no upload, the task text) | `ebom-join-check.md` | `src/lib/ebom/ebomCheck.ts`, the same code as `npx tsx scripts/ebom-join.ts <upload> <result>` |
+| ifc-ebom-compiler | `## E-BOM class rows`, against the contract and cell by cell against the helper's own rows | `ebom-join-check.md`, `ebom.xlsx` | `src/lib/ebom/ebomCheck.ts` (CLI `scripts/ebom-join.ts`) |
+| warranty-register-check | `## Warranty register check` | `warranty-status-check.md` | `src/lib/warranty/resultCheck.ts` (CLI `scripts/warranty-status.ts`) |
+| procurement-lead-time-check | `## Lead time check` | `procurement-lead-time-check.md` | `src/lib/procurement/resultCheck.ts` (CLI `scripts/procurement-lead-time.ts`) |
+| material-delivery-check | `## Delivery check` | `delivery-check-check.md` | `src/lib/delivery/resultCheck.ts` (CLI `scripts/delivery-check.ts`) |
+| bms-digital-twin | `## Point mapping` | `bms-point-status-check.md` | `src/lib/bms/resultCheck.ts` (CLI `scripts/bms-point-status.ts`) |
+| carbon-epd-enrichment | `## Per-product rows` | `carbon-lifecycle-check.md` | `src/lib/carbon/resultCheck.ts` (CLI `scripts/carbon-lifecycle.ts`) |
+| qto-normalization | `## Normalised rows` | `qto-group-totals-check.md` | `src/lib/qto/resultCheck.ts` (CLI `scripts/qto-group-totals.ts`) |
+| scope-rule-drafter | The rules typed in the task box (numbered S-1, S-2, ... as the skill does) against the attached E-BOM data. `## Sentence mapping` and `## RULES`: every rule in the compiler's grammar, its field a column and its value in the data, one mapping row per sentence, the unturned sentences copied. The badge shows the dry run, e.g. "2 rules, all valid: text:1 excludes E-06; text:2 excludes E-05" | `rule-check-check.md` | `src/lib/rules/ruleCheck.ts` (CLI `scripts/rule-check.ts`) |
+
+Each check reads `result.md` first, else any `.md`/`.txt` of the output with that section, and takes the upload as
+input (with no upload, the task text). The six table helpers are wired through `helperCheck` with the same
+`runCli(input, result)` their CLI uses, so the app and `npx tsx scripts/<helper>.ts <input> <result>` agree.
 
 ## Adding one
 
 1. Put the check logic in `src/lib/` as pure code (no I/O), so the CLI and the app run the same thing.
-2. Add a `PostRunCheck` for the slug to `POST_RUN_CHECKS` in `src/lib/server/tryitout/postRunCheck.ts`. It gets the task
-   text, the upload as text (or null) and the output files, and returns the report file name, its text, one summary
-   line and the findings.
+2. A helper with `runCli(input, result)` (exit codes 0 match, 1 `MISMATCHES (n)` then one line each, 2 bad input):
+   add a row to `HELPER_CHECKS` in `src/lib/server/tryitout/postRunCheck.ts`. Anything else: add a `PostRunCheck` to
+   `POST_RUN_CHECKS`. It gets the task text, the upload as text (or null) and the output files, and returns the
+   report file name and text, one summary line, the status (`match`, `differences`, `not-checked`), the findings and
+   optional attachments.
 3. Add tests in a new test file (pre-existing test files stay unmodified, `src/lib/mcptest/criteria.test.ts`).
 
 The check runs on both paths: the Pi container (`src/lib/server/tryitout/piRunner.ts`) and the direct-model fallback

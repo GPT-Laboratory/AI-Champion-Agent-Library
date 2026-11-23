@@ -382,6 +382,7 @@ Research output from Phase 12. Hosting of multi-agent systems and other formats 
 - [docs/agent-types.md](docs/agent-types.md): taxonomy of agent kinds, topologies and frameworks with per-format findings.
 - [docs/agent-capability-matrix.md](docs/agent-capability-matrix.md): what each type needs, stores and shows, and Try It Out suitability.
 - [docs/agent-intake-guide.md](docs/agent-intake-guide.md): what authors should send, readiness checklist and a reply template.
+- [docs/adding-an-agent.md](docs/adding-an-agent.md): the files a maintainer adds or updates for a new catalog agent.
 - [docs/agent-hosting-decision-memo.md](docs/agent-hosting-decision-memo.md): recommended model changes, ranked adapters and open questions.
 
 ---

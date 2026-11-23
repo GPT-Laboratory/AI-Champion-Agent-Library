@@ -10,4 +10,6 @@ export interface TryItOutExample {
   file: { name: string; text: string } | null
   /** Saved result for the default task and file; shown without a model call. `label` says where it came from. */
   result: { label: string; text: string } | null
+  /** Optional wording for the panel: the task and file field labels, a hint under the task, the task placeholder. */
+  labels?: { task?: string; file?: string; hint?: string; placeholder?: string }
 }

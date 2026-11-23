@@ -222,13 +222,13 @@ export async function runJobInContainer(jobId: string): Promise<void> {
       setStatus(jobId, 'failed', 'agent finished without producing output')
       return
     }
-    // Optional per-agent deterministic check (docs/tryitout-post-run-check.md); adds one report file at most.
-    const check = applyPostRunCheck(jobId, slug, {
+    // Optional per-agent deterministic check (docs/tryitout-post-run-check.md): a report and possibly a spreadsheet.
+    const extra = applyPostRunCheck(jobId, slug, {
       task: job.task,
       upload: upload === null ? null : new TextDecoder('utf-8').decode(upload),
       files,
     })
-    if (check) files = { ...files, [check.name]: check.bytes }
+    for (const f of extra) files = { ...files, [f.name]: f.bytes }
     await writeArtifactZip(jobId, files)
     pushEvent(jobId, 'agent settled (clean exit)')
     setStatus(jobId, 'succeeded')

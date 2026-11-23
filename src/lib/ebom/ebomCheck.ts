@@ -71,6 +71,12 @@ export interface EbomCheck {
   out: string
   problems: string[]
   diffs: string[]
+  /** With a result that could be read: the agent's class rows. */
+  rows?: ResultRow[]
+  /** With a result that meets the contract: the E-BOM lines joined from the agent's billed rows. */
+  lines?: Line[]
+  /** The block titles of the upload (block_id -> title). */
+  blockTitles?: Record<string, string>
 }
 
 /** Runs the helper on the upload and, given a result, checks and compares it. Throws only on a bug. */
@@ -102,8 +108,10 @@ export function checkEbomResult(inputText: string, resultText?: string, stickM =
       problems.length ? `CONTRACT PROBLEMS (${problems.length})\n${problems.join('\n')}` : 'contract: every element has exactly one valid outcome',
       diffs.length ? `MISMATCHES WITH THE HELPER (${diffs.length})\n${diffs.join('\n')}` : 'result table matches the helper on every cell',
     ]
-    if (problems.length === 0) out.push(`## E-BOM lines from the result (stick ${stickM} m)\n${formatLines(joinLines(got, stickM))}`)
-    return { code: problems.length || diffs.length ? 1 : 0, out: out.join('\n\n'), problems, diffs }
+    const lines = problems.length === 0 ? joinLines(got, stickM) : undefined
+    if (lines) out.push(`## E-BOM lines from the result (stick ${stickM} m)\n${formatLines(lines)}`)
+    const blockTitles = Object.fromEntries(upload.blocks.map((b) => [b.block_id, b.title]))
+    return { code: problems.length || diffs.length ? 1 : 0, out: out.join('\n\n'), problems, diffs, rows: got, lines, blockTitles }
   } catch (e) {
     if (e instanceof ParseError || e instanceof EbomError) return { code: 2, out: `error: ${e.message}`, problems: [], diffs: [] }
     throw e

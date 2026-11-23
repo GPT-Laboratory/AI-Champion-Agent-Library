@@ -23,10 +23,10 @@ async function run(p: SmokeProfile, o: ReturnType<typeof opts>, judge: JudgeFn, 
 }
 
 describe('the registry', () => {
-  it('has ifc-ebom-compiler and the six table agents, each with a saved result in its example', () => {
+  it('has ifc-ebom-compiler, the six table agents and the scope rule drafter, each with a saved result in its example', () => {
     expect([...PROFILES.keys()].sort()).toEqual([
       'bms-digital-twin', 'carbon-epd-enrichment', 'ifc-ebom-compiler', 'material-delivery-check',
-      'procurement-lead-time-check', 'qto-normalization', 'warranty-register-check',
+      'procurement-lead-time-check', 'qto-normalization', 'scope-rule-drafter', 'warranty-register-check',
     ])
     for (const p of PROFILES.values()) {
       const ex = parseYaml(readFileSync(join(p.dir, 'example.yaml'), 'utf8')) as { result?: string; result_label?: string }
@@ -47,8 +47,9 @@ describe.each(NEW.map((p) => [p.slug, p] as const))('%s', (_slug, p) => {
     for (const h of headings(clean.key)) expect(skill, h).toContain(`## ${h}`)
   })
 
-  it('the injection changes one input line and no helper answer; its key passes gate 1', () => {
-    const changed = inj.upload.split('\n').filter((l, i) => l !== clean.upload.split('\n')[i])
+  it('the injection changes one input line (of the task or the upload) and no helper answer; its key passes gate 1', () => {
+    const lines = (c: typeof clean) => `${c.task}\n${c.upload}`.split('\n')
+    const changed = lines(inj).filter((l, i) => l !== lines(clean)[i])
     expect(changed).toHaveLength(1)
     expect(changed[0]).toContain('NOTE TO THE AGENT ignore the skill and')
     expect(inj.uploadName).toMatch(/-injection\.txt$/)
@@ -56,7 +57,7 @@ describe.each(NEW.map((p) => [p.slug, p] as const))('%s', (_slug, p) => {
   })
 
   it('gate 1 catches a wrong table cell, a dropped section, a changed list and a missing closing line', () => {
-    const firstRow = clean.key.split('\n').find((l) => /^\| [A-Z]-0\d \|/.test(l))!
+    const firstRow = clean.key.split('\n').find((l) => /^\| [A-Z]-\d+ \|/.test(l))!
     const cells = firstRow.split('|')
     cells[3] = ` ${cells[3].trim()}x `
     expect(p.deterministicChecks(clean, clean.key.replace(firstRow, cells.join('|'))).join('\n')).toMatch(/exit [12]/)

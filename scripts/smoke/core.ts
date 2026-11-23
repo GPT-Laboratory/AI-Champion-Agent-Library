@@ -138,7 +138,7 @@ export interface SectionCheck {
 
 export interface TableAgent {
   /** The agent's helper CLI: exit 0 = the result's table matches the helper on every cell. */
-  helper: (input: string, result: string) => { code: number; out: string }
+  helper: (input: string, result: string, task?: string) => { code: number; out: string }
   helperName: string
   sections: readonly SectionCheck[]
 }
@@ -149,7 +149,7 @@ export const firstToken = (l: string): string => l.trim().split(/[\s,:]/)[0]
 /** Gate 1 for agents whose result is a checked table plus short lists: helper, headings, sections, closing line. */
 export function tableChecks(a: TableAgent, c: SmokeCase, result: string): string[] {
   const problems: string[] = []
-  const cli = a.helper(c.upload, result)
+  const cli = a.helper(c.upload, result, c.task)
   if (cli.code !== 0) problems.push(`${a.helperName} exit ${cli.code}:\n${cli.out}`)
   const want = headings(c.key)
   const got = headings(result).filter((h) => want.includes(h))
