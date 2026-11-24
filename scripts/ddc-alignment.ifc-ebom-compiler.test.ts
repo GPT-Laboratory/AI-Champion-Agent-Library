@@ -2,6 +2,7 @@
 // other. Own design (no DDC skill, so no docs/ddc-alignment spec): the answer key for the sample lives in this file.
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { EXCLUDED_BY, UNTIED_HEADING, prepareEbomUpload } from '../src/lib/ebom/prepare'
 import { parse as parseYaml } from 'yaml'
 import { parseResultTable, runCli } from './ebom-join'
 import { REVIEW_TEXT, classRows, joinLines, parseUpload, reviewItems, type ClassRow } from '../src/lib/ebom/ebomJoin'
@@ -111,6 +112,20 @@ describe('ifc-ebom-compiler alignment', () => {
     const worked = parseUpload(fencedAfter('Input:'))
     const workedTokens = new Set(worked.elements.map((e) => e.token))
     for (const e of u.elements) expect(workedTokens.has(e.token)).toBe(false)
+  })
+
+  it('the worked input is exactly what the tool step hands the model (excluded_by and the untied section)', () => {
+    const prepared = fencedAfter('Input:')
+    // Back to the raw upload: drop the tool's column and section, then let the tool prepare it again.
+    const lines = prepared.split('\n')
+    const at = lines.findIndex((l) => l.startsWith('token,'))
+    const drop = lines[at].split(',').indexOf(EXCLUDED_BY)
+    const raw = lines
+      .slice(0, lines.indexOf(`## ${UNTIED_HEADING}`))
+      .map((l, i) => (i >= at && l.includes(',') ? l.split(',').filter((_, j) => j !== drop).join(',') : l))
+      .join('\n')
+    expect(raw).not.toContain(EXCLUDED_BY)
+    expect(prepareEbomUpload(raw)!.text).toBe(prepared)
   })
 
   it('SKILL.md has the section headers, the output tables, the fixed texts, the closing line and the hard rules', () => {

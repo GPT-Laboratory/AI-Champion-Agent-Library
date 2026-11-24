@@ -135,7 +135,7 @@ Agents 13-16 are chosen from the DDC skills (see docs/ddc-agent-candidates.md); 
 | G-131 | 2 IFC EBOM Compiler | Class step only, as a text slice: element facts arrive already read (no IFC parsing), exact-match catalogue and scope rules, no derived lines, no block choice; about 10 elements per run | tool | open | ifc-ebom-compiler | open |
 | G-132 | 2 IFC EBOM Compiler | Sample is synthetic; no counted live Try It Out run yet; behaviour on real data unproven | data | open | ifc-ebom-compiler | open |
 | G-133 | Scope Rule Drafter | One condition per rule (field = value, exclude only), as the IFC EBOM Compiler reads; a sentence that needs a type and a place together, a size range or a geometric condition is listed with a reason, not expressed | tool | open | scope-rule-drafter | open |
-| G-134 | Scope Rule Drafter | The tool checks that each rule is well-formed, tied to the data and what it excludes; whether a sentence was read correctly is checked only by the answer key and the LLM judge | tool | open | scope-rule-drafter | open |
+| G-134 | Scope Rule Drafter | The tool checks that each rule is well-formed, tied to the data, comes from a note with an exclusion wording and uses a value the note names, and what it excludes; whether a note was read correctly beyond that (e.g. a missed second condition) is checked only by the answer key and the LLM judge | tool | open | scope-rule-drafter | open |
 | G-135 | Scope Rule Drafter | Sample is synthetic (invented sentences, the IFC EBOM Compiler's invented elements); no counted live Try It Out run yet; about 10 sentences per run | data | open | scope-rule-drafter | open |
 
 

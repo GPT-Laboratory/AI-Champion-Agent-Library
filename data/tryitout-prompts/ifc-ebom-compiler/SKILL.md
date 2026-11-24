@@ -31,6 +31,10 @@ column of the elements table.
 `differ` or `none`) come from the geometry engine. `loc_block` is the location step's block id, or `review` where it
 did not settle the block.
 
+Before the run, a tool applies the scope rules for you. It adds a last column `excluded_by` to ELEMENTS (the id of
+the rule that excludes the element, or `-`) and a section `## RULES NOT TIED TO DATA` (the rule lines it could not
+tie to the data, or `none`). You copy both; you do not apply the rules yourself and you never change `excluded_by`.
+
 Write the result to `output/result.md`. If you cannot write files, give the same content as your answer.
 
 You only COPY and LOOK UP. You never add, subtract, multiply, round or count, and you never correct a value.
@@ -41,7 +45,7 @@ Take the element rows in input order. For each one, go through these steps and s
 
 | # | if | outcome | rule | review kind |
 |---|---|---|---|---|
-| 1 | a scope rule's `field` holds exactly its `value` on this row | exclude | the rule id, e.g. `rules:1` | - |
+| 1 | `excluded_by` holds a rule id | exclude | that rule id, e.g. `rules:1` | - |
 | 2 | `loc_block` is `review`, or is not a `block_id` in BLOCKS | review | `loc-review` | unsettled |
 | 3 | no CATALOGUE row has the same `ifc_class`, `geom_family` and `size_mm` | review | `no-catalogue` | unsettled |
 | 4 | two or more CATALOGUE rows have the same `ifc_class`, `geom_family` and `size_mm` | review | `multi-catalogue` | unsettled |
@@ -56,8 +60,14 @@ On a `bill` row: `block` = `loc_block`, `designation` and `unit` = the `name` an
 CATALOGUE row, `qty` copied exactly as written (keep every decimal, never round). On `exclude` and `review` rows:
 `block` = `loc_block` copied, `designation`, `unit` and `qty` = `-`.
 
-A rule line that is not in the shape `<rule_id>: <field> = <value> -> exclude (<reason>)`, or whose `field` is not a
-column of ELEMENTS, cannot be tied to the data: apply it to nothing and list it under "Rules not tied to data".
+Step 1 comes first for every element: an element with a rule id in `excluded_by` is excluded, whatever the later
+steps would say. "Rules not tied to data" is exactly the `## RULES NOT TIED TO DATA` section, copied: a rule that is
+in `## RULES` and excludes no element is still tied (it just excludes nothing) and is not listed.
+
+Only if ELEMENTS has no `excluded_by` column (no tool ran): step 1 is "a scope rule's `field` holds exactly its
+`value` on this row", taking the rules in order; a rule line that is not in the shape
+`<rule_id>: <field> = <value> -> exclude (<reason>)`, or whose `field` is not a column of ELEMENTS, cannot be tied to
+the data: apply it to nothing and list it under "Rules not tied to data".
 
 ## Output format
 
@@ -86,7 +96,7 @@ review kind from the step table, `what` = the token, a colon and the fixed text 
 size; `multi-catalogue` = two or more catalogue names fit; `zero-qty` = zero or negative length; `length-unsettled` =
 no stated length and the geometry readings do not agree. If there is none, write `none` instead of the table.
 
-`## Rules not tied to data` then one line per such rule, copied exactly. If there is none, write `none`.
+`## Rules not tied to data` then the lines of `## RULES NOT TIED TO DATA`, copied exactly. If there is none, write `none`.
 
 `## Totals` then exactly: `Metres and pieces per block and designation, and stick rounding: to compute (tool).`
 
@@ -94,7 +104,7 @@ End with: `Draft for estimator review. Synthetic input; element facts were read 
 
 ## Worked rows (different data; one per branch)
 
-Input:
+Input: as the tool hands it to you, with `excluded_by` and `## RULES NOT TIED TO DATA` filled in
 
 ```
 ## BLOCKS
@@ -111,17 +121,20 @@ SYN Supply valve 100,kpl,IfcAirTerminal,solid,100,IV
 ## RULES
 rules:1: system = SYN-HOOD -> exclude (hood ducts are delivered by the kitchen supplier)
 rules:2: Ducts inside the shaft belong to the shaft contractor
+rules:3: system = SYN-SPRINKLER -> exclude (sprinkler pipes are delivered by the sprinkler contractor)
 ## ELEMENTS
-token,ifc_class,type_name,system,size_mm,geom_family,stated_length_m,geom_centreline_m,geom_check,loc_block
-X-1,IfcDuctSegment,Round duct,SUPPLY-1,125,straight,2.40,2.412,agree,B1
-X-2,IfcDuctSegment,Round duct,SUPPLY-1,160,straight,,1.853,agree,B2
-X-3,IfcDuctSegment,Round duct,SUPPLY-1,160,straight,,3.104,differ,B1
-X-4,IfcDuctSegment,Round duct,SUPPLY-1,125,straight,0,0.000,none,B1
-X-5,IfcDuctFitting,Bend,SUPPLY-1,125,bend,,0.311,agree,B1
-X-6,IfcAirTerminal,Supply valve,SUPPLY-1,100,solid,,0.120,agree,B2
-X-7,IfcDuctSegment,Hood duct,SYN-HOOD,125,straight,1.20,1.200,agree,B1
-X-8,IfcDuctSegment,Round duct,SUPPLY-1,200,straight,1.50,1.502,agree,B1
-X-9,IfcAirTerminal,Supply valve,EXHAUST-1,100,solid,,0.120,agree,review
+token,ifc_class,type_name,system,size_mm,geom_family,stated_length_m,geom_centreline_m,geom_check,loc_block,excluded_by
+X-1,IfcDuctSegment,Round duct,SUPPLY-1,125,straight,2.40,2.412,agree,B1,-
+X-2,IfcDuctSegment,Round duct,SUPPLY-1,160,straight,,1.853,agree,B2,-
+X-3,IfcDuctSegment,Round duct,SUPPLY-1,160,straight,,3.104,differ,B1,-
+X-4,IfcDuctSegment,Round duct,SUPPLY-1,125,straight,0,0.000,none,B1,-
+X-5,IfcDuctFitting,Bend,SUPPLY-1,125,bend,,0.311,agree,B1,-
+X-6,IfcAirTerminal,Supply valve,SUPPLY-1,100,solid,,0.120,agree,B2,-
+X-7,IfcDuctSegment,Hood duct,SYN-HOOD,125,straight,1.20,1.200,agree,B1,rules:1
+X-8,IfcDuctSegment,Round duct,SUPPLY-1,200,straight,1.50,1.502,agree,B1,-
+X-9,IfcAirTerminal,Supply valve,EXHAUST-1,100,solid,,0.120,agree,review,-
+## RULES NOT TIED TO DATA
+rules:2: Ducts inside the shaft belong to the shaft contractor
 ```
 
 Output:
@@ -159,10 +172,11 @@ Metres and pieces per block and designation, and stick rounding: to compute (too
 Why: X-1 has a stated length, so 2.40 is copied as written (step 7), not the geometry's 2.412. X-2 has no stated
 length and its readings agree, so the centreline 1.853 is copied (step 9). X-3 has no stated length and its readings
 differ (step 10). X-4 states 0 (step 6): a zero is never billed. X-5 matches two catalogue bends of size 125 (step 4):
-you never choose between them. X-6 is a piece (step 5): qty 1, its length is not used. X-7 is caught by rules:1 (step
-1) before anything else, although the catalogue has a name for it. X-8 has size 200 and the catalogue has no 200
+you never choose between them. X-6 is a piece (step 5): qty 1, its length is not used. X-7 has `rules:1` in `excluded_by` (step
+1), so it is excluded before anything else, although the catalogue has a name for it. X-8 has size 200 and the catalogue has no 200
 duct (step 3): no name is made up. X-9 has no settled block (step 2), so its `where` is `class`. rules:2 names no
-field and value, so it is applied to nothing and listed.
+field and value, so the tool listed it under `## RULES NOT TIED TO DATA` and you copy it. rules:3 is a valid rule
+that excludes no element here: it is tied, so it is not listed.
 
 ## Hard constraints
 

@@ -22,7 +22,7 @@ task: >-                # required; prefilled in the Task field
 file: sample-ifc-elements.txt     # optional; attached by default, viewable as "View example input"
 result: example-result.md         # optional; shown as "Show example result (no model call)"
 result_label: Expected result ... # required with result: says where the result came from
-task_label: Scope rules in your own words, one per line   # optional; label of the task field (default "Task")
+task_label: Scope notes in your own words, one per line   # optional; label of the task field (default "Task")
 file_label: E-BOM input file the rules apply to         # optional; label of the file field
 hint: The rules are matched against ...                 # optional; one line under the task field
 task_placeholder: "One rule per line, ..."              # optional; shown when the task field is empty

@@ -19,6 +19,7 @@ import { writeArtifactZip } from './artifact'
 import { logDetail, publicErrorMessage } from './redact'
 import { localMcpAgent, type LocalMcpAgent } from '../localMcp/agents'
 import { applyPostRunCheck } from './postRunCheck'
+import { PRE_RUN_STEPS, applyPreRunStep } from './preRunStep'
 
 /** Names only the input files that were actually staged, so Pi never tries to read a missing upload. */
 export function piInstruction(hasUpload: boolean): string {
@@ -121,16 +122,22 @@ export async function runJobInContainer(jobId: string): Promise<void> {
     beginJob(lease.id, jobId, { maxTotalTokens: cfg.jobTokenBudget, maxRequests: cfg.jobRequestBudget })
     proxyJobBegun = true
 
-    // Task and upload are written as FILES only (T8-06-1).
+    // Task and upload are written as FILES only (T8-06-1). An agent's optional tool step (preRunStep.ts) rewrites the
+    // data it reads: the upload, or the task text when there is none. `upload` keeps the original for the check.
+    if (job.fileName !== null) upload = new Uint8Array(await readFile(inputFilePath(jobId)))
+    const stagedTask = upload === null ? applyPreRunStep(jobId, slug, job.task) : job.task
     const staged: Parameters<typeof runtime.putFiles>[2] = [
       { path: jobId, type: 'dir' },
       { path: `${jobId}/input`, type: 'dir' },
       { path: `${jobId}/output`, type: 'dir' },
-      { path: `${jobId}/input/task.txt`, content: job.task },
+      { path: `${jobId}/input/task.txt`, content: stagedTask },
     ]
-    if (job.fileName !== null) {
-      upload = new Uint8Array(await readFile(inputFilePath(jobId)))
-      staged.push({ path: `${jobId}/input/upload.txt`, content: upload })
+    if (upload !== null) {
+      // Only an agent with a step gets its upload rewritten; every other upload is staged byte for byte.
+      const content = PRE_RUN_STEPS.has(slug)
+        ? new TextEncoder().encode(applyPreRunStep(jobId, slug, new TextDecoder('utf-8').decode(upload)))
+        : upload
+      staged.push({ path: `${jobId}/input/upload.txt`, content })
     }
     await bounded(runtime.putFiles(containerId, WORK_ROOT_IN_CONTAINER, staged), ENGINE_CALL_TIMEOUT_MS)
 

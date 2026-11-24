@@ -38,6 +38,35 @@ export function ruleLines(text: string): Sentence[] {
 }
 export const NOT_TURNED_HEADING = 'Sentences not turned into a rule'
 
+/**
+ * The exclusion wordings of the skill's step 1 (SKILL.md lists the same): a note with one of them excludes something,
+ * a note without one never does. Requirements ("must", "shall") have none.
+ */
+export const EXCLUSION_WORDINGS: readonly RegExp[] = [
+  /\b(?:delivered|supplied|installed|provided|billed|furnished)\s+by\b/i,
+  /\bcomes?\s+from\b/i,
+  /\bbelongs?\s+to\b/i,
+  /\bnot\s+(?:part\s+of|included\s+in|in)\s+(?:this|the|our)\s+(?:contract|scope|delivery)\b/i,
+  /\b(?:outside|out\s+of)\s+(?:(?:this|the|our)\s+)?(?:contract|scope)\b/i,
+  /\bexclud(?:e|es|ed|ing)\b/i,
+]
+
+export const hasExclusionWording = (note: string): boolean => EXCLUSION_WORDINGS.some((r) => r.test(note))
+
+const normal = (s: string) => s.toLowerCase().replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim()
+
+/**
+ * The skill's naming rule: the value appears in the note, compared without case, a hyphen read as a space, a leading
+ * `SYN-` label ignored and a plural `s` accepted, as whole words. "Exhaust valves" names `Exhaust valve`, not
+ * `IfcAirTerminal`.
+ */
+export function namesValue(note: string, value: string): boolean {
+  const v = normal(value.replace(/^syn-/i, ''))
+  if (v === '') return false
+  const esc = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(?:^|[^a-z0-9])${esc}s?(?:[^a-z0-9]|$)`).test(normal(note))
+}
+
 export interface Sentence {
   id: string
   text: string
@@ -216,8 +245,10 @@ export function checkRuleResult(inputText: string, resultText?: string, task?: s
   const got = result.mapping.map((r) => r.sentence)
   if (got.join(',') !== want.join(',')) problems.push(`mapping rows are ${got.join(', ') || 'none'}; expected one per sentence in input order: ${want.join(', ')}`)
   const used = new Map<string, string>()
+  const noteOf = new Map(input.sentences.map((x) => [x.id, x.text]))
   for (const r of result.mapping) {
     const s = r.sentence
+    const note = noteOf.get(s) ?? ''
     if (!(OUTCOMES as readonly string[]).includes(r.outcome)) {
       problems.push(`${s}: outcome "${r.outcome}" is not rule or not-a-rule`)
       continue
@@ -232,9 +263,13 @@ export function checkRuleResult(inputText: string, resultText?: string, task?: s
         used.set(r.rule, s)
       }
       if (r.reason !== '-') problems.push(`${s}: a rule row must have reason "-", not "${r.reason}"`)
+      // The two parts of the skill a tool can check on the wording: an exclusion wording, and the value named.
+      if (note && !hasExclusionWording(note)) problems.push(`${s}: made a rule, but the note has no exclusion wording (a requirement or remark is not-an-exclusion)`)
+      if (note && rule && !namesValue(note, rule.value)) problems.push(`${s}: the note does not name "${rule.value}"; a rule's value must appear in its note`)
     } else {
       if (r.rule !== '-' || r.field !== '-' || r.value !== '-') problems.push(`${s}: a not-a-rule row must have "-" in rule, field and value`)
       if (!(REASONS as readonly string[]).includes(r.reason)) problems.push(`${s}: reason "${r.reason}" is not one of ${REASONS.join(', ')}`)
+      else if (r.reason === 'not-an-exclusion' && hasExclusionWording(note)) problems.push(`${s}: the note has an exclusion wording, so it is not not-an-exclusion`)
     }
   }
   for (const p of parsed) if (!used.has(p.id)) problems.push(`${p.id}: no mapping row names this rule`)

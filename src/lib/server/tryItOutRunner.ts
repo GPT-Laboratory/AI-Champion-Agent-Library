@@ -22,6 +22,7 @@ import { loadPromptFor, composePrompt } from './tryItOutPrompts'
 import { MODEL, modelParams } from './tryItOutModel'
 import { zipOutputDir } from './tryitout/artifact'
 import { applyPostRunCheck } from './tryitout/postRunCheck'
+import { applyPreRunStep } from './tryitout/preRunStep'
 import { runJobInContainer } from './tryitout/piRunner'
 import { getTryItOutService } from './tryitout/service'
 import { isTryItOutRuntimeError } from './tryitout/runtime'
@@ -137,7 +138,9 @@ export async function runDirectLlmJob(jobId: string): Promise<void> {
     const response = await getClient().responses.create({
       model: MODEL,
       ...modelParams(),
-      input: composePrompt({ basePrompt, skill, inputText }),
+      // The agent's optional tool step rewrites the data it reads; with a file, the task text goes along (an agent such
+      // as scope-rule-drafter reads its notes from the task and its data from the file).
+      input: composePrompt({ basePrompt, skill, inputText: applyPreRunStep(jobId, job.agentId, inputText), task: job.fileName !== null ? job.task : undefined }),
     })
 
     const text = response.output_text

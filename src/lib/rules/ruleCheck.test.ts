@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parse as parseYaml } from 'yaml'
 import { describe, expect, it } from 'vitest'
-import { checkRuleResult, dryRunSummary, parseRuleInput, parseRuleResult, ruleLines, runCli } from './ruleCheck'
+import { checkRuleResult, dryRunSummary, hasExclusionWording, namesValue, parseRuleInput, parseRuleResult, ruleLines, runCli } from './ruleCheck'
 
 const DIR = join(process.cwd(), 'data/tryitout-prompts/scope-rule-drafter')
 const SAMPLE = readFileSync(join(DIR, 'sample-ebom-input.txt'), 'utf8')
@@ -117,5 +117,77 @@ describe('checkRuleResult', () => {
     expect(r.out).not.toMatch(/^token:/m)
     expect(runCli(SAMPLE, 'prose only', TASK).out).toBe('error: no `## RULES` section in the result')
     expect(() => parseRuleResult('## RULES\nnone\n## Sentence mapping\nno table')).toThrow('no table found under `## Sentence mapping`')
+  })
+})
+
+describe('exclusion wording and naming (the skill\'s step 1 and naming rule, checked on the notes)', () => {
+  it('exclusion wordings: someone else delivers or owns it, or it is outside the contract; requirements are not', () => {
+    for (const n of [
+      'Sprinkler piping is delivered by the sprinkler contractor.',
+      'All IfcAirTerminal elements come from a separate contractor.',
+      'Everything in the shaft belongs to the shaft contractor.',
+      'Temporary ducts are not part of this contract.',
+      'Kitchen ducts are outside our scope.',
+      'Exclude all sprinkler elements.',
+    ]) expect(hasExclusionWording(n), n).toBe(true)
+    for (const n of ['All round ducts must be spiral-seamed.', 'Copper pipes shall be pressure tested.', 'Note the new valve supplier.']) expect(hasExclusionWording(n), n).toBe(false)
+  })
+
+  it('a value is named only when it appears in the note itself', () => {
+    expect(namesValue('Sprinkler piping is delivered by the sprinkler contractor.', 'SYN-SPRINKLER')).toBe(true)
+    expect(namesValue('Temporary ducts are not part of this contract.', 'Temporary duct')).toBe(true)
+    expect(namesValue('All IfcAirTerminal elements come from a separate contractor.', 'IfcAirTerminal')).toBe(true)
+    expect(namesValue('Exhaust valves are supplied by the owner.', 'Exhaust valve')).toBe(true)
+    expect(namesValue('Exhaust valves are supplied by the owner.', 'IfcAirTerminal')).toBe(false) // the class is not named
+    expect(namesValue('Insulation of cold-water pipes is billed by the insulation contractor.', 'COLD-WATER-1')).toBe(false)
+    expect(namesValue('Round ductwork is excluded.', 'Round duct')).toBe(false) // whole words only
+  })
+
+  it('the rules from the live run that went wrong are flagged; the right ones pass', () => {
+    const notes = TASK
+    const rules = [
+      ['S-1', 'system', 'SYN-SPRINKLER'],
+      ['S-2', 'type_name', 'Temporary duct'],
+      ['S-3', 'system', 'SYN-SPRINKLER'],
+      ['S-4', 'ifc_class', 'IfcAirTerminal'],
+      ['S-5', 'type_name', 'Round duct'],
+    ] as const
+    const sentence = (id: string) => ruleLines(notes).find((x) => x.id === id)!.text
+    const result = [
+      '## RULES',
+      ...rules.map(([s, f, v], i) => `text:${i + 1}: ${f} = ${v} -> exclude (${s}: ${sentence(s)})`),
+      '## Sentence mapping',
+      '| sentence | outcome | rule | field | value | reason |',
+      '|---|---|---|---|---|---|',
+      ...rules.map(([s, f, v], i) => `| ${s} | rule | text:${i + 1} | ${f} | ${v} | - |`),
+      '| S-6 | not-a-rule | - | - | - | no-field-value |',
+      '## Sentences not turned into a rule',
+      `S-6: ${sentence('S-6')}`,
+    ].join('\n')
+    const p = checkRuleResult(SAMPLE, result, notes).problems
+    expect(p).toContain('S-3: the note does not name "SYN-SPRINKLER"; a rule\'s value must appear in its note')
+    expect(p).toContain('S-4: the note does not name "IfcAirTerminal"; a rule\'s value must appear in its note')
+    expect(p).toContain('S-5: made a rule, but the note has no exclusion wording (a requirement or remark is not-an-exclusion)')
+    expect(p.filter((x) => /^S-[12]:/.test(x))).toEqual([])
+  })
+
+  it('your added note becomes a valid rule; calling a note with an exclusion wording not-an-exclusion is flagged', () => {
+    const notes = 'All IfcAirTerminal elements come from a separate contractor.'
+    const ok = [
+      '## RULES',
+      `text:1: ifc_class = IfcAirTerminal -> exclude (S-1: ${notes})`,
+      '## Sentence mapping',
+      '| sentence | outcome | rule | field | value | reason |',
+      '|---|---|---|---|---|---|',
+      '| S-1 | rule | text:1 | ifc_class | IfcAirTerminal | - |',
+      '## Sentences not turned into a rule',
+      'none',
+    ].join('\n')
+    const r = checkRuleResult(SAMPLE, ok, notes)
+    expect(r.problems).toEqual([])
+    expect(dryRunSummary(r.dryRun)).toBe('1 rule, all valid: text:1 excludes E-10')
+    const wrong = ['## RULES', 'none', '## Sentence mapping', '| sentence | outcome | rule | field | value | reason |', '|---|---|---|---|---|---|',
+      '| S-1 | not-a-rule | - | - | - | not-an-exclusion |', '## Sentences not turned into a rule', `S-1: ${notes}`].join('\n')
+    expect(checkRuleResult(SAMPLE, wrong, notes).problems).toEqual(['S-1: the note has an exclusion wording, so it is not not-an-exclusion'])
   })
 })
