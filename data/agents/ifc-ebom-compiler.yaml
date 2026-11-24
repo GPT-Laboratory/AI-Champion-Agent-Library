@@ -38,7 +38,7 @@ metadata:
     - "Steps are applied in a fixed order and the first that fits decides: scope rule, block, catalogue match, unit and quantity"
     - "A designation is the name of the one CATALOGUE row with the same ifc_class, geom_family and size_mm (exact text equality); no row or several rows send the element to review"
     - "Pieces (kpl) are billed as 1 per element; metres are the stated length when the model states one, otherwise the geometry centreline when the geometry check agrees"
-    - "A scope rule is applied only when the named field holds exactly the named value; a rule in any other shape is applied to nothing and listed"
+    - "A scope rule is applied only when the named field holds exactly the named value; a rule in any other shape is applied to nothing and listed. In Try It Out a tool applies the rules before the run (column excluded_by) and the model copies its answer"
     - "Review kinds follow the compiler's contract: unsettled, bad_data, estimate (scope is not used in this slice)"
   gaps:
     - "Text slice of one step only: the IFC conversion, geometry engine, location, reconcile and relocate agents of the compiler are not run; their results must be supplied as text"
@@ -72,5 +72,5 @@ llm_config:
     temperature: 0.2
 tools:
   - name: "ebom_join"
-    description: "Deterministic helper src/lib/ebom/ebomJoin.ts (CLI scripts/ebom-join.ts), not wired into Try It Out: checks that every element has exactly one outcome, adds the billed metres and pieces per block and designation and rounds metres up to whole sticks. The model writes to compute (tool) instead."
+    description: "Deterministic helper src/lib/ebom/ebomJoin.ts (CLI scripts/ebom-join.ts), run by the app around every Try It Out run: before it, it applies the scope rules and writes the excluded_by column and the rules not tied to data into the input (src/lib/ebom/prepare.ts), so the model never decides an exclusion; after it, it checks every class row, adds the billed metres and pieces per block and designation, rounds metres up to whole sticks and writes ebom.xlsx. The model writes to compute (tool) for the totals."
 human_in_the_loop: true
