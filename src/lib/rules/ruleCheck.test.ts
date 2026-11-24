@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parse as parseYaml } from 'yaml'
 import { describe, expect, it } from 'vitest'
-import { checkRuleResult, dryRunSummary, hasExclusionWording, namesValue, parseRuleInput, parseRuleResult, ruleLines, runCli } from './ruleCheck'
+import { checkRuleResult, dryRunSummary, hasExclusionWording, namedValues, namesValue, parseRuleData, parseRuleInput, parseRuleResult, prepareRuleUpload, ruleLines, runCli } from './ruleCheck'
 
 const DIR = join(process.cwd(), 'data/tryitout-prompts/scope-rule-drafter')
 const SAMPLE = readFileSync(join(DIR, 'sample-ebom-input.txt'), 'utf8')
@@ -78,7 +78,7 @@ describe('checkRuleResult', () => {
   })
 
   it('a shortened value matches nothing; an invented field is not a column', () => {
-    expect(problems(KEY.split('SYN-SPRINKLER').join('SPRINKLER'))).toEqual(['text:1: no element has system = "SPRINKLER" (the rule matches nothing)'])
+    expect(problems(KEY.split('SYN-SPRINKLER').join('SPRINKLER'))).toContain('text:1: no element has system = "SPRINKLER" (the rule matches nothing)')
     expect(problems(KEY.replace('text:1: system', 'text:1: contractor').replace('| system |', '| contractor |'))).toContain('text:1: field "contractor" is not an ELEMENTS column')
   })
 
@@ -189,5 +189,40 @@ describe('exclusion wording and naming (the skill\'s step 1 and naming rule, che
     const wrong = ['## RULES', 'none', '## Sentence mapping', '| sentence | outcome | rule | field | value | reason |', '|---|---|---|---|---|---|',
       '| S-1 | not-a-rule | - | - | - | not-an-exclusion |', '## Sentences not turned into a rule', `S-1: ${notes}`].join('\n')
     expect(checkRuleResult(SAMPLE, wrong, notes).problems).toEqual(['S-1: the note has an exclusion wording, so it is not not-an-exclusion'])
+  })
+})
+
+describe('the value list: look up, never guess, never broaden', () => {
+  const data = parseRuleData(SAMPLE)
+  const named = (note: string) => namedValues(note, data).map((n) => `${n.field}=${n.value}`)
+
+  it('the tool step lists the values per column, blocks with tab and title; rewriting it changes nothing', () => {
+    const r = prepareRuleUpload(SAMPLE)!
+    expect(r.text).toContain('\n## VALUES\n')
+    expect(r.text).toContain('type_name: Round duct | Bend | Tee | Temporary duct | Copper pipe | Exhaust valve')
+    expect(r.text).toContain('loc_block: K1 (2nd floor, Staircase B apartments) | K2 (Basement, Storage rooms) | K3 (2nd floor, Staircase B apartments) | K4')
+    expect(prepareRuleUpload(r.text)!.text).toBe(r.text)
+    expect(prepareRuleUpload('no data')).toBeNull()
+  })
+
+  it('named values: a block by its tab; nothing invented; two values stay two', () => {
+    expect(named('Exclude all IfcDuctSegment items from Basement')).toEqual(['ifc_class=IfcDuctSegment', 'loc_block=K2'])
+    expect(named('Kitchen hood items come from a separate contractor.')).toEqual([])
+    expect(named('Everything on the 2nd floor is excluded.')).toEqual(['loc_block=K1', 'loc_block=K3'])
+    expect(named('Everything in the basement is excluded.')).toEqual(['loc_block=K2'])
+  })
+
+  it('a rule on one of two named values is flagged; a rule on the block named by its tab passes', () => {
+    const one = (note: string, field: string, value: string) => [
+      '## RULES', `text:1: ${field} = ${value} -> exclude (S-1: ${note})`,
+      '## Sentence mapping', '| sentence | outcome | rule | field | value | reason |', '|---|---|---|---|---|---|',
+      `| S-1 | rule | text:1 | ${field} | ${value} | - |`, '## Sentences not turned into a rule', 'none',
+    ].join('\n')
+    const broad = 'Exclude all IfcDuctSegment items from Basement'
+    expect(checkRuleResult(SAMPLE, one(broad, 'loc_block', 'K2'), broad).problems).toEqual([
+      'S-1: the note names more than one value (ifc_class = IfcDuctSegment, loc_block = K2); a rule on one of them excludes more than the note says',
+    ])
+    const basement = 'Everything in the basement is excluded.'
+    expect(checkRuleResult(SAMPLE, one(basement, 'loc_block', 'K2'), basement).problems).toEqual([])
   })
 })

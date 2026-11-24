@@ -72,10 +72,21 @@ export interface Sentence {
   text: string
 }
 
-export interface RuleInput {
-  sentences: Sentence[]
+export interface Block {
+  id: string
+  tab: string
+  title: string
+}
+
+export interface RuleData {
   columns: string[]
   elements: Record<string, string>[]
+  /** The upload's BLOCKS (block_id, tab, title), if it has them: a block is named by its id, tab or title. */
+  blocks: Block[]
+}
+
+export interface RuleInput extends RuleData {
+  sentences: Sentence[]
   /** Ids of the rules the upload already has (its own `## RULES`). */
   existingIds: string[]
 }
@@ -130,9 +141,9 @@ function sections(text: string, keepCase = false): Map<string, string[]> {
  * The rules come from a `## RULE TEXT` section of `text` if it has one, else from the task's lines, which needs an
  * upload (a task that is itself the data cannot also be the rules).
  */
-export function parseRuleInput(text: string, task?: string): RuleInput {
+/** The element data of an upload: ELEMENTS (required) and BLOCKS (optional). */
+export function parseRuleData(text: string): RuleData {
   const s = sections(text)
-  const ruleText = s.get('RULE TEXT')
   const el = s.get('ELEMENTS')
   if (!el || el.length === 0) throw new ParseError('no "## ELEMENTS" section with a header in the attached data')
   const columns = el[0].split(',').map((c) => c.trim())
@@ -143,13 +154,97 @@ export function parseRuleInput(text: string, task?: string): RuleInput {
     if (cells.length !== columns.length) throw new ParseError(`ELEMENTS row ${n + 1} has ${cells.length} cells, expected ${columns.length}`)
     return Object.fromEntries(columns.map((c, i) => [c, cells[i].trim()]))
   })
+  const bl = s.get('BLOCKS') ?? []
+  const bh = (bl[0] ?? '').split(',').map((c) => c.trim())
+  const blocks = bh.includes('block_id')
+    ? bl.slice(1).map((l) => {
+        const c = l.split(',').map((x) => x.trim())
+        return { id: c[bh.indexOf('block_id')] ?? '', tab: c[bh.indexOf('tab')] ?? '', title: c[bh.indexOf('title')] ?? '' }
+      })
+    : []
+  return { columns, elements, blocks }
+}
+
+/**
+ * The rules and the element data. `text` is the upload (or, with no upload, the task text); `task` is the task text.
+ * The rules come from a `## RULE TEXT` section of `text` if it has one, else from the task's lines, which needs an
+ * upload (a task that is itself the data cannot also be the rules).
+ */
+export function parseRuleInput(text: string, task?: string): RuleInput {
+  const data = parseRuleData(text)
+  const s = sections(text)
+  const ruleText = s.get('RULE TEXT')
   let sentences: Sentence[]
   if (ruleText) sentences = ruleLines(ruleText.join('\n'))
   else if (task !== undefined && task !== text) sentences = ruleLines(task)
   else throw new ParseError('no rules: type them in the task box, one per line, and attach the E-BOM data as the file')
   if (sentences.length === 0) throw new ParseError('no rules: the task box has no rule line')
   const existingIds = (s.get('RULES') ?? []).map((l) => RULE.exec(l)?.[1] ?? l.split(':').slice(0, 2).join(':'))
-  return { sentences, columns, elements, existingIds }
+  return { ...data, sentences, existingIds }
+}
+
+// ------------------------------------------------------------------ the values a rule may name
+
+/** The ELEMENTS columns a note can name. Lengths, geometry readings and the geometry family are not things a scope note
+ *  is written about (and "bend" would otherwise name both a type and a family). */
+export const VALUE_COLUMNS = ['ifc_class', 'type_name', 'system', 'size_mm', 'loc_block'] as const
+export const VALUES_HEADING = 'VALUES'
+
+export interface NamedValue {
+  field: string
+  value: string
+}
+
+/** Every value of VALUE_COLUMNS that a note names (the skill's naming rule); a block also by its tab or title. */
+export function namedValues(note: string, data: RuleData): NamedValue[] {
+  const out: NamedValue[] = []
+  for (const field of VALUE_COLUMNS) {
+    for (const value of distinctValues(data)[field] ?? []) {
+      const block = field === 'loc_block' ? data.blocks.find((b) => b.id === value) : undefined
+      const names = [value, ...(block ? [block.tab, block.title].filter(Boolean) : [])]
+      if (names.some((n) => namesValue(note, n))) out.push({ field, value })
+    }
+  }
+  return out
+}
+
+/** The `## VALUES` section the tool step writes: per column, the values a rule may name, blocks with tab and title. */
+export function valuesSection(data: RuleData): string {
+  const values = distinctValues(data)
+  const lines = VALUE_COLUMNS.map((f) => {
+    const vs = (values[f] ?? []).map((v) => {
+      const b = f === 'loc_block' ? data.blocks.find((x) => x.id === v) : undefined
+      return b ? `${v} (${[b.tab, b.title].filter(Boolean).join(', ')})` : v
+    })
+    return `${f}: ${vs.join(' | ') || '(none)'}`
+  })
+  return [`## ${VALUES_HEADING}`, '# Written by a tool before the run: the only values a rule may name, per ELEMENTS column. A block is named by its id, tab or title.', ...lines].join('\n')
+}
+
+/**
+ * The tool step in front of scope-rule-drafter (src/lib/server/tryitout/preRunStep.ts): the upload with its
+ * `## VALUES` section (re)written, so the model picks values from a list instead of reading them out of CSV rows.
+ * Null when the upload has no readable ELEMENTS.
+ */
+export function prepareRuleUpload(text: string): { text: string; note: string } | null {
+  // Drop a VALUES section the upload brought along: it is rewritten, never trusted.
+  const kept: string[] = []
+  let skipping = false
+  for (const l of text.replace(/\r\n?/g, '\n').split('\n')) {
+    const h = /^##\s/.test(l.trim()) ? l.trim().replace(/^##\s+/, '').trim().toUpperCase() : null
+    if (h !== null) skipping = h === VALUES_HEADING
+    if (!skipping) kept.push(l)
+  }
+  let data: RuleData
+  try {
+    data = parseRuleData(kept.join('\n'))
+  } catch (e) {
+    if (e instanceof ParseError) return null
+    throw e
+  }
+  while (kept.length && kept[kept.length - 1].trim() === '') kept.pop()
+  const counts = VALUE_COLUMNS.map((f) => `${(distinctValues(data)[f] ?? []).length} ${f}`).join(', ')
+  return { text: `${kept.join('\n')}\n${valuesSection(data)}\n`, note: `tool step: the values a rule may name listed for the model (${counts})` }
 }
 
 export function parseRuleResult(text: string): RuleResult {
@@ -191,7 +286,7 @@ const table = (cols: string[], rows: string[][]): string =>
   [`| ${cols.join(' | ')} |`, `|${cols.map(() => '---').join('|')}|`, ...rows.map((r) => `| ${r.join(' | ')} |`)].join('\n')
 
 /** Distinct values per ELEMENTS column (input order), for the helper's report without a result. */
-export function distinctValues(input: RuleInput): Record<string, string[]> {
+export function distinctValues(input: RuleData): Record<string, string[]> {
   const out: Record<string, string[]> = {}
   for (const c of input.columns) out[c] = [...new Set(input.elements.map((e) => e[c]).filter((v) => v !== ''))]
   return out
@@ -265,7 +360,11 @@ export function checkRuleResult(inputText: string, resultText?: string, task?: s
       if (r.reason !== '-') problems.push(`${s}: a rule row must have reason "-", not "${r.reason}"`)
       // The two parts of the skill a tool can check on the wording: an exclusion wording, and the value named.
       if (note && !hasExclusionWording(note)) problems.push(`${s}: made a rule, but the note has no exclusion wording (a requirement or remark is not-an-exclusion)`)
-      if (note && rule && !namesValue(note, rule.value)) problems.push(`${s}: the note does not name "${rule.value}"; a rule's value must appear in its note`)
+      if (note && rule) {
+        const named = namedValues(note, input)
+        if (!named.some((n) => n.field === rule.field && n.value === rule.value)) problems.push(`${s}: the note does not name "${rule.value}"; a rule's value must appear in its note`)
+        else if (named.length > 1) problems.push(`${s}: the note names more than one value (${named.map((n) => `${n.field} = ${n.value}`).join(', ')}); a rule on one of them excludes more than the note says`)
+      }
     } else {
       if (r.rule !== '-' || r.field !== '-' || r.value !== '-') problems.push(`${s}: a not-a-rule row must have "-" in rule, field and value`)
       if (!(REASONS as readonly string[]).includes(r.reason)) problems.push(`${s}: reason "${r.reason}" is not one of ${REASONS.join(', ')}`)

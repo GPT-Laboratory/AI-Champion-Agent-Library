@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { parse as parseYaml } from 'yaml'
-import { REASONS, checkRuleResult, runCli } from './rule-check'
+import { REASONS, VALUES_HEADING, checkRuleResult, prepareRuleUpload, runCli } from './rule-check'
 import { RESULT_COLS, classRows, parseUpload } from '../src/lib/ebom/ebomJoin'
 import { parseResultTable } from '../src/lib/ebom/ebomCheck'
 import { rulesBlockOf, spliceRules } from '../src/lib/rules/splice'
@@ -43,9 +43,13 @@ describe('scope-rule-drafter alignment', () => {
   })
 
   it('the worked example of SKILL.md passes the helper; its one rule excludes X-2', () => {
-    const r = checkRuleResult(fenced('Upload \\(the E-BOM data[^\\n]*'), fenced('Output:'), fenced('Task \\(the rules, as typed\\):'))
+    const upload = fenced('Upload as the tool hands it to you[^\\n]*')
+    const r = checkRuleResult(upload, fenced('Output:'), fenced('Task \\(the rules, as typed\\):'))
     expect(r.problems).toEqual([])
     expect(r.dryRun).toEqual([{ rule: 'text:1', field: 'system', value: 'SYN-HOOD', excludes: ['X-2'] }])
+    // The worked upload is exactly what the tool step writes from the raw data.
+    const raw = upload.slice(0, upload.indexOf(`## ${VALUES_HEADING}`))
+    expect(prepareRuleUpload(raw)!.text.trimEnd()).toBe(upload.trimEnd())
   })
 
   it('SKILL.md names the grammar, the mapping header, every reason, the data rule and the closing line of the key', () => {

@@ -32,6 +32,7 @@ metadata:
     - "Synthetic example in data/tryitout-prompts/scope-rule-drafter/ (six typed rules; the IFC EBOM Compiler sample's data without its rules)"
     - "Intended in a connected setup: the estimator's scope notes and the element facts of the IFC EBOM Compiler's upload"
   assumptions:
+    - "The values a rule may use come only from the ## VALUES list a tool writes before the run; a note naming two or more values, or one value narrowed by other words, is never turned into a broader rule"
     - "A note becomes a rule only when it has an exclusion wording (delivered, supplied, installed, provided or billed by; comes from; belongs to; not part of or outside this contract; excluded) and names exactly one cell value of one ELEMENTS column (compared without case, a hyphen read as a space, a leading SYN- label ignored, a plural s accepted)"
     - "Steps are applied in a fixed order and the first that fits decides: not an exclusion, not about the elements, more than one condition, no field value, rule"
     - "Rule ids are text:1, text:2, ... so they never clash with the rules an upload already has"
@@ -61,5 +62,5 @@ llm_config:
     temperature: 0.2
 tools:
   - name: "rule_check"
-    description: "Deterministic helper src/lib/rules/ruleCheck.ts (CLI scripts/rule-check.ts), run by the app after every Try It Out run: checks every rule line against the IFC EBOM Compiler's grammar and the element data, the sentence mapping and the list of sentences not turned into a rule, and shows which elements each rule would exclude."
+    description: "Deterministic helper src/lib/rules/ruleCheck.ts (CLI scripts/rule-check.ts), run by the app around every Try It Out run. Before it, it lists the values a rule may name (## VALUES: each column's values, blocks with their tab and title), so the model picks from a list instead of guessing. After it, checks every rule line against the IFC EBOM Compiler's grammar and the element data, the sentence mapping and the list of sentences not turned into a rule, and shows which elements each rule would exclude."
 human_in_the_loop: true
