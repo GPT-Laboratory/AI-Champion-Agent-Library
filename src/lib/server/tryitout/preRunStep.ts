@@ -7,13 +7,17 @@
 // scope exclusions. A step that cannot read the input, or throws, leaves the input unchanged and never fails the job.
 
 import { prepareEbomUpload, type PreparedUpload } from '$lib/ebom/prepare'
+import { prepareRuleUpload } from '$lib/rules/ruleCheck'
 import { pushEvent } from '../tryItOutJobs'
 import { logDetail } from './redact'
 
 export type PreRunStep = (input: string) => PreparedUpload | null
 
 /** slug -> step. A Map, so a slug such as "constructor" never reaches an Object prototype member. */
-export const PRE_RUN_STEPS: ReadonlyMap<string, PreRunStep> = new Map<string, PreRunStep>([['ifc-ebom-compiler', prepareEbomUpload]])
+export const PRE_RUN_STEPS: ReadonlyMap<string, PreRunStep> = new Map<string, PreRunStep>([
+  ['ifc-ebom-compiler', prepareEbomUpload],
+  ['scope-rule-drafter', prepareRuleUpload],
+])
 
 /** The input as the agent gets it, plus one feed line; the input unchanged when the agent has no step. Never throws. */
 export function runPreRunStep(slug: string, input: string, steps: ReadonlyMap<string, PreRunStep> = PRE_RUN_STEPS): { text: string; event: string | null } {

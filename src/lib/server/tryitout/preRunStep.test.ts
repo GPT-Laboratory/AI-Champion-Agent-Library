@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { PRE_RUN_STEPS, runPreRunStep, type PreRunStep } from './preRunStep'
 
 describe('runPreRunStep', () => {
-  it('only ifc-ebom-compiler has a step; other slugs and prototype names pass the input through', () => {
-    expect([...PRE_RUN_STEPS.keys()]).toEqual(['ifc-ebom-compiler'])
-    for (const slug of ['scope-rule-drafter', 'constructor', '__proto__']) expect(runPreRunStep(slug, 'x')).toEqual({ text: 'x', event: null })
+  it('ifc-ebom-compiler and scope-rule-drafter have a step; other slugs and prototype names pass the input through', () => {
+    expect([...PRE_RUN_STEPS.keys()]).toEqual(['ifc-ebom-compiler', 'scope-rule-drafter'])
+    for (const slug of ['qto-normalization', 'constructor', '__proto__']) expect(runPreRunStep(slug, 'x')).toEqual({ text: 'x', event: null })
   })
 
   it('an unreadable input or a throwing step leaves the input unchanged and says so', () => {

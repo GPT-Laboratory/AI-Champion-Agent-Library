@@ -340,7 +340,7 @@
           "llm_temperature": 0.2,
           "llm_max_tokens": 16384,
           "llm_top_p": null,
-          "tool_names": "[\"catalog_lookup\"]",
+          "tool_names": "[\"catalog_lookup\",\"sourcing_match\"]",
           "input_schema": "[{\"key\":\"input_text\",\"label\":\"E-BOM and catalog excerpt (CSV text)\",\"type\":\"textarea\",\"required\":true,\"description\":null,\"placeholder\":\"## E-BOM\\nline_id,description,req_class,req_dn,req_material,qty,unit\\n## CATALOG EXCERPT\\nproduct_id,supplier,name,class,dn,material,sales_unit,in_stock\",\"unit\":null,\"defaultValue\":null,\"options\":[],\"min\":null,\"max\":null}]",
           "requires_human_approval": 1,
           "category": "project-management",
@@ -841,8 +841,8 @@
       "hash": "d6ccda503a1ac357202f3cbdaccd91cfcfdebf1fa8227b112b7a4f44f28b3a85"
     },
     "product-sourcing-mbom": {
-      "text": "Product Sourcing MBOM. Reads an engineering BOM and a catalog excerpt as CSV text, proposes candidate catalog products for every BOM line in one row per line by exact attribute equality, flags ambiguous, no-match and unit-mismatch lines and copies matched lines into an M-BOM draft. Own design, inspired by 1_DDC_Toolkit/CWICR-Database/cwicr-material-procurement (method only; no CWICR data); the catalog is generic synthetic product data. Output is a draft.. project-management. sourcing bom catalog procurement etim. catalog lookup",
-      "hash": "d73d551c613e69a917cedaeb2292a595a22fac6e65dc9ad6438ea473a3b9cca7"
+      "text": "Product Sourcing MBOM. Reads an engineering BOM and a catalog excerpt as CSV text, proposes candidate catalog products for every BOM line in one row per line by exact attribute equality, flags ambiguous, no-match and unit-mismatch lines and copies matched lines into an M-BOM draft. Own design, inspired by 1_DDC_Toolkit/CWICR-Database/cwicr-material-procurement (method only; no CWICR data); the catalog is generic synthetic product data. Output is a draft.. project-management. sourcing bom catalog procurement etim. catalog lookup sourcing match",
+      "hash": "ce3754ba3700e0c170ab16b193f8b4afeb701eee1378e54d5e58ae81271b3aac"
     },
     "punch-list-closure-check": {
       "text": "Punch List Closure Check. Checks punch list items against simple closure rules and an as-of date and drafts a closed-ok, closed-unverified, overdue, open-ok or no-responsible verdict per item with the reason for engineer review. Dates are compared as ISO text, never counted. Own design, inspired by 1_DDC_Toolkit/Field-Operations/punch-list-manager (+ 1_DDC_Toolkit/Project-Closeout/punch-list-manager). Output is a draft.. project-management. site-handover punch-list closeout status-check. punch list reader",

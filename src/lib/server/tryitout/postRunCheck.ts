@@ -17,6 +17,7 @@ import { runCli as bmsCli } from '$lib/bms/resultCheck'
 import { runCli as carbonCli } from '$lib/carbon/resultCheck'
 import { runCli as qtoCli } from '$lib/qto/resultCheck'
 import { checkRuleResult, dryRunSummary, runCli as ruleCli } from '$lib/rules/ruleCheck'
+import { checkSourcingResult, sourcingSummary, runCli as sourcingCli } from '$lib/sourcing/mbomCheck'
 import { parseDocument } from '$lib/resultMarkdown'
 import { cellValue, xlsxBytes, type Sheet } from '$lib/xlsx'
 import type { CheckStatus, JobCheck } from '$lib/tryItOutCheck'
@@ -267,6 +268,15 @@ export const HELPER_CHECKS: ReadonlyArray<[string, HelperCheckSpec]> = [
       section: 'Sentence mapping',
       runCli: ruleCli,
       matchSummary: (input, result, task) => dryRunSummary(checkRuleResult(input, result, task).dryRun),
+    },
+  ],
+  [
+    'product-sourcing-mbom',
+    {
+      helper: 'sourcing-match',
+      section: 'Per-line rows',
+      runCli: (input, result) => sourcingCli(input, result),
+      matchSummary: (input, result) => sourcingSummary(checkSourcingResult(input, result).results),
     },
   ],
 ]

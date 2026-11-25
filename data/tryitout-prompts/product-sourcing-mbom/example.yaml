@@ -2,3 +2,7 @@
 # The task is the one of the agent's latest live-run plan (26-01); the file is the agent's synthetic sample.
 task: Match each E-BOM line to the catalog excerpt and draft the M-BOM
 file: sample-ebom-catalog.txt
+result: example-result.md
+# example-result.md is the reference result written by the sourcing-match helper (scripts/sourcing-match.ts) from the
+# skill's equality rules; it is also the helper's answer key in src/lib/sourcing/mbomCheck.test.ts.
+result_label: Expected result for the example input, written by the sourcing-match helper from the skill's equality rules. Not a model run.
