@@ -71,6 +71,29 @@ export async function pipelinesOf(agentSlug: string, dir: string = PIPELINES_DIR
   }
 }
 
+export interface PipelineCard {
+  slug: string
+  title: string
+  summary: string
+  steps: { slug: string; title: string }[]
+}
+
+/** Every pipeline for the list page /pipelines, with its steps' agent titles. A broken pipeline is left out. */
+export async function listPipelineCards(dir: string = PIPELINES_DIR): Promise<PipelineCard[]> {
+  let defs: PipelineDef[]
+  try {
+    defs = await listPipelines(dir)
+  } catch (err) {
+    console.warn('Pipelines not listed:', (err as Error).message)
+    return []
+  }
+  const slugs = [...new Set(defs.flatMap((d) => d.steps))]
+  const titles = new Map(
+    slugs.length ? db.select({ slug: agents.slug, title: agents.title }).from(agents).where(inArray(agents.slug, slugs)).all().map((r) => [r.slug, r.title]) : [],
+  )
+  return defs.map((d) => ({ slug: d.slug, title: d.title, summary: d.summary, steps: d.steps.map((s) => ({ slug: s, title: titles.get(s) ?? s })) }))
+}
+
 export interface PipelineStep {
   slug: string
   title: string

@@ -6,8 +6,9 @@ unchanged), so each step gets its own tool step, tool check and download, exactl
 
 ## Plain-language rules to E-BOM to M-BOM
 
-Page: `/pipelines/rules-to-mbom`. Definition: `data/pipelines/rules-to-mbom/pipeline.yaml`. Each member agent's page
-links to it ("Step n of the pipeline …").
+Page: `/pipelines/rules-to-mbom`. Definition: `data/pipelines/rules-to-mbom/pipeline.yaml`. Ways in: the "Pipelines"
+link in the header (the list `/pipelines`, every folder of `data/pipelines`) and each member agent's page ("Step n of
+the pipeline …").
 
 | # | What happens | Who |
 |---|---|---|

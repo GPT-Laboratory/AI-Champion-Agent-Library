@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { listPipelines, loadPipelineDef, loadPipelinePage, pipelinesOf } from './pipelines'
+import { listPipelineCards, listPipelines, loadPipelineDef, loadPipelinePage, pipelinesOf } from './pipelines'
 
 let root: string
 beforeEach(() => (root = mkdtempSync(join(tmpdir(), 'pipelines-'))))
@@ -15,6 +15,14 @@ describe('pipeline definitions', () => {
     expect((await listPipelines()).map((x) => x.slug)).toEqual(['rules-to-mbom'])
     expect(await pipelinesOf('ifc-ebom-compiler')).toEqual([{ slug: 'rules-to-mbom', title: 'Plain-language rules to E-BOM to M-BOM', step: 2 }])
     expect(await pipelinesOf('qto-normalization')).toEqual([])
+  })
+
+  it('the list page: each pipeline with its steps\' agent titles; none when there are none', async () => {
+    const cards = await listPipelineCards()
+    expect(cards.map((c) => [c.slug, c.steps.map((s) => s.title)])).toEqual([
+      ['rules-to-mbom', ['Scope Rule Drafter', 'IFC EBOM Compiler', 'Product Sourcing MBOM']],
+    ])
+    expect(await listPipelineCards(root)).toEqual([])
   })
 
   it('no such pipeline, a bad slug or an invalid file', async () => {

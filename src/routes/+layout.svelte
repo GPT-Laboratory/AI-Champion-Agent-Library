@@ -21,20 +21,21 @@
           <span class="text-xs text-gray-600" data-testid="app-version">{appVersion}</span>
         {/if}
       </div>
-      {#if data.compareEnabled}
-        <a href="/compare" class="text-sm font-medium text-gray-900 underline">Compare agents</a>
-      {/if}
-      {#if data.themeEnabled}
-        <ThemeToggle theme={data.theme} />
-      {/if}
-      {#if data.user}
-        <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4">
+        <a href="/pipelines" class="text-sm font-medium text-gray-900 underline">Pipelines</a>
+        {#if data.compareEnabled}
+          <a href="/compare" class="text-sm font-medium text-gray-900 underline">Compare agents</a>
+        {/if}
+        {#if data.themeEnabled}
+          <ThemeToggle theme={data.theme} />
+        {/if}
+        {#if data.user}
           <span class="hidden text-sm text-gray-600 sm:inline">{data.user.email}</span>
           <form method="POST" action="/logout">
             <button type="submit" class="text-sm font-medium text-blue-700 hover:underline">Sign out</button>
           </form>
-        </div>
-      {/if}
+        {/if}
+      </div>
     </nav>
   </header>
   <main id="main-content" tabindex="-1" class="max-w-6xl mx-auto px-4 md:px-6 py-8 focus:outline-none">
