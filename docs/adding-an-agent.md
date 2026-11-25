@@ -60,6 +60,7 @@ What makes the agent's output checkable instead of taken on trust. The existing 
 | `scripts/ddc-alignment.<slug>.test.ts` | Keeps SKILL.md, sample, entry, spec and `example-result.md` consistent. Read the key from `example-result.md`; do not copy it into the test. |
 | `scripts/smoke/profiles.ts` | A profile (`tableProfile({...})` when there is a helper) so `scripts/smoke-agent.ts --agent <slug>` and the LLM judge work; `scripts/smoke-agent.test.ts` then covers it. See [tryitout-live-run.md](tryitout-live-run.md). |
 | `src/lib/server/tryitout/postRunCheck.ts` | Recommended: add the helper to `HELPER_CHECKS` (a `runCli(input, result)` helper) or `POST_RUN_CHECKS` (anything else), so every run gets the "Checked by tool" badge and a check report in the download. Keep the check logic in `src/lib/`, not in `scripts/`. See [tryitout-post-run-check.md](tryitout-post-run-check.md). |
+| `src/lib/skillHelpers.ts` | With a helper: add it to `SKILL_HELPERS` (what to run before and after the skill), so the skill download ships the helper and says how to use it. See [skill-download.md](skill-download.md). |
 
 ## 5. Check it
 

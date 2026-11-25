@@ -36,6 +36,12 @@ BLOCKS, e.g. `K2 (Basement, Storage rooms)`. **These are the only values a rule 
 for every note, look the note's words up in it. A value that is not in the list does not exist, however likely it
 sounds; never make one up, and never shorten, extend or rename one.
 
+Only if the upload has no `## VALUES` section (no tool ran, e.g. the skill is used on its own): write that list
+yourself first, under `## VALUES` at the top of your working notes (not in the result): for each of `ifc_class`,
+`type_name`, `system`, `size_mm` and `loc_block`, every value that occurs in that ELEMENTS column, copied exactly and
+once each; for each block id, its `tab` and `title` from BLOCKS. Then work from that list exactly as above. The tool
+that writes it is `scripts/rule-check.ts <upload> --prepare`.
+
 The upload also has `## BLOCKS` and `## CATALOGUE`, and may have `## RULES` (rules it already has). You do not
 change them. Existing rules keep their own ids; yours are always `text:1`, `text:2`, … so they never clash.
 

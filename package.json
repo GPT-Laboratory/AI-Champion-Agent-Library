@@ -16,10 +16,11 @@
     "mcp-propose-eval": "tsx scripts/mcp-propose-eval.ts",
     "tryout:configure": "tsx scripts/set-try-it-out-mode.ts",
     "db:push": "drizzle-kit push",
-    "build": "npm run db:push && npm run ingest && npm run tryout:configure && vite build",
+    "build": "npm run db:push && npm run ingest && npm run tryout:configure && npm run skills:build && vite build",
+    "skills:build": "tsx scripts/build-skill-helpers.ts",
     "preview": "node build",
     "smoke": "tsx scripts/smoke.ts",
-    "dev": "npm run db:push && npm run ingest && npm run tryout:configure && vite dev"
+    "dev": "npm run db:push && npm run ingest && npm run tryout:configure && npm run skills:build && vite dev"
   },
   "keywords": [],
   "author": "",

@@ -91,6 +91,17 @@
           </a>
         {/if}
 
+        {#if data.skillDownload}
+          <a
+            href={`/agents/${agent.slug}/skill.zip`}
+            download
+            data-sveltekit-reload
+            class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:underline"
+          >
+            Download skill (.zip)
+          </a>
+        {/if}
+
         {#if agent.tryItOutMode === 'external' && agent.tryItOutUrl}
           <a
             href={agent.tryItOutUrl}
