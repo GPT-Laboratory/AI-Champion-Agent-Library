@@ -8,10 +8,12 @@
 // 0 = no rounding). No network, no writes.
 // The app runs the same check after every Try It Out job of the agent (docs/tryitout-post-run-check.md).
 // Usage: npx tsx scripts/ebom-join.ts <upload.txt> [result.md] [--stick-m <metres>]
+//        npx tsx scripts/ebom-join.ts <upload.txt> --prepare   (the tool step before the run: excluded_by, untied rules)
 // Exit codes: 0 ok (and no problems or mismatches), 1 problems or mismatches found, 2 usage or validation error.
 import { readFileSync } from 'node:fs'
 import { isMainModule } from './is-main.js'
 import { checkEbomResult } from '../src/lib/ebom/ebomCheck.js'
+import { prepareEbomUpload } from '../src/lib/ebom/prepare.js'
 
 // The parser and the check live in src/lib/ebom/ebomCheck.ts, so the app's post-run check runs the same code.
 export { ParseError, parseResultTable, formatLines } from '../src/lib/ebom/ebomCheck.js'
@@ -21,24 +23,28 @@ export function runCli(inputText: string, resultText?: string, stickM = '3'): { 
   return { code, out }
 }
 
-export function parseArgs(argv: string[]): { files: string[]; stickM: string } | null {
+/** `--prepare` (one file): print the upload as the tool step hands it to the model (excluded_by, untied rules). */
+export function parseArgs(argv: string[]): { files: string[]; stickM: string; prepare?: true } | null {
   const files: string[] = []
   let stickM = '3'
+  let prepare = false
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--stick-m') {
+    if (argv[i] === '--prepare') prepare = true
+    else if (argv[i] === '--stick-m') {
       const v = argv[++i]
       if (v === undefined) return null
       stickM = v
     } else if (argv[i].startsWith('--')) return null
     else files.push(argv[i])
   }
+  if (prepare) return files.length === 1 ? { files, stickM, prepare: true } : null
   return files.length >= 1 && files.length <= 2 ? { files, stickM } : null
 }
 
 if (isMainModule(import.meta.url, process.argv[1])) {
   const args = parseArgs(process.argv.slice(2))
   if (!args) {
-    console.error('usage: ebom-join.ts <upload.txt> [result.md] [--stick-m <metres>]')
+    console.error('usage: ebom-join.ts <upload.txt> [result.md] [--stick-m <metres>] | ebom-join.ts <upload.txt> --prepare')
     process.exit(2)
   }
   let a: string
@@ -49,6 +55,15 @@ if (isMainModule(import.meta.url, process.argv[1])) {
   } catch (e) {
     console.error(`error: cannot read file: ${(e as Error).message}`)
     process.exit(2)
+  }
+  if (args.prepare) {
+    const p = prepareEbomUpload(a)
+    if (!p) {
+      console.error('error: the upload cannot be read (it needs ## BLOCKS, ## CATALOGUE and ## ELEMENTS)')
+      process.exit(2)
+    }
+    process.stdout.write(p.text)
+    process.exit(0)
   }
   const r = runCli(a, b, args.stickM)
   if (r.code === 2) console.error(r.out)
