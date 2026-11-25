@@ -45,6 +45,7 @@ describe('registry', () => {
       'carbon-epd-enrichment',
       'qto-normalization',
       'scope-rule-drafter',
+      'product-sourcing-mbom',
     ])
     for (const slug of ['demo-rfi-triage', 'clash-prioritization', 'constructor', '__proto__']) {
       expect(runPostRunCheck(slug, { task: 't', upload: SAMPLE, files: { 'result.md': enc(SLIP) } })).toEqual({ files: [], events: [], check: null })

@@ -59,4 +59,6 @@ llm_config:
 tools:
   - name: "catalog_lookup"
     description: "Placeholder, not wired: the catalog excerpt is passed as text in one model call (recorded as a gap)."
+  - name: "sourcing_match"
+    description: "Deterministic helper src/lib/sourcing/mbomCheck.ts (CLI scripts/sourcing-match.ts), run by the app after every Try It Out run: applies the skill's equality rules to the E-BOM lines and the catalog excerpt and checks the per-line rows (candidates, status, unit check, near misses, review), the M-BOM draft and the open items cell by cell. Without a result it writes the reference result."
 human_in_the_loop: true

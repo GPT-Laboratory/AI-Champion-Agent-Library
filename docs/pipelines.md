@@ -16,7 +16,7 @@ links to it ("Step n of the pipeline …").
 | Gate 1 | The rules, editable. "Approve and continue" puts them into `## RULES` of the E-BOM data (`ebomUpload`, the same splice as the one-click hand-over). | you, tool |
 | 2 | IFC EBOM Compiler on that data; its tool step applies the rules (`excluded_by`) and its check compares every class row with the ebom-join helper; `ebom.xlsx` is offered. | model, tool |
 | Gate 2 | The ebom-join tool joins the class rows into E-BOM lines (block x designation, metres up to whole 3 m sticks) and maps each designation to product class, size and material (`designation-mapping.csv`). Rows that break the contract stop the pipeline here. | tool, you |
-| 3 | Product Sourcing E-BOM to M-BOM on those lines and the catalog excerpt (`catalog-excerpt.csv`): matched, ambiguous or no-match per line, an M-BOM draft and open items. | model |
+| 3 | Product Sourcing E-BOM to M-BOM on those lines and the catalog excerpt (`catalog-excerpt.csv`): matched, ambiguous or no-match per line, an M-BOM draft and open items; the sourcing-match tool checks every cell. | model, tool |
 
 The tool steps are `src/lib/pipeline/rulesToMbom.ts` (pure, tested in `rulesToMbom.test.ts`, including the whole chain
 run with tools only). The page is `src/routes/pipelines/[slug]` with `src/lib/components/PipelineRunner.svelte`; the
