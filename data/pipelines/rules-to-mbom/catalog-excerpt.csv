@@ -1,0 +1,8 @@
+# SYNTHETIC SAMPLE - invented product catalog excerpt; no real supplier, product or price
+product_id,supplier,name,class,dn,material,sales_unit,in_stock
+SP-01,SynSupplier A,Spiral duct 250 galvanized,SYN-EC201,250,galvanized steel,m,Y
+SP-02,SynSupplier A,Spiral duct 100 galvanized,SYN-EC201,100,galvanized steel,m,Y
+SP-03,SynSupplier B,Spiral duct 100 galvanized,SYN-EC201,100,galvanized steel,m,N
+SP-04,SynSupplier B,Bend 90 100 galvanized pack of 5,SYN-EC202,100,galvanized steel,pack5,Y
+SP-05,SynSupplier A,Copper pipe 15 straight,SYN-EC101,15,copper,m,Y
+SP-06,SynSupplier A,Exhaust valve 125,SYN-EC204,125,steel,pcs,Y

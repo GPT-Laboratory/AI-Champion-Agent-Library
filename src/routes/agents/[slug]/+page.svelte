@@ -105,6 +105,14 @@
         <CustomizeMenu generatorEnabled={data.mcpGeneratorEnabled === true} testerEnabled={data.mcpTesterEnabled === true} />
       </div>
 
+      {#if data.pipelines}
+        {#each data.pipelines as pl (pl.slug)}
+          <p class="mt-4 text-sm text-gray-700">
+            Step {pl.step} of the pipeline <a href={`/pipelines/${pl.slug}`} class="font-medium text-indigo-600 hover:underline">{pl.title}</a>
+          </p>
+        {/each}
+      {/if}
+
       {#if agent.tryItOutMode === 'runnable'}
         <div id="try-out" class="mt-6">
           <button

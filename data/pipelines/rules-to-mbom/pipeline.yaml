@@ -1,0 +1,17 @@
+# Pipeline "Plain-language rules -> E-BOM -> M-BOM" (docs/pipelines.md). Read by src/lib/server/pipelines.ts and run on
+# the page /pipelines/rules-to-mbom: each step is an ordinary Try It Out job of the named agent, and the hand-overs
+# between them are deterministic tools (src/lib/pipeline/rulesToMbom.ts). The notes, the E-BOM data and each agent's
+# task are the agents' own Try It Out examples (data/tryitout-prompts/<slug>/example.yaml); this folder only adds what
+# the last hand-over needs: the designation mapping and the product catalog excerpt.
+title: Plain-language rules to E-BOM to M-BOM
+summary: >-
+  Type scope notes in your own words, run them against E-BOM data, and follow the result through three agents: the
+  Scope Rule Drafter turns the notes into scope rules, the IFC EBOM Compiler drafts the E-BOM with those rules, and
+  Product Sourcing drafts the M-BOM from the E-BOM lines. A tool checks every step, tools do the hand-overs, and you
+  approve each hand-over.
+steps:
+  - scope-rule-drafter
+  - ifc-ebom-compiler
+  - product-sourcing-mbom
+mapping: designation-mapping.csv
+catalog: catalog-excerpt.csv

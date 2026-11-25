@@ -76,6 +76,9 @@ IFC EBOM Compiler.
   Opened any other way (a related-agent link, the catalog, a bookmark), the compiler shows no note and discards a
   left-over hand-over. The panel is rebuilt for every agent page, so nothing carries over between agents.
 
+The pipeline page `/pipelines/rules-to-mbom` uses the same splice, with an approval and an editable rules box in
+between; see [pipelines.md](pipelines.md).
+
 ## Rules
 
 - The saved result must be honest about its source. Say in `result_label` whether it is a helper's answer key, a counted live run (give the job id) or something else.

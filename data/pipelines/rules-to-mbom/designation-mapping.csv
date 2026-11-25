@@ -1,0 +1,9 @@
+# SYNTHETIC SAMPLE - invented mapping from the E-BOM designations of the IFC EBOM Compiler sample to the product class, nominal size and material the sourcing agent matches on; SYN classes are invented
+designation,req_class,req_dn,req_material
+SYN Round duct 100,SYN-EC201,100,galvanized steel
+SYN Round duct 250,SYN-EC201,250,galvanized steel
+SYN Bend 100,SYN-EC202,100,galvanized steel
+SYN Tee 250,SYN-EC203,250,galvanized steel
+SYN Tee 250 reducing,SYN-EC203,250,galvanized steel
+SYN Exhaust valve 125,SYN-EC204,125,steel
+SYN Copper pipe 15,SYN-EC101,15,copper
