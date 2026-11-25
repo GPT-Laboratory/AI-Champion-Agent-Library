@@ -14,3 +14,5 @@ data/fixtures-scale/
 override.tryitout.yml
 .tryitout-runs/
 .claude/
+# Built by scripts/build-skill-helpers.ts (npm run skills:build)
+skill-helpers/

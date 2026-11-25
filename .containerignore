@@ -14,3 +14,5 @@ docs/
 !data/tryitout-prompts/**/SKILL.md
 # Try It Out example files (docs/tryitout-example.md), e.g. a saved example-result.md
 !data/tryitout-prompts/**/*.md
+# Built by scripts/build-skill-helpers.ts (npm run skills:build)
+skill-helpers/

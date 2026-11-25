@@ -41,6 +41,7 @@ RUN mkdir -p db \
     && npx --no-install drizzle-kit push --force \
     && npm run ingest \
     && npm run tryout:configure \
+    && npx --no-install tsx scripts/build-skill-helpers.ts \
     && npx --no-install vite build \
     && node --input-type=module -e \
       "import Database from 'better-sqlite3'; const db = new Database('./db/catalog.db', { readonly: true }); db.prepare('SELECT 1 FROM agents LIMIT 1').get(); db.close()"
@@ -69,6 +70,10 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/db ./db
 COPY --from=builder /app/data/tryitout-prompts ./data/tryitout-prompts
+# Pipeline definitions and their hand-over data (/pipelines, docs/pipelines.md).
+COPY --from=builder /app/data/pipelines ./data/pipelines
+# The skill helpers bundled by scripts/build-skill-helpers.ts for the skill download (docs/skill-download.md).
+COPY --from=builder /app/skill-helpers ./skill-helpers
 COPY --from=builder /app/package.json ./package.json
 # The MCP test runner stages the driver sources into its container (src/lib/server/mcptest/containerRun.ts reads them
 # from the working directory); without these three the feature fails with "driver sources could not be read".

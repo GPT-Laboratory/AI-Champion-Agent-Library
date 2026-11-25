@@ -7,6 +7,7 @@ import type { PageServerLoad } from './$types'
 import { warmForSession } from '$lib/server/tryitout/service'
 import { loadTryItOutExample } from '$lib/server/tryItOutExample'
 import { pipelinesOf } from '$lib/server/pipelines'
+import { hasSkill } from '$lib/server/skillBundle'
 import type { TryItOutExample } from '$lib/tryItOutExample'
 import { related } from '$lib/server/search/index.js'
 import { sessionKey } from '$lib/server/tryitout/session'
@@ -63,6 +64,7 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies, getCl
   }
 
   const pipelines = effectiveMode === 'runnable' ? await pipelinesOf(row.slug) : []
+  const skillDownload = await hasSkill(row.slug)
 
   // DISC-01: up to 4 related agents. Best effort; a failure must never break the detail page.
   let relatedAgents: { slug: string; title: string; summary: string; category: string | null }[] = []
@@ -100,6 +102,8 @@ export const load: PageServerLoad = async ({ params, url, locals, cookies, getCl
     ...(tryItOutExample ? { tryItOutExample } : {}),
     // Only a step of a pipeline (data/pipelines) gets the key, for the link to the pipeline page.
     ...(pipelines.length ? { pipelines } : {}),
+    // Only an agent with a skill folder (data/tryitout-prompts/<slug>/SKILL.md) gets the key, for the download link.
+    ...(skillDownload ? { skillDownload } : {}),
     ...mcpGeneratorData(),
     ...mcpTesterData(),
   }
